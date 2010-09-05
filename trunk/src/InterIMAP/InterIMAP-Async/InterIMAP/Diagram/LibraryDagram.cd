@@ -1,0 +1,296 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="InterIMAP.Asynchronous.Client.IMAPConnection" Collapsed="true">
+    <Position X="7.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIRIAASIQgIIEABSAUDAgIDAIAgSAAACMCYAQAAAAII=</HashCode>
+      <FileName>Asynchronous\Client\IMAPConnection.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InterIMAP.Asynchronous.Client.IMAPConnectionPool" Collapsed="true">
+    <Position X="7.5" Y="1.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAIAACBAgAACEAAAAAAAwAQAAAJIAgAAgAAAAAAAEA=</HashCode>
+      <FileName>Asynchronous\Client\IMAPConnectionPool.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InterIMAP.Asynchronous.Client.IMAPConnectionWorker" Collapsed="true">
+    <Position X="7.5" Y="2" Width="2" />
+    <TypeIdentifier>
+      <HashCode>BQAIAAAAoiYIAEEAAAABAIABIAAQAEAAIhAQEQAAAIA=</HashCode>
+      <FileName>Asynchronous\Client\IMAPConnectionWorker.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InterIMAP.Asynchronous.Client.IMAPMailboxManager" Collapsed="true">
+    <Position X="7.5" Y="2.75" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>IAMABEAARIgBAFCAAAAAAKAABAAAwAAWAAABgAAAACA=</HashCode>
+      <FileName>Asynchronous\Client\IMAPMailboxManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InterIMAP.Asynchronous.Client.IMAPRequestManager" Collapsed="true">
+    <Position X="7.5" Y="3.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAACAAAAAAAUQEACAAgBAAEAAQIAAAAAAAAAAAAIA=</HashCode>
+      <FileName>Asynchronous\Client\IMAPRequestManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InterIMAP.Asynchronous.Helpers.WorkerLogger" Collapsed="true">
+    <Position X="4.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgIAAAACAAAAAAAABACAAAAggAAEAAIAAQAAAAQIA=</HashCode>
+      <FileName>Asynchronous\Helpers\WorkerLogger.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InterIMAP.Asynchronous.Objects.Folder" Collapsed="true">
+    <Position X="4.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAIAAAAAAAAAgEAIAABAAAQAAAAAAQAAAAAAgQEAAAA=</HashCode>
+      <FileName>Asynchronous\Objects\Folder.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="InterIMAP.Common.Attributes.LinkToTable" Collapsed="true">
+    <Position X="4.75" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAA=</HashCode>
+      <FileName>Common\Attributes\LinkToTable.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InterIMAP.Common.Commands.BaseCommand" Collapsed="true">
+    <Position X="4.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAACAAAAAEEBAIAAIAIBAAAAooAAAAIAoAAAYAAAAQ=</HashCode>
+      <FileName>Common\Commands\BaseCommand.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="InterIMAP.Common.Commands.CapabilityCommand" Collapsed="true">
+    <Position X="2.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAA=</HashCode>
+      <FileName>Common\Commands\CapabilityCommand.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InterIMAP.Common.Commands.CommandResult" Collapsed="true">
+    <Position X="2.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAAAAABAAAAAAAAQAAAAGIAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Common\Commands\CommandResult.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InterIMAP.Common.Commands.CustomCommand" Collapsed="true">
+    <Position X="2.75" Y="4.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAA=</HashCode>
+      <FileName>Common\Commands\CustomCommand.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InterIMAP.Common.Commands.ExamineFolderCommand" Collapsed="true">
+    <Position X="2.75" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAA=</HashCode>
+      <FileName>Common\Commands\ExamineFolderCommand.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InterIMAP.Common.Commands.FolderListCommand" Collapsed="true">
+    <Position X="2.75" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAA=</HashCode>
+      <FileName>Common\Commands\FolderListCommand.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InterIMAP.Common.Commands.HeartBeatCommand" Collapsed="true">
+    <Position X="2.75" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAA=</HashCode>
+      <FileName>Common\Commands\HeartBeatCommand.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InterIMAP.Common.Commands.LoginCommand" Collapsed="true">
+    <Position X="2.75" Y="7.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAA=</HashCode>
+      <FileName>Common\Commands\LoginCommand.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InterIMAP.Common.Commands.MessageListCommand" Collapsed="true">
+    <Position X="5.75" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAA=</HashCode>
+      <FileName>Common\Commands\MessageListCommand.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InterIMAP.Common.Commands.SelectFolderCommand" Collapsed="true">
+    <Position X="5.75" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAA=</HashCode>
+      <FileName>Common\Commands\SelectFolderCommand.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InterIMAP.Common.Data.Database" Collapsed="true">
+    <Position X="8" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Common\Data\Database.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InterIMAP.Common.Data.DataManager" Collapsed="true">
+    <Position X="8" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAiEAAIAAAEuACEEAAAIAAACAAAsAACABAAAAAAAA=</HashCode>
+      <FileName>Common\Data\DataManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InterIMAP.Common.Data.Mailbox" Collapsed="true">
+    <Position X="8" Y="7.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CEABBBACAwAAAQZALAgCQAgEBgkGQBggEQAIoKUCBhg=</HashCode>
+      <FileName>Common\Data\Mailbox.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InterIMAP.Common.Data.ZipStorer" Collapsed="true">
+    <Position X="8" Y="8" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>oAEAAAAEAAAAIkJAAgRAAAACAIAAgEAQCAAAQQDQAIA=</HashCode>
+      <FileName>Common\Data\ZipStorer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InterIMAP.Common.Processors.BaseProcessor" Collapsed="true">
+    <Position X="10.75" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAAgAAAAAQAAEAAQAAgAAQAAAAAgAAAAAAAAAAAAAQ=</HashCode>
+      <FileName>Common\Processors\BaseProcessor.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="InterIMAP.Common.Processors.FolderListProcessor" Collapsed="true">
+    <Position X="10.75" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAABIAIBAAAAAAgAAgAAAAAAAAAAAAAAAAIAAAAAA=</HashCode>
+      <FileName>Common\Processors\FolderListProcessor.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InterIMAP.Common.Processors.LoginProcessor" Collapsed="true">
+    <Position X="10.75" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAABAgAAAAAAAQAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Common\Processors\LoginProcessor.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InterIMAP.Common.Processors.MessageListProcessor" Collapsed="true">
+    <Position X="10.75" Y="7.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAgAgAAAAAAAAAAAAgAgAAAAAAAAAAAAAAAAAAABgAA=</HashCode>
+      <FileName>Common\Processors\MessageListProcessor.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InterIMAP.Common.Requests.BaseRequest" Collapsed="true">
+    <Position X="13" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAwQAAAABAAMQDAgBABBQAAAAQAAgAGAAAAAAAQAQ=</HashCode>
+      <FileName>Common\Requests\BaseRequest.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="InterIMAP.Common.Requests.MessageListRequest" Collapsed="true">
+    <Position X="13" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Common\Requests\MessageListRequest.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InterIMAP.Common.Requests.SimpleBatchRequest" Collapsed="true">
+    <Position X="13" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAABAAAAA=</HashCode>
+      <FileName>Common\Requests\SimpleBatchRequest.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="InterIMAP.IMAPConfig" Collapsed="true">
+    <Position X="13.25" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEwAIAAEAAAAAIERAggAgAAAEAiASIgCAQooRAAAAGA=</HashCode>
+      <FileName>Common\IMAPConfig.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InterIMAP.IMAPException" Collapsed="true">
+    <Position X="13.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAwAAAAAAACA=</HashCode>
+      <FileName>Common\IMAPException.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InterIMAP.IMAPLogger" Collapsed="true">
+    <Position X="13.25" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAoAAAAAkAAAAABAAAABAAAAAgAAkAAAAAAAAAAgAA=</HashCode>
+      <FileName>Common\IMAPLogger.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Interface Name="InterIMAP.Common.Interfaces.IBatchRequest" Collapsed="true">
+    <Position X="10.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAA=</HashCode>
+      <FileName>Common\Interfaces\IBatchRequest.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="InterIMAP.Common.Interfaces.ICommand" Collapsed="true">
+    <Position X="10.75" Y="1.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAAAAAAAAAAAAIAAIAIBAAAAAoAAAAIAIAAAAAAAAQ=</HashCode>
+      <FileName>Common\Interfaces\ICommand.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="InterIMAP.Common.Interfaces.IFolder" Collapsed="true">
+    <Position X="10.75" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAIAAAAAAAAAAAAIAAAAAAQAAAAAAQAAAAAAgQEAAAA=</HashCode>
+      <FileName>Common\Interfaces\IFolder.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="InterIMAP.Common.Interfaces.IProcessor" Collapsed="true">
+    <Position X="10.75" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAAAAAAAAAAAAAAAAAgAAAAAAAAgAAAAAAAAAAAAAQ=</HashCode>
+      <FileName>Common\Interfaces\IProcessor.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="InterIMAP.Common.Interfaces.IRequest" Collapsed="true">
+    <Position X="10.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAwQAAAABAAAQBAgAABAQAAAAAAAAAEAAAAAAAAAQ=</HashCode>
+      <FileName>Common\Interfaces\IRequest.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Enum Name="InterIMAP.Common.IMAPError" Collapsed="true">
+    <Position X="5.75" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAGMAwRAEAgAAEQAQgAAAABAEIQQSAABBAAAAIkAAEw=</HashCode>
+      <FileName>Common\Enums\IMAPError.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="InterIMAP.Common.IMAPResponse" Collapsed="true">
+    <Position X="5.75" Y="8.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAABA=</HashCode>
+      <FileName>Common\Enums\IMAPResponse.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="InterIMAP.Common.LogType" Collapsed="true">
+    <Position X="5.75" Y="9" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAABAAAAAAAAAAAAAAAAAQAAAAAAEAAABAAAAAA=</HashCode>
+      <FileName>Common\Enums\LogType.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="InterIMAP.Common.MailboxType" Collapsed="true">
+    <Position X="5.75" Y="9.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAA=</HashCode>
+      <FileName>Common\Enums\MailboxType.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Tahoma" Size="8.25" />
+</ClassDiagram>

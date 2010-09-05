@@ -63,7 +63,18 @@ namespace InterIMAP.Common.Processors
             string[] separateFlag = flags.Split(new char[] {' '});
             foreach (string flag in separateFlag)
             {
-                object tempFlag = Enum.Parse(typeof (MessageFlag), flag.TrimStart('\\').TrimEnd(')'));
+                object tempFlag = null;
+                string flagname = flag.TrimStart('\\').TrimEnd(')');
+                try
+                {
+                    tempFlag = Enum.Parse(typeof(MessageFlag), flagname);
+                }
+                catch (System.Exception)
+                {
+                    // flag is not in the enum
+                    // just add it to the message object as a string
+                    _msg.SetCustomFlag(flagname, true);
+                }
                 if (tempFlag == null) continue;
                 MessageFlag f = (MessageFlag) tempFlag;
                 _client.MailboxManager.SetMessageFlag(_msg, f, true, true);

@@ -47,8 +47,8 @@ namespace InterIMAP.Common
         /// </summary>
         Answered,
         /// <summary>
-        /// Indicates if this message has been flaged
+        /// Indicates if this message has been flagged
         /// </summary>
-        Flagged
+        Flagged,
     }
 }

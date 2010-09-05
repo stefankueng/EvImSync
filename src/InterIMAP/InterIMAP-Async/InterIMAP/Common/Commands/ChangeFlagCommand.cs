@@ -58,5 +58,26 @@ namespace InterIMAP.Common.Commands
             CommandString = String.Format(cmd, Parameters);
 
         }
+
+        /// <summary>
+        /// Create a new ChangeFlag command
+        /// </summary>
+        /// <param name="msg"></param>
+        /// <param name="flag"></param>
+        /// <param name="value"></param>
+        /// <param name="callback"></param>
+        public ChangeFlagCommand(IMessage msg, string flag, bool value, CommandDataReceivedCallback callback)
+            : base(callback)
+        {
+            //  UID STORE 4963 -FLAGS (\Seen)
+            const string cmd = "UID STORE {0} {1}FLAGS ({2})";
+            _parameters.Add(msg.UID.ToString());
+            _parameters.Add(value ? "+" : "-");
+            _parameters.Add(flag);
+            _parameterObjs.Add(msg);
+
+            CommandString = String.Format(cmd, Parameters);
+
+        }
     }
 }

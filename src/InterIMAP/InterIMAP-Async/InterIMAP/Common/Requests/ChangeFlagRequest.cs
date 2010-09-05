@@ -46,7 +46,22 @@ namespace InterIMAP.Common.Requests
         {
             PreCommand = new SelectFolderCommand(msg.Folder, null);
             Command = new ChangeFlagCommand(msg, flag, value, null);
-            ProcessorType = typeof (ChangeFlagProcessor);
+            ProcessorType = typeof(ChangeFlagProcessor);
+        }
+
+        /// <summary>
+        /// Create new changeflag request
+        /// </summary>
+        /// <param name="msg"></param>
+        /// <param name="flag"></param>
+        /// <param name="value"></param>
+        /// <param name="callback"></param>
+        public ChangeFlagRequest(IMessage msg, string flag, bool value, RequestCompletedCallback callback)
+            : base(callback)
+        {
+            PreCommand = new SelectFolderCommand(msg.Folder, null);
+            Command = new ChangeFlagCommand(msg, flag, value, null);
+            ProcessorType = typeof(ChangeFlagProcessor);
         }
     }
 }

@@ -1,0 +1,50 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InterIMAP", "InterIMAP\InterIMAP.csproj", "{12A005BE-C03F-4950-8568-9814FDF61776}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InterIMAPConsoleTest", "InterIMAPConsoleTest\InterIMAPConsoleTest.csproj", "{F9B80728-79D7-46B3-8C64-7275E3E06DA0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConfigGenerator", "ConfigGenerator\ConfigGenerator.csproj", "{58DED038-265E-4A5F-9D93-F8C2A651F934}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConfigGeneratorWin", "ConfigGeneratorWin\ConfigGeneratorWin.csproj", "{E6039749-AFE9-4F0D-8B47-74FDA4B87763}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InterIMAPGUITest", "InterIMAPGUITest\InterIMAPGUITest.csproj", "{BC007DC7-BA47-4987-B1D5-7C21000FEE3B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IMAPShell", "IMAPShell\IMAPShell.csproj", "{FDBD0B45-0334-4E84-9933-BB920AA8DB64}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{12A005BE-C03F-4950-8568-9814FDF61776}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{12A005BE-C03F-4950-8568-9814FDF61776}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{12A005BE-C03F-4950-8568-9814FDF61776}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{12A005BE-C03F-4950-8568-9814FDF61776}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9B80728-79D7-46B3-8C64-7275E3E06DA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9B80728-79D7-46B3-8C64-7275E3E06DA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9B80728-79D7-46B3-8C64-7275E3E06DA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9B80728-79D7-46B3-8C64-7275E3E06DA0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58DED038-265E-4A5F-9D93-F8C2A651F934}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58DED038-265E-4A5F-9D93-F8C2A651F934}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58DED038-265E-4A5F-9D93-F8C2A651F934}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58DED038-265E-4A5F-9D93-F8C2A651F934}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6039749-AFE9-4F0D-8B47-74FDA4B87763}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6039749-AFE9-4F0D-8B47-74FDA4B87763}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6039749-AFE9-4F0D-8B47-74FDA4B87763}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6039749-AFE9-4F0D-8B47-74FDA4B87763}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC007DC7-BA47-4987-B1D5-7C21000FEE3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC007DC7-BA47-4987-B1D5-7C21000FEE3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC007DC7-BA47-4987-B1D5-7C21000FEE3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC007DC7-BA47-4987-B1D5-7C21000FEE3B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FDBD0B45-0334-4E84-9933-BB920AA8DB64}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDBD0B45-0334-4E84-9933-BB920AA8DB64}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDBD0B45-0334-4E84-9933-BB920AA8DB64}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDBD0B45-0334-4E84-9933-BB920AA8DB64}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

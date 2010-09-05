@@ -236,6 +236,25 @@ namespace InterIMAP.Common.Interfaces
         /// Flag indicating if the content for this message has already been downloaded
         /// </summary>
         bool ContentLoaded { get; }
-        
+
+        /// <summary>
+        /// returns the state of the custom flag
+        /// </summary>
+        /// <param name="flag">the name of the custom flag</param>
+        /// <returns>true if the flag exists, false if it does not exist</returns>
+        bool GetCustomFlag(string flag);
+
+        /// <summary>
+        /// sets the custom flag
+        /// </summary>
+        /// <param name="flag">the flag name</param>
+        /// <param name="value">if true, the flag is set. If false, the flag is removed</param>
+        void SetCustomFlag(string flag, bool value);
+
+        /// <summary>
+        /// returns a list of custom flags this message has
+        /// </summary>
+        System.Collections.Generic.List<string> GetCustomFlags();
+
     }
 }

@@ -46,6 +46,7 @@ namespace InterIMAP.Asynchronous.Objects
         #region Private Fields
         private readonly int _id;
         private readonly IMAPAsyncClient _client;
+        private List<string> _customFlags = new List<string>();
         #endregion
 
         #region Public Properties
@@ -394,6 +395,36 @@ namespace InterIMAP.Asynchronous.Objects
                 _client.DataManager.AssociateContact(sourceTable, ID, contact.ID);
             }
         }
+
+        /// <summary>
+        /// returns a list of custom flags this message has
+        /// </summary>
+        public List<string> GetCustomFlags()
+        {
+            return _customFlags;
+        }
+
+        /// <summary>
+        /// returns the state of the specified custom flag
+        /// </summary>
+        public bool GetCustomFlag(string flag)
+        {
+            return _customFlags.Find(delegate(string s) { return s == flag; }) != null;
+        }
+
+        /// <summary>
+        /// Sets or removes a custom flag from this message
+        /// </summary>
+        /// <param name="flag">the name of the flag</param>
+        /// <param name="value">true to set the flag, false to remove it</param>
+        public void SetCustomFlag(string flag, bool value)
+        {
+            if ((value)&&(!GetCustomFlag(flag)))
+                _customFlags.Add(flag);
+            else
+                _customFlags.Remove(flag);
+        }
+
         #endregion
 
         #region Private Methods

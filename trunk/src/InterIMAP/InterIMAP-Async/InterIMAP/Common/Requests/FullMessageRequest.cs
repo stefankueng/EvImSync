@@ -83,21 +83,52 @@ namespace InterIMAP.Common.Requests
 
         #region Public Methods
         /// <summary>
-        /// Begin retreiving the message
+        /// Begin retrieving the message
         /// </summary>
         public void Start()
         {
             MessageFlagRequest mfr = new MessageFlagRequest(_msg, delegate
                                                                       {
-                                                                          MessageHeaderRequest mhr = new MessageHeaderRequest(_msg, delegate
+                                                                          if (_msg.HeaderLoaded)
                                                                           {
                                                                               GetMessageStructure();
-                                                                          });
-                                                                          _client.RequestManager.SubmitRequest(mhr, true);
+                                                                          }
+                                                                          else
+                                                                          {
+                                                                              MessageHeaderRequest mhr = new MessageHeaderRequest(_msg, delegate
+                                                                              {
+                                                                                  GetMessageStructure();
+                                                                              });
+                                                                              _client.RequestManager.SubmitRequest(mhr, true);
+                                                                          }
                                                                       });
             _client.RequestManager.SubmitRequest(mfr, false);
-            
+
         }
+
+        public void SubmitAndWait()
+        {
+            MessageFlagRequest mfr = new MessageFlagRequest(_msg, delegate
+            {
+                if (_msg.HeaderLoaded)
+                {
+                    GetMessageStructure();
+                }
+                else
+                {
+                    MessageHeaderRequest mhr = new MessageHeaderRequest(_msg, delegate
+                    {
+                        GetMessageStructure();
+                    });
+                    _client.RequestManager.SubmitAndWait(mhr, true);
+                }
+            });
+            _client.RequestManager.SubmitAndWait(mfr, false);
+
+            while (!_msg.ContentLoaded) { System.Threading.Thread.Sleep(10); }
+
+        }
+
         #endregion
 
         #region Private Methods

@@ -59,6 +59,7 @@ namespace InterIMAP.Common.Processors
             
             bool isBinary = content.ContentTransferEncoding.ToUpper().Equals("BASE64");
             bool isHTML = content.ContentType.ToUpper().Contains("HTML");
+            bool isQuotedPrintable = content.ContentType.ToUpper().Contains("QUOTED");
             StringBuilder sb = new StringBuilder();
             
             foreach (string line in CmdResult.Results)
@@ -122,7 +123,10 @@ namespace InterIMAP.Common.Processors
                     if (string.IsNullOrEmpty(content.Charset))
                         content.Charset = "utf-8";
                     charSet = content.Charset;
-                    content.HTMLData = DecodeQuotedPrintable(preEncodedHTML);
+                    if (isQuotedPrintable)
+                        content.HTMLData = DecodeQuotedPrintable(preEncodedHTML);
+                    else
+                        content.HTMLData = preEncodedHTML;
                 }
                 else
                 {

@@ -606,6 +606,21 @@ namespace InterIMAP.Asynchronous.Client
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="msg"></param>
+        /// <param name="flag"></param>
+        /// <param name="value"></param>
+        public void SetMessageFlag(IMessage msg, string flag, bool value)
+        {
+            bool currentValue = msg.GetCustomFlag(flag);
+            if (currentValue == value) return;
+            msg.SetCustomFlag(flag, value);
+            ChangeFlagRequest cfr = new ChangeFlagRequest(msg, flag, value, null);
+            _client.RequestManager.SubmitAndWait(cfr, true);
+        }
+
+        /// <summary>
         /// Marks the specified message as \Seen on the server
         /// </summary>
         /// <param name="msg"></param>

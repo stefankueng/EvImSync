@@ -46,8 +46,8 @@ namespace InterIMAP.Asynchronous.Client
     /// Provides all of the necessary plumbing to interact with an IMAP server
     /// </summary>
     public class IMAPConnection
-    {        
-        
+    {
+
         #region Private Fields
         private string _serverHost;
         private ushort _serverPort;
@@ -76,8 +76,8 @@ namespace InterIMAP.Asynchronous.Client
         /// IMAP Command constant
         /// </summary>
         private const ushort IMAP_DEFAULT_SSL_PORT = 993;
-                
-        #endregion        
+
+        #endregion
 
         #region Public Properties
         /// <summary>
@@ -166,7 +166,7 @@ namespace InterIMAP.Asynchronous.Client
             _serverPort = _useSSL ? IMAP_DEFAULT_SSL_PORT : IMAP_DEFAULT_PORT;
             _username = _config.UserName;
             _password = _config.Password;
-            _logger = logger;            
+            _logger = logger;
         }
         #endregion
 
@@ -177,9 +177,9 @@ namespace InterIMAP.Asynchronous.Client
         /// <param name="type">Log type;LogTypeEnum</param>
         /// <param name="log">Log data</param>
         public virtual void Log(LogType type, string log)
-        {                        
+        {
             if (_logger != null)
-                _logger.Log(type, log);            
+                _logger.Log(type, log);
         }
 
         /// <summary>
@@ -204,7 +204,7 @@ namespace InterIMAP.Asynchronous.Client
         private void Capability()
         {
             CapabilityCommand cc = new CapabilityCommand(null);
-            
+
             CommandResult cr = ExecuteCommand(cc);
 
             foreach (string s in cr.Results)
@@ -217,7 +217,7 @@ namespace InterIMAP.Asynchronous.Client
         /// <param name="cmd"></param>
         /// <returns></returns>
         public CommandResult ExecuteCommand(ICommand cmd)
-        {            
+        {
             if (!IsConnected) return null;
             ArrayList resultArray = new ArrayList();
             PrepareCommand(cmd);
@@ -227,48 +227,60 @@ namespace InterIMAP.Asynchronous.Client
             Stopwatch sw = new Stopwatch();
             try
             {
-                WriteToStream(data, 0, data.Length);
+                bool sendData = false;
                 long bytesReceived = 0;
                 long totalBytes = 0;
-                
-                while (true)
+                do 
                 {
-                    string result = ReadLine();
-                    if (result == null) break;
-                    sw.Start();                    
-                    resultArray.Add(result);
-                                        
-                    if (result.StartsWith(cmd.ResponseOK))
-                    {                        
-                        //Log(LogType.IMAP, result);
-                        response = IMAPResponse.IMAP_SUCCESS_RESPONSE;
-                        break;
-                    }
-                    
-                    if (result.StartsWith(cmd.ResponseNO) || result.StartsWith(cmd.ResponseBAD))
-                    {                        
-                        //Log(LogType.IMAP, result);
-                        response = IMAPResponse.IMAP_FAILURE_RESPONSE;
-                        break;
-                    }
-
-                    if (resultArray.Count == 1)
-                        totalBytes = DetermineTotalSize(result);
-                    else
+                    WriteToStream(data, 0, data.Length);
+                    sendData = false;
+                    while (true)
                     {
-                        //if (cmd is MessagePartCommand)
-                        //    bytesReceived += GetStringBytes(result, GetCurrentEncoding()).LongLength;
-                        //else
-                        bytesReceived += GetStringBytes(result).LongLength;
+                        string result = ReadLine();
+                        if (result == null) break;
+                        sw.Start();
+                        resultArray.Add(result);
+
+                        if (result.StartsWith(cmd.ResponseOK))
+                        {
+                            //Log(LogType.IMAP, result);
+                            response = IMAPResponse.IMAP_SUCCESS_RESPONSE;
+                            break;
+                        }
+
+                        if ((cmd.ResponseGoAhead.Length > 0) && (result.StartsWith(cmd.ResponseGoAhead)))
+                        {
+                            sendData = true;
+                            data = GetStringBytes(cmd.CommandData);
+                            resultArray.Clear();
+                            break;
+                        }
+
+                        if (result.StartsWith(cmd.ResponseNO) || result.StartsWith(cmd.ResponseBAD))
+                        {
+                            //Log(LogType.IMAP, result);
+                            response = IMAPResponse.IMAP_FAILURE_RESPONSE;
+                            break;
+                        }
+
+                        if (resultArray.Count == 1)
+                            totalBytes = DetermineTotalSize(result);
+                        else
+                        {
+                            //if (cmd is MessagePartCommand)
+                            //    bytesReceived += GetStringBytes(result, GetCurrentEncoding()).LongLength;
+                            //else
+                            bytesReceived += GetStringBytes(result).LongLength;
+                        }
+
+                        if (bytesReceived > totalBytes)
+                            totalBytes = bytesReceived;
+
+                        cmd.OnCommandDataReceived(bytesReceived, totalBytes);
+                        if (cmd.GetType() != typeof(MessagePartCommand))
+                            Log(LogType.IMAP, result);
                     }
-
-                    if (bytesReceived > totalBytes)
-                        totalBytes = bytesReceived;
-
-                    cmd.OnCommandDataReceived(bytesReceived, totalBytes);
-                    if (cmd.GetType() != typeof(MessagePartCommand))
-                        Log(LogType.IMAP, result);
-                }
+                } while (sendData);
                 sw.Stop();
 
                 //if (cmd is MessagePartCommand)
@@ -276,7 +288,7 @@ namespace InterIMAP.Asynchronous.Client
 
             }
             catch (Exception e)
-            {                
+            {
                 _logger.Log(LogType.IMAP, e.Message);
             }
             //Log(LogType.IMAP, "");
@@ -291,7 +303,7 @@ namespace InterIMAP.Asynchronous.Client
 
             return 0;
         }
-        
+
         private void PrepareCommand(ICommand cmd)
         {
             cmd.CommandNumber = ++_commandCount;
@@ -320,12 +332,12 @@ namespace InterIMAP.Asynchronous.Client
             return Encoding.ASCII.GetBytes(s.ToCharArray());
         }
 
-/*
-        private byte[] GetStringBytes(string s, Encoding enc)
-        {
-            return enc.GetBytes(s);
-        }
-*/
+        /*
+                private byte[] GetStringBytes(string s, Encoding enc)
+                {
+                    return enc.GetBytes(s);
+                }
+        */
         #endregion
 
         #region Send and Receive Methods
@@ -342,11 +354,11 @@ namespace InterIMAP.Asynchronous.Client
             }
             catch (IOException ioe)
             {
-                    
+
             }
             return line;
         }
-                
+
         /// <summary>
         /// Sends a raw string to the server, optionally in the format of a command
         /// </summary>
@@ -381,7 +393,7 @@ namespace InterIMAP.Asynchronous.Client
 
         }
 
-        
+
         #endregion
 
         #region Connection Management Methods
@@ -418,10 +430,10 @@ namespace InterIMAP.Asynchronous.Client
 
             try
             {
-                _socket = new Socket(AddressFamily.InterNetwork,SocketType.Stream, ProtocolType.Tcp);
+                _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 //_socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
                 //_socket.IOControl(IOControlCode.KeepAliveValues, )
-                SetTcpKeepAlive(_socket, 1000,1000);
+                SetTcpKeepAlive(_socket, 1000, 1000);
                 _socket.SendBufferSize = int.MaxValue;
                 _socket.ReceiveBufferSize = int.MaxValue;
                 _socket.SendTimeout = int.MaxValue;

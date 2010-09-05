@@ -47,6 +47,7 @@ namespace InterIMAP.Common.Commands
         
         #region Private Members
         private string _commandString;
+        private string _commandData = "";
         protected List<string> _parameters;
         protected List<object> _parameterObjs;
         private int _commandNum;        
@@ -58,6 +59,23 @@ namespace InterIMAP.Common.Commands
         #endregion
 
         #region ICommand Members
+
+        public virtual string CommandStringPlain
+        {
+            get
+            {
+                if (ValidateParameters())
+                    return _commandString;
+
+                return String.Empty;
+            }
+            protected set
+            {
+                _commandDetail = value;
+
+                _commandString = _commandDetail;
+            }
+        }
 
         public virtual string CommandString
         {
@@ -104,6 +122,11 @@ namespace InterIMAP.Common.Commands
             get { return String.Format("{0} OK", CommandID); }
         }
 
+        public virtual string ResponseGoAhead
+        {
+            get { return string.Empty; }
+        }
+
         public virtual string ResponseNO
         {
             get { return String.Format("{0} NO", CommandID); }
@@ -113,6 +136,19 @@ namespace InterIMAP.Common.Commands
         {
             get { return String.Format("{0} BAD", CommandID); }
         }
+
+        public virtual string CommandData
+        {
+            get { return _commandData; }
+            set { _commandData = value.Replace("\r", "").Replace("\n", "\r\n") + "\r\n"; }
+        }
+
+
+        public virtual bool UseSameCmdIDAsLastCommand
+        {
+            get { return false; }
+        }
+
         #endregion
 
         #region Public Properties

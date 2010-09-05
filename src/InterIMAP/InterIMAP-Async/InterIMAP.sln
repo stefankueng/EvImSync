@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InterIMAP", "InterIMAP\InterIMAP.csproj", "{12A005BE-C03F-4950-8568-9814FDF61776}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InterIMAPConsoleTest", "InterIMAPConsoleTest\InterIMAPConsoleTest.csproj", "{F9B80728-79D7-46B3-8C64-7275E3E06DA0}"

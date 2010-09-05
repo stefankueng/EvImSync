@@ -64,6 +64,11 @@ namespace InterIMAP.Common.Interfaces
         string ResponseOK { get; }
 
         /// <summary>
+        /// The go ahead response, after which the CommandData is sent
+        /// </summary>
+        string ResponseGoAhead { get; }
+
+        /// <summary>
         /// The NO response string for this command
         /// </summary>
         string ResponseNO { get; }
@@ -72,6 +77,11 @@ namespace InterIMAP.Common.Interfaces
         /// The BAD response string for this command
         /// </summary>
         string ResponseBAD { get; }
+
+        /// <summary>
+        /// the data to send after the initial command string
+        /// </summary>
+        string CommandData { get; }
 
         /// <summary>
         /// Event that is fired when data for this command is received
@@ -86,7 +96,7 @@ namespace InterIMAP.Common.Interfaces
         void OnCommandDataReceived(long receivedBytes, long totalBytes);
         #endregion
 
-        
+
 
 
     }

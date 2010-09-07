@@ -20,6 +20,7 @@ using EveImSync.Enums;
 using System.Net.Mail;
 using System.Net.Mime;
 using System.Text.RegularExpressions;
+using System.Xml.Serialization;
 
 namespace EveImSync
 {
@@ -27,10 +28,7 @@ namespace EveImSync
     {
         private IMAPAsyncClient client;
         private delegate void StringDelegate(string foo);
-        private string username;
-        private string password;
-        private string notebook;
-        private string notefolder;
+        private string ENScriptPath;
 
         public MainFrm()
         {
@@ -59,11 +57,6 @@ namespace EveImSync
 
         private void startsync_Click(object sender, EventArgs e)
         {
-            username = userName.Text;
-            password = passWord.Text;
-            notebook = noteBook.Text;
-            notefolder = notesFolder.Text;
-
             startsync.Enabled = false;
             MethodInvoker syncDelegate = new MethodInvoker(SyncEvernoteWithIMAP);
             syncDelegate.BeginInvoke(null, null);
@@ -71,29 +64,33 @@ namespace EveImSync
 
         public void SyncEvernoteWithIMAP()
         {
-            AddInfoLine("extracting notes");
-            string exportFile = ExtractNotes();
-            if (exportFile != null && exportFile != "")
+            Configuration config = Configuration.Create();
+            ENScriptPath = config.ENScriptPath;
+            foreach (SyncPairSettings syncPair in config.syncPairs)
             {
-                AddInfoLine("parsing Evernote notes");
-                List<Note> notesEvernote = ParseNotes(exportFile);
-                AddInfoLine(string.Format("Found {0} notes in Evernote", notesEvernote.Count));
-                AddInfoLine("fetching list of emails");
-                List<Note> notesIMAP = GetMailList();
-                AddInfoLine(string.Format("Found {0} notes in IMAP", notesIMAP.Count));
-                AddInfoLine("Analyzing notes, figuring out what notes need syncing");
-                DiffNotesAndMails(ref notesEvernote, ref notesIMAP);
-                AddInfoLine("Downloading emails as notes");
-                DownloadAndImportMailsToEvernote(notesIMAP);
-                UploadNotesAsMails(notefolder, notesEvernote, exportFile);
+                AddInfoLine("extracting notes");
+                string exportFile = ExtractNotes(syncPair.EvernoteNotebook);
+                if (exportFile != null && exportFile != "")
+                {
+                    AddInfoLine("parsing Evernote notes");
+                    List<Note> notesEvernote = ParseNotes(exportFile);
+                    AddInfoLine(string.Format("Found {0} notes in Evernote", notesEvernote.Count));
+                    AddInfoLine("fetching list of emails");
+                    List<Note> notesIMAP = GetMailList(syncPair.IMAPServer, syncPair.IMAPUsername, syncPair.IMAPPassword, syncPair.IMAPNotesFolder);
+                    AddInfoLine(string.Format("Found {0} notes in IMAP", notesIMAP.Count));
+                    AddInfoLine("Analyzing notes, figuring out what notes need syncing");
+                    DiffNotesAndMails(ref notesEvernote, ref notesIMAP);
+                    AddInfoLine("Downloading emails as notes");
+                    DownloadAndImportMailsToEvernote(notesIMAP, syncPair.EvernoteNotebook);
+                    UploadNotesAsMails(syncPair.IMAPNotesFolder, notesEvernote, exportFile);
+                }
             }
         }
 
-        private string ExtractNotes()
+        private string ExtractNotes(string notebook)
         {
             ENScriptWrapper ENScript = new ENScriptWrapper();
-            // TODO: replace fixed path
-            ENScript.ENScriptPath = @"C:\Program Files (x86)\Evernote\Evernote3.5\ENScript.exe";
+            ENScript.ENScriptPath = ENScriptPath;
 
             string exportFile = Path.GetTempFileName();
 
@@ -141,12 +138,11 @@ namespace EveImSync
             return noteList;
         }
 
-        private List<Note> GetMailList()
+        private List<Note> GetMailList(string server, string username, string password, string notefolder)
         {
             List<Note> noteList = new List<Note>();
 
-            // TODO: replace hard coded IMAP server
-            IMAPConfig config = new IMAPConfig("imap.gmail.com", username, password, true, true, "/");
+            IMAPConfig config = new IMAPConfig(server, username, password, true, true, "/");
             client = new IMAPAsyncClient(config, 2);
             client.Start();
 
@@ -243,12 +239,12 @@ namespace EveImSync
             }
         }
 
-        private void DownloadAndImportMailsToEvernote(List<Note> notesIMAP)
+        private void DownloadAndImportMailsToEvernote(List<Note> notesIMAP, string notebook)
         {
             while (notesIMAP.Count > 0)
             {
                 Note n = notesIMAP[0];
-                //if (n.Action == NoteAction.ImportToEvernote)
+                if (n.Action == NoteAction.ImportToEvernote)
                 {
                     IMessage msg = client.MailboxManager.GetMessageByUID(n.IMAPMessageUID, n.IMAPFolder.ID);
                     AddInfoLine(string.Format("getting email\"{0}\"", msg.Subject));
@@ -333,8 +329,7 @@ namespace EveImSync
                         n.SaveEvernoteExportData(path);
                         // import the export file into Evernote
                         ENScriptWrapper ENScript = new ENScriptWrapper();
-                        // TODO: replace fixed path
-                        ENScript.ENScriptPath = @"C:\Program Files (x86)\Evernote\Evernote3.5\ENScript.exe";
+                        ENScript.ENScriptPath = ENScriptPath;
                         if (!ENScript.ImportNotes(path, notebook))
                         {
                             AddInfoLine(string.Format("failed to import note \"{0}\"", msg.Subject));
@@ -348,129 +343,132 @@ namespace EveImSync
 
         private void UploadNotesAsMails(string folder, List<Note> notesEvernote, string exportFile)
         {
-            int notecounter = 0;
+            int uploadcount = 0;
             foreach (Note n in notesEvernote)
             {
-
-                XmlTextReader xtrInput;
-                XmlDocument xdItem;
-
-                xtrInput = new XmlTextReader(exportFile);
-
-                while (xtrInput.Read())
+                if (n.Action == NoteAction.UploadToIMAP)
+                    uploadcount++;
+            }
+            AddInfoLine(string.Format("uploading {0} notes to IMAP", uploadcount));
+            foreach (Note n in notesEvernote)
+            {
+                if (n.Action == NoteAction.UploadToIMAP)
                 {
-                    while ((xtrInput.NodeType == XmlNodeType.Element) && (xtrInput.Name.ToLower() == "note"))
+                    AddInfoLine(string.Format("uploading note \"{0}\"", n.Title));
+                    XmlTextReader xtrInput;
+                    XmlDocument xdItem;
+
+                    xtrInput = new XmlTextReader(exportFile);
+
+                    while (xtrInput.Read())
                     {
-                        xdItem = new XmlDocument();
-                        xdItem.LoadXml(xtrInput.ReadOuterXml());
-                        XmlNode node = xdItem.FirstChild;
-
-                        // node is <note> element
-                        // node.FirstChild.InnerText is <title>
-                        node = node.FirstChild;
-
-                        if (node.InnerText == n.Title)
+                        while ((xtrInput.NodeType == XmlNodeType.Element) && (xtrInput.Name.ToLower() == "note"))
                         {
-                            node = node.NextSibling;
-                            if (n.Content == node.InnerXml.Replace("\r", ""))
+                            xdItem = new XmlDocument();
+                            xdItem.LoadXml(xtrInput.ReadOuterXml());
+                            XmlNode node = xdItem.FirstChild;
+
+                            // node is <note> element
+                            // node.FirstChild.InnerText is <title>
+                            node = node.FirstChild;
+
+                            if (node.InnerText == n.Title)
                             {
-                                XmlNodeList atts = xdItem.GetElementsByTagName("resource");
-                                foreach (XmlNode xmln in atts)
+                                node = node.NextSibling;
+                                if (n.Content == node.InnerXml.Replace("\r", ""))
                                 {
-                                    Attachment attachment = new Attachment();
-                                    attachment.Base64Data = xmln.FirstChild.InnerText;
-                                    byte[] data = Convert.FromBase64String(xmln.FirstChild.InnerText);
-                                    byte[] hash = new System.Security.Cryptography.MD5CryptoServiceProvider().ComputeHash(data);
-                                    string hashHex = BitConverter.ToString(hash).Replace("-", "").ToLower();
-
-                                    attachment.Hash = hashHex;
-
-                                    XmlNodeList fns = xdItem.GetElementsByTagName("file-name");
-                                    if (fns.Count > n.Attachments.Count)
+                                    XmlNodeList atts = xdItem.GetElementsByTagName("resource");
+                                    foreach (XmlNode xmln in atts)
                                     {
-                                        attachment.FileName = fns.Item(n.Attachments.Count).InnerText;
+                                        Attachment attachment = new Attachment();
+                                        attachment.Base64Data = xmln.FirstChild.InnerText;
+                                        byte[] data = Convert.FromBase64String(xmln.FirstChild.InnerText);
+                                        byte[] hash = new System.Security.Cryptography.MD5CryptoServiceProvider().ComputeHash(data);
+                                        string hashHex = BitConverter.ToString(hash).Replace("-", "").ToLower();
+
+                                        attachment.Hash = hashHex;
+
+                                        XmlNodeList fns = xdItem.GetElementsByTagName("file-name");
+                                        if (fns.Count > n.Attachments.Count)
+                                        {
+                                            attachment.FileName = fns.Item(n.Attachments.Count).InnerText;
+                                        }
+                                        XmlNodeList mimes = xdItem.GetElementsByTagName("mime");
+                                        if (mimes.Count > n.Attachments.Count)
+                                        {
+                                            attachment.ContentType = mimes.Item(n.Attachments.Count).InnerText;
+                                        }
+                                        n.Attachments.Add(attachment);
                                     }
-                                    XmlNodeList mimes = xdItem.GetElementsByTagName("mime");
-                                    if (mimes.Count > n.Attachments.Count)
-                                    {
-                                        attachment.ContentType = mimes.Item(n.Attachments.Count).InnerText;
-                                    }
-                                    n.Attachments.Add(attachment);
                                 }
                             }
                         }
                     }
-                }
-                xtrInput.Close();
+                    xtrInput.Close();
 
-                string htmlBody = n.Content;
+                    string htmlBody = n.Content;
 
-                List<LinkedResource> linkedResources = new List<LinkedResource>();
-                List<System.Net.Mail.Attachment> attachedResources = new List<System.Net.Mail.Attachment>();
-                foreach (Attachment attachment in n.Attachments)
-                {
-                    Regex rx = new Regex(@"<en-media\b[^>]*?hash=""" + attachment.Hash + @"""[^>]*/>", RegexOptions.IgnoreCase);
-                    if ((attachment.ContentType.Contains("image")) && (rx.Match(htmlBody).Success))
+                    List<LinkedResource> linkedResources = new List<LinkedResource>();
+                    List<System.Net.Mail.Attachment> attachedResources = new List<System.Net.Mail.Attachment>();
+                    foreach (Attachment attachment in n.Attachments)
                     {
-                        // replace the <en-media /> tag with an <img /> tag
-                        htmlBody = rx.Replace(htmlBody, @"<img src=""cid:" + attachment.Hash + @"""/>");
-                        byte[] data = Convert.FromBase64String(attachment.Base64Data);
-                        Stream s = new MemoryStream(data);
-                        ContentType ct = new ContentType();
-                        ct.Name = attachment.FileName;
-                        ct.MediaType = attachment.ContentType;
-                        LinkedResource lr = new LinkedResource(s, ct);
-                        lr.ContentId = attachment.Hash;
-                        linkedResources.Add(lr);
+                        Regex rx = new Regex(@"<en-media\b[^>]*?hash=""" + attachment.Hash + @"""[^>]*/>", RegexOptions.IgnoreCase);
+                        if ((attachment.ContentType.Contains("image")) && (rx.Match(htmlBody).Success))
+                        {
+                            // replace the <en-media /> tag with an <img /> tag
+                            htmlBody = rx.Replace(htmlBody, @"<img src=""cid:" + attachment.Hash + @"""/>");
+                            byte[] data = Convert.FromBase64String(attachment.Base64Data);
+                            Stream s = new MemoryStream(data);
+                            ContentType ct = new ContentType();
+                            ct.Name = attachment.FileName;
+                            ct.MediaType = attachment.ContentType;
+                            LinkedResource lr = new LinkedResource(s, ct);
+                            lr.ContentId = attachment.Hash;
+                            linkedResources.Add(lr);
+                        }
+                        else
+                        {
+                            byte[] data = Convert.FromBase64String(attachment.Base64Data);
+                            Stream s = new MemoryStream(data);
+                            ContentType ct = new ContentType();
+                            ct.Name = attachment.FileName;
+                            ct.MediaType = attachment.ContentType;
+                            System.Net.Mail.Attachment a = new System.Net.Mail.Attachment(s, ct);
+                            attachedResources.Add(a);
+                        }
                     }
-                    else
+                    htmlBody = htmlBody.Replace(@"<![CDATA[<?xml version=""1.0"" encoding=""UTF-8""?>", "");
+                    htmlBody = htmlBody.Replace(@"<!DOCTYPE en-note SYSTEM ""http://xml.evernote.com/pub/enml2.dtd"">", "");
+                    htmlBody = htmlBody.Replace("<en-note>", "<body>");
+                    htmlBody = htmlBody.Replace("</en-note>]]>", "</body>");
+                    htmlBody = htmlBody.Trim();
+                    htmlBody = @"<!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 4.01 Transitional//EN""><head></head>" + htmlBody;
+                    MailMessage mailMsg = new MailMessage();
+
+                    AlternateView avHtml = AlternateView.CreateAlternateViewFromString(htmlBody, Encoding.UTF8, MediaTypeNames.Text.Html);
+                    foreach (LinkedResource lr in linkedResources)
                     {
-                        byte[] data = Convert.FromBase64String(attachment.Base64Data);
-                        Stream s = new MemoryStream(data);
-                        ContentType ct = new ContentType();
-                        ct.Name = attachment.FileName;
-                        ct.MediaType = attachment.ContentType;
-                        System.Net.Mail.Attachment a = new System.Net.Mail.Attachment(s, ct);
-                        attachedResources.Add(a);
+                        avHtml.LinkedResources.Add(lr);
                     }
+
+                    // Add the alternate views instead of using MailMessage.Body
+                    mailMsg.AlternateViews.Add(avHtml);
+                    foreach (System.Net.Mail.Attachment a in attachedResources)
+                    {
+                        mailMsg.Attachments.Add(a);
+                    }
+                    mailMsg.From = new MailAddress("EveImSync <eveimsync@tortoisesvn.net>");
+                    mailMsg.To.Add(new MailAddress("EveImSync <eveimsync@tortoisesvn.net>"));
+                    mailMsg.Subject = n.Title;
+                    string eml = mailMsg.GetEmailAsString();
+
+                    // find the folder to upload to
+                    IFolder currentFolder = client.MailboxManager.GetFolderByPath(folder);
+                    string customFlag = "XEveIm" + n.ContentHash;
+
+                    // now upload the new note
+                    client.RequestManager.SubmitAndWait(new AppendRequest(eml, customFlag, currentFolder, null), false);
                 }
-                htmlBody = htmlBody.Replace(@"<![CDATA[<?xml version=""1.0"" encoding=""UTF-8""?>", "");
-                htmlBody = htmlBody.Replace(@"<!DOCTYPE en-note SYSTEM ""http://xml.evernote.com/pub/enml2.dtd"">", "");
-                htmlBody = htmlBody.Replace("<en-note>", "<body>");
-                htmlBody = htmlBody.Replace("</en-note>]]>", "</body>");
-                htmlBody = htmlBody.Trim();
-                htmlBody = @"<!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 4.01 Transitional//EN""><head></head>" + htmlBody;
-                MailMessage mailMsg = new MailMessage();
-
-                AlternateView avHtml = AlternateView.CreateAlternateViewFromString(htmlBody, Encoding.UTF8, MediaTypeNames.Text.Html);
-                foreach (LinkedResource lr in linkedResources)
-                {
-                    avHtml.LinkedResources.Add(lr);
-                }
-
-                // Add the alternate views instead of using MailMessage.Body
-                mailMsg.AlternateViews.Add(avHtml);
-                foreach (System.Net.Mail.Attachment a in attachedResources)
-                {
-                    mailMsg.Attachments.Add(a);
-                }
-                mailMsg.From = new MailAddress("EveImSync <eveimsync@tortoisesvn.net>");
-                mailMsg.To.Add(new MailAddress("EveImSync <eveimsync@tortoisesvn.net>"));
-                mailMsg.Subject = n.Title;
-                string eml = mailMsg.GetEmailAsString();
-
-                //using (StreamWriter outfile = new StreamWriter(@"D:\Development\EveImSync\" + notecounter.ToString() + ".eml"))
-                //{
-                //    outfile.Write(eml);
-                //}
-                //notecounter++;
-
-                // find the folder to upload to
-                IFolder currentFolder = client.MailboxManager.GetFolderByPath(folder);
-                string customFlag = "XEveIm" + n.ContentHash;
-
-                // now upload the new note
-                client.RequestManager.SubmitAndWait(new AppendRequest(eml, customFlag, currentFolder, null), false);
             }
         }
     }

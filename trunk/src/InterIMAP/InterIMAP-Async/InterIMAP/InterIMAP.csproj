@@ -32,7 +32,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <WarningLevel>0</WarningLevel>
     <DocumentationFile>bin\Debug\InterIMAP.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -41,7 +41,7 @@
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <WarningLevel>0</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -65,6 +65,7 @@
     <Compile Include="Common\Attributes\HeaderName.cs" />
     <Compile Include="Common\Attributes\LinkToTable.cs" />
     <Compile Include="Common\BatchRequests\BaseBatchRequest.cs" />
+    <Compile Include="Common\Commands\AppendCommand.cs" />
     <Compile Include="Common\Commands\BaseCommand.cs" />
     <Compile Include="Common\Commands\CapabilityCommand.cs" />
     <Compile Include="Common\Commands\ChangeFlagCommand.cs" />
@@ -110,6 +111,7 @@
     <Compile Include="Common\Interfaces\IMessageContent.cs" />
     <Compile Include="Common\Interfaces\IProcessor.cs" />
     <Compile Include="Common\Interfaces\IRequest.cs" />
+    <Compile Include="Common\Processors\AppendProcessor.cs" />
     <Compile Include="Common\Processors\BaseProcessor.cs" />
     <Compile Include="Common\Processors\ChangeFlagProcessor.cs" />
     <Compile Include="Common\Processors\CreateFolderProcessor.cs" />
@@ -122,6 +124,7 @@
     <Compile Include="Common\Processors\MessagePartProcessor.cs" />
     <Compile Include="Common\Processors\MessageStructureProcessor.cs" />
     <Compile Include="Common\Processors\SearchProcessor.cs" />
+    <Compile Include="Common\Requests\AppendRequest.cs" />
     <Compile Include="Common\Requests\AsyncBatchRequest.cs" />
     <Compile Include="Common\Requests\BaseRequest.cs" />
     <Compile Include="Common\Requests\ChangeFlagRequest.cs" />

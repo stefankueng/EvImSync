@@ -1,9 +1,23 @@
-﻿using System;
+﻿// EvImSync - A tool to sync Evernote notes to IMAP mails and vice versa
+// Copyright (C) 2010 - Stefan Kueng
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Xml.Serialization;
 using System.IO;
+using System.Xml.Serialization;
 
 namespace EveImSync
 {
@@ -15,7 +29,7 @@ namespace EveImSync
         {
         }
 
-        static public Configuration Create()
+        public static Configuration Create()
         {
             Configuration c = new Configuration();
             XmlSerializer xs = new XmlSerializer(typeof(Configuration));
@@ -36,7 +50,7 @@ namespace EveImSync
             }
         }
 
-        public List<SyncPairSettings> syncPairs = new List<SyncPairSettings>();
+        public List<SyncPairSettings> SyncPairs = new List<SyncPairSettings>();
 
         public string ENScriptPath = string.Empty;
     }

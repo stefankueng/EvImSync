@@ -1,34 +1,47 @@
-﻿using System;
+﻿// EvImSync - A tool to sync Evernote notes to IMAP mails and vice versa
+// Copyright (C) 2010 - Stefan Kueng
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using System.Threading;
-using System.IO;
-using System.Xml;
 using System.Diagnostics;
-using System.Reflection;
+using System.IO;
+using System.Net.Mail;
+using System.Net.Mime;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Windows.Forms;
+using System.Xml;
+using EveImSync.Enums;
 using InterIMAP;
 using InterIMAP.Asynchronous.Client;
 using InterIMAP.Common.Interfaces;
-using InterIMAP.Common.Processors;
 using InterIMAP.Common.Requests;
-using InterIMAP.Common.Attributes;
-using EveImSync.Enums;
-using System.Net.Mail;
-using System.Net.Mime;
-using System.Text.RegularExpressions;
-using System.Xml.Serialization;
 
 namespace EveImSync
 {
+    /// <summary>
+    /// main dialog
+    /// </summary>
     public partial class MainFrm : Form
     {
         private IMAPAsyncClient client;
+        
         private delegate void StringDelegate(string foo);
-        private string ENScriptPath;
+
+        private string enscriptpath;
 
         public MainFrm()
         {
@@ -36,7 +49,7 @@ namespace EveImSync
             this.progressInfoList.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
         }
 
-        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ExitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.Close();
         }
@@ -55,22 +68,22 @@ namespace EveImSync
             }
         }
 
-        private void startsync_Click(object sender, EventArgs e)
+        private void Startsync_Click(object sender, EventArgs e)
         {
             startsync.Enabled = false;
             MethodInvoker syncDelegate = new MethodInvoker(SyncEvernoteWithIMAP);
             syncDelegate.BeginInvoke(null, null);
         }
 
-        public void SyncEvernoteWithIMAP()
+        private void SyncEvernoteWithIMAP()
         {
             Configuration config = Configuration.Create();
-            ENScriptPath = config.ENScriptPath;
-            foreach (SyncPairSettings syncPair in config.syncPairs)
+            enscriptpath = config.ENScriptPath;
+            foreach (SyncPairSettings syncPair in config.SyncPairs)
             {
                 AddInfoLine("extracting notes");
                 string exportFile = ExtractNotes(syncPair.EvernoteNotebook);
-                if (exportFile != null && exportFile != "")
+                if (exportFile != null && exportFile != string.Empty)
                 {
                     AddInfoLine("parsing Evernote notes");
                     List<Note> notesEvernote = ParseNotes(exportFile);
@@ -89,13 +102,15 @@ namespace EveImSync
 
         private string ExtractNotes(string notebook)
         {
-            ENScriptWrapper ENScript = new ENScriptWrapper();
-            ENScript.ENScriptPath = ENScriptPath;
+            ENScriptWrapper enscript = new ENScriptWrapper();
+            enscript.ENScriptPath = enscriptpath;
 
             string exportFile = Path.GetTempFileName();
 
-            if (ENScript.ExportNotebook(notebook, exportFile))
+            if (enscript.ExportNotebook(notebook, exportFile))
+            {
                 return exportFile;
+            }
 
             return null;
         }
@@ -104,7 +119,7 @@ namespace EveImSync
         {
             List<Note> noteList = new List<Note>();
             XmlTextReader xtrInput;
-            XmlDocument xdItem;
+            XmlDocument xmlDocItem;
 
             xtrInput = new XmlTextReader(exportFile);
 
@@ -112,9 +127,9 @@ namespace EveImSync
             {
                 while ((xtrInput.NodeType == XmlNodeType.Element) && (xtrInput.Name.ToLower() == "note"))
                 {
-                    xdItem = new XmlDocument();
-                    xdItem.LoadXml(xtrInput.ReadOuterXml());
-                    XmlNode node = xdItem.FirstChild;
+                    xmlDocItem = new XmlDocument();
+                    xmlDocItem.LoadXml(xtrInput.ReadOuterXml());
+                    XmlNode node = xmlDocItem.FirstChild;
 
                     // node is <note> element
                     // node.FirstChild.InnerText is <title>
@@ -124,7 +139,7 @@ namespace EveImSync
                     note.Title = node.InnerText;
                     node = node.NextSibling;
                     note.Content = node.InnerXml;
-                    XmlNodeList tagslist = xdItem.GetElementsByTagName("tag");
+                    XmlNodeList tagslist = xmlDocItem.GetElementsByTagName("tag");
                     foreach (XmlNode n in tagslist)
                     {
                         note.Tags.Add(n.InnerText);
@@ -133,6 +148,7 @@ namespace EveImSync
                     noteList.Add(note);
                 }
             }
+
             xtrInput.Close();
 
             return noteList;
@@ -156,7 +172,6 @@ namespace EveImSync
             client.RequestManager.SubmitAndWait(new FolderTreeRequest(folder, null), false);
             IFolder currentFolder = client.MailboxManager.GetFolderByPath(folder);
             client.RequestManager.SubmitAndWait(new MessageListRequest(currentFolder, null), false);
-
 
             IMessage[] msgList = client.MailboxManager.GetMessagesByFolder(currentFolder);
             foreach (IMessage msg in msgList)
@@ -183,8 +198,8 @@ namespace EveImSync
                     }
                 }
 
-                bool bAdd = true;
-                if ((hash != null) && (hash != ""))
+                bool toAdd = true;
+                if ((hash != null) && (hash != string.Empty))
                 {
                     // does this note already exist?
                     note.ContentHash = hash;
@@ -193,13 +208,16 @@ namespace EveImSync
                         if (n.ContentHash == note.ContentHash)
                         {
                             n.Tags.Add(folder);
-                            bAdd = false;
+                            toAdd = false;
                             break;
                         }
                     }
                 }
-                if (bAdd)
+
+                if (toAdd)
+                {
                     noteList.Add(note);
+                }
             }
 
             IFolder[] subFolders = client.MailboxManager.GetSubFolders(currentFolder);
@@ -213,7 +231,7 @@ namespace EveImSync
         {
             foreach (Note n in notesIMAP)
             {
-                if (n.ContentHash == "")
+                if (n.ContentHash == string.Empty)
                 {
                     // Notes with no hashs haven't been downloaded and processed yet, so they're new
                     // and must be imported into Evernote
@@ -235,7 +253,9 @@ namespace EveImSync
             {
                 bool existsInIMAP = notesIMAP.Find(delegate(Note findNote) { return findNote.ContentHash == n.ContentHash; }) != null;
                 if (!existsInIMAP)
+                {
                     n.Action = NoteAction.UploadToIMAP;
+                }
             }
         }
 
@@ -250,7 +270,8 @@ namespace EveImSync
                     AddInfoLine(string.Format("getting email\"{0}\"", msg.Subject));
 
                     FullMessageRequest fmr = new FullMessageRequest(client, msg);
-                    //fmr.MessageProgress += new FullMessageProgressCallback(fmr_MessageProgress);
+
+                    // fmr.MessageProgress += new FullMessageProgressCallback(fmr_MessageProgress);
                     fmr.SubmitAndWait();
                     if (msg.ContentLoaded)
                     {
@@ -259,7 +280,7 @@ namespace EveImSync
                         {
                             if (!msgcontent.IsAttachment)
                             {
-                                if ((msgcontent.TextData != null) && (msgcontent.TextData.Length > 0) && (n.ContentHash == ""))
+                                if ((msgcontent.TextData != null) && (msgcontent.TextData.Length > 0) && (n.ContentHash == string.Empty))
                                 {
                                     n.SetTextContent(msgcontent.TextData);
                                 }
@@ -267,15 +288,18 @@ namespace EveImSync
                                 {
                                     n.SetHtmlContent(msgcontent.HTMLData);
                                 }
-                                Debug.Assert(n.ContentHash != "");
+
+                                Debug.Assert(n.ContentHash != string.Empty, "Hash is empty!");
                             }
                             else
                             {
                                 n.AddAttachment(msgcontent.BinaryData, msgcontent.ContentId, msgcontent.ContentType, msgcontent.ContentFilename);
                             }
                         }
+
                         n.Content = "<![CDATA[<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE en-note SYSTEM \"http://xml.evernote.com/pub/enml2.dtd\">" +
                                         "<en-note>" + n.Content + "</en-note>]]>";
+                        
                         // remove existing XEveIm flags
                         List<string> fls = new List<string>(msg.GetCustomFlags());
                         foreach (string flag in fls)
@@ -310,6 +334,7 @@ namespace EveImSync
                                     break;
                                 }
                             }
+
                             if ((hash != null) && (hash == n.ContentHash))
                             {
                                 // yes, this is the same message!
@@ -322,21 +347,25 @@ namespace EveImSync
                                 }
                             }
                         }
+
                         AddInfoLine(string.Format("importing note\"{0}\"", msg.Subject));
 
                         // generate the Evernote export file
                         string path = Path.GetTempFileName();
                         n.SaveEvernoteExportData(path);
+
                         // import the export file into Evernote
-                        ENScriptWrapper ENScript = new ENScriptWrapper();
-                        ENScript.ENScriptPath = ENScriptPath;
-                        if (!ENScript.ImportNotes(path, notebook))
+                        ENScriptWrapper enscript = new ENScriptWrapper();
+                        enscript.ENScriptPath = enscriptpath;
+                        if (!enscript.ImportNotes(path, notebook))
                         {
                             AddInfoLine(string.Format("failed to import note \"{0}\"", msg.Subject));
                         }
+
                         File.Delete(path);
                     }
                 }
+
                 notesIMAP.Remove(n);
             }
         }
@@ -347,8 +376,11 @@ namespace EveImSync
             foreach (Note n in notesEvernote)
             {
                 if (n.Action == NoteAction.UploadToIMAP)
+                {
                     uploadcount++;
+                }
             }
+
             AddInfoLine(string.Format("uploading {0} notes to IMAP", uploadcount));
             foreach (Note n in notesEvernote)
             {
@@ -356,7 +388,7 @@ namespace EveImSync
                 {
                     AddInfoLine(string.Format("uploading note \"{0}\"", n.Title));
                     XmlTextReader xtrInput;
-                    XmlDocument xdItem;
+                    XmlDocument xmlDocItem;
 
                     xtrInput = new XmlTextReader(exportFile);
 
@@ -364,9 +396,9 @@ namespace EveImSync
                     {
                         while ((xtrInput.NodeType == XmlNodeType.Element) && (xtrInput.Name.ToLower() == "note"))
                         {
-                            xdItem = new XmlDocument();
-                            xdItem.LoadXml(xtrInput.ReadOuterXml());
-                            XmlNode node = xdItem.FirstChild;
+                            xmlDocItem = new XmlDocument();
+                            xmlDocItem.LoadXml(xtrInput.ReadOuterXml());
+                            XmlNode node = xmlDocItem.FirstChild;
 
                             // node is <note> element
                             // node.FirstChild.InnerText is <title>
@@ -375,35 +407,38 @@ namespace EveImSync
                             if (node.InnerText == n.Title)
                             {
                                 node = node.NextSibling;
-                                if (n.Content == node.InnerXml.Replace("\r", ""))
+                                if (n.Content == node.InnerXml.Replace("\r", string.Empty))
                                 {
-                                    XmlNodeList atts = xdItem.GetElementsByTagName("resource");
+                                    XmlNodeList atts = xmlDocItem.GetElementsByTagName("resource");
                                     foreach (XmlNode xmln in atts)
                                     {
                                         Attachment attachment = new Attachment();
                                         attachment.Base64Data = xmln.FirstChild.InnerText;
                                         byte[] data = Convert.FromBase64String(xmln.FirstChild.InnerText);
                                         byte[] hash = new System.Security.Cryptography.MD5CryptoServiceProvider().ComputeHash(data);
-                                        string hashHex = BitConverter.ToString(hash).Replace("-", "").ToLower();
+                                        string hashHex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
 
                                         attachment.Hash = hashHex;
 
-                                        XmlNodeList fns = xdItem.GetElementsByTagName("file-name");
+                                        XmlNodeList fns = xmlDocItem.GetElementsByTagName("file-name");
                                         if (fns.Count > n.Attachments.Count)
                                         {
                                             attachment.FileName = fns.Item(n.Attachments.Count).InnerText;
                                         }
-                                        XmlNodeList mimes = xdItem.GetElementsByTagName("mime");
+
+                                        XmlNodeList mimes = xmlDocItem.GetElementsByTagName("mime");
                                         if (mimes.Count > n.Attachments.Count)
                                         {
                                             attachment.ContentType = mimes.Item(n.Attachments.Count).InnerText;
                                         }
+                                        
                                         n.Attachments.Add(attachment);
                                     }
                                 }
                             }
                         }
                     }
+
                     xtrInput.Close();
 
                     string htmlBody = n.Content;
@@ -413,7 +448,7 @@ namespace EveImSync
                     foreach (Attachment attachment in n.Attachments)
                     {
                         Regex rx = new Regex(@"<en-media\b[^>]*?hash=""" + attachment.Hash + @"""[^>]*/>", RegexOptions.IgnoreCase);
-                        if ((attachment.ContentType.Contains("image")) && (rx.Match(htmlBody).Success))
+                        if (attachment.ContentType.Contains("image") && rx.Match(htmlBody).Success)
                         {
                             // replace the <en-media /> tag with an <img /> tag
                             htmlBody = rx.Replace(htmlBody, @"<img src=""cid:" + attachment.Hash + @"""/>");
@@ -437,26 +472,28 @@ namespace EveImSync
                             attachedResources.Add(a);
                         }
                     }
-                    htmlBody = htmlBody.Replace(@"<![CDATA[<?xml version=""1.0"" encoding=""UTF-8""?>", "");
-                    htmlBody = htmlBody.Replace(@"<!DOCTYPE en-note SYSTEM ""http://xml.evernote.com/pub/enml2.dtd"">", "");
+
+                    htmlBody = htmlBody.Replace(@"<![CDATA[<?xml version=""1.0"" encoding=""UTF-8""?>", string.Empty);
+                    htmlBody = htmlBody.Replace(@"<!DOCTYPE en-note SYSTEM ""http://xml.evernote.com/pub/enml2.dtd"">", string.Empty);
                     htmlBody = htmlBody.Replace("<en-note>", "<body>");
                     htmlBody = htmlBody.Replace("</en-note>]]>", "</body>");
                     htmlBody = htmlBody.Trim();
                     htmlBody = @"<!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 4.01 Transitional//EN""><head></head>" + htmlBody;
                     MailMessage mailMsg = new MailMessage();
 
-                    AlternateView avHtml = AlternateView.CreateAlternateViewFromString(htmlBody, Encoding.UTF8, MediaTypeNames.Text.Html);
+                    AlternateView altViewHtml = AlternateView.CreateAlternateViewFromString(htmlBody, Encoding.UTF8, MediaTypeNames.Text.Html);
                     foreach (LinkedResource lr in linkedResources)
                     {
-                        avHtml.LinkedResources.Add(lr);
+                        altViewHtml.LinkedResources.Add(lr);
                     }
 
                     // Add the alternate views instead of using MailMessage.Body
-                    mailMsg.AlternateViews.Add(avHtml);
+                    mailMsg.AlternateViews.Add(altViewHtml);
                     foreach (System.Net.Mail.Attachment a in attachedResources)
                     {
                         mailMsg.Attachments.Add(a);
                     }
+
                     mailMsg.From = new MailAddress("EveImSync <eveimsync@tortoisesvn.net>");
                     mailMsg.To.Add(new MailAddress("EveImSync <eveimsync@tortoisesvn.net>"));
                     mailMsg.Subject = n.Title;

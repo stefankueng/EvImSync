@@ -1,4 +1,20 @@
-﻿namespace EveImSync
+﻿// EvImSync - A tool to sync Evernote notes to IMAP mails and vice versa
+// Copyright (C) 2010 - Stefan Kueng
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+namespace EveImSync
 {
     partial class MainFrm
     {
@@ -17,6 +33,7 @@
             {
                 components.Dispose();
             }
+
             base.Dispose(disposing);
         }
 
@@ -78,7 +95,7 @@
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
             this.exitToolStripMenuItem.Size = new System.Drawing.Size(116, 22);
             this.exitToolStripMenuItem.Text = "Exit";
-            this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
+            this.exitToolStripMenuItem.Click += new System.EventHandler(this.ExitToolStripMenuItem_Click);
             // 
             // startsync
             // 
@@ -90,7 +107,7 @@
             this.startsync.TabIndex = 1;
             this.startsync.Text = "Start Sync";
             this.startsync.UseVisualStyleBackColor = true;
-            this.startsync.Click += new System.EventHandler(this.startsync_Click);
+            this.startsync.Click += new System.EventHandler(this.Startsync_Click);
             // 
             // progressInfoList
             // 

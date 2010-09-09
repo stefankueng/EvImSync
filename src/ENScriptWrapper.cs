@@ -1,30 +1,61 @@
-﻿using System;
+﻿// EvImSync - A tool to sync Evernote notes to IMAP mails and vice versa
+// Copyright (C) 2010 - Stefan Kueng
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Diagnostics;
 using System.IO;
 
 namespace EveImSync
 {
-    class ENScriptWrapper
+    /// <summary>
+    /// Wrapper for the ENScript.exe tool
+    /// </summary>
+    public class ENScriptWrapper
     {
-        public String ENScriptPath
+        /// <summary>
+        /// path to the ENScript.exe
+        /// </summary>
+        private string exePath;
+        
+        /// <summary>
+        /// the full path to ENScript.exe
+        /// </summary>
+        public string ENScriptPath
         {
             get
             {
                 return exePath;
             }
+
             set
             {
                 exePath = value;
             }
         }
 
-        public List<String> GetNotebooks()
+        /// <summary>
+        /// Lists all the notebooks in Evernote
+        /// </summary>
+        /// <returns>List of notebook names</returns>
+        public List<string> GetNotebooks()
         {
-            List<String> notebooks = new List<String>();
+            List<string> notebooks = new List<string>();
 
-            ProcessStartInfo processStartInfo = new ProcessStartInfo(exePath, "listNotebooks");
+            ProcessStartInfo processStartInfo = new ProcessStartInfo(this.exePath, "listNotebooks");
             processStartInfo.UseShellExecute = false;
             processStartInfo.ErrorDialog = false;
             processStartInfo.RedirectStandardError = true;
@@ -50,10 +81,16 @@ namespace EveImSync
             return notebooks;
         }
 
-        public bool ExportNotebook(String notebook, String exportFile)
+        /// <summary>
+        /// Exports the specified notebook to the specified file
+        /// </summary>
+        /// <param name="notebook">the notebook to export</param>
+        /// <param name="exportFile">the file to export the notebook to</param>
+        /// <returns>true if successful, false in case of an error</returns>
+        public bool ExportNotebook(string notebook, string exportFile)
         {
-            bool bRet = false;
-            ProcessStartInfo processStartInfo = new ProcessStartInfo(exePath, "exportNotes /q \"notebook:" + notebook +"\" /f " + exportFile);
+            bool ret = false;
+            ProcessStartInfo processStartInfo = new ProcessStartInfo(this.exePath, "exportNotes /q \"notebook:" + notebook + "\" /f " + exportFile);
             processStartInfo.UseShellExecute = false;
             processStartInfo.ErrorDialog = false;
             processStartInfo.RedirectStandardError = true;
@@ -70,17 +107,24 @@ namespace EveImSync
                 StreamReader outputReader = process.StandardOutput;
                 StreamReader errorReader = process.StandardError;
                 process.WaitForExit();
-                bRet = File.Exists(exportFile);
+                ret = File.Exists(exportFile);
             }
 
-            return bRet;
+            return ret;
         }
 
-        public bool ImportNotes(String notesPath, String notebook)
+        /// <summary>
+        /// Imports all the notes in the export file to the 
+        /// specified notebook in Evernote
+        /// </summary>
+        /// <param name="notesPath">the path to the export file</param>
+        /// <param name="notebook">the notebook where the export file should be imported to</param>
+        /// <returns>true if successful, false in case of an error</returns>
+        public bool ImportNotes(string notesPath, string notebook)
         {
-            bool bRet = false;
+            bool ret = false;
 
-            ProcessStartInfo processStartInfo = new ProcessStartInfo(exePath, "importNotes /n " + notebook + " /s " + notesPath);
+            ProcessStartInfo processStartInfo = new ProcessStartInfo(this.exePath, "importNotes /n " + notebook + " /s " + notesPath);
             processStartInfo.UseShellExecute = false;
             processStartInfo.ErrorDialog = false;
             processStartInfo.RedirectStandardError = true;
@@ -97,12 +141,10 @@ namespace EveImSync
                 StreamReader outputReader = process.StandardOutput;
                 StreamReader errorReader = process.StandardError;
                 process.WaitForExit();
-                bRet = process.ExitCode == 0;
+                ret = process.ExitCode == 0;
             }
 
-            return bRet;
+            return ret;
         }
-
-        private String exePath;
     }
 }

@@ -1,13 +1,28 @@
-﻿using System;
+﻿// EvImSync - A tool to sync Evernote notes to IMAP mails and vice versa
+// Copyright (C) 2010 - Stefan Kueng
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+using System;
 using System.Collections.Generic;
-using System.Text;
-using EveImSync.Enums;
-using InterIMAP.Common.Interfaces;
-using HtmlAgilityPack;
 using System.IO;
-using System.Xml;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using System.Xml;
+using EveImSync.Enums;
+using HtmlAgilityPack;
+using InterIMAP.Common.Interfaces;
 
 namespace EveImSync
 {
@@ -19,7 +34,7 @@ namespace EveImSync
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml(html);
 
-            //Remove potentially harmful elements 
+            // Remove potentially harmful elements 
             HtmlNodeCollection nc = doc.DocumentNode.SelectNodes("//script|//link|//iframe|//frameset|//frame|//applet|//object|//embed" +
             "|//head|//base|//basefont|//bgsound|//blink|//button|//dir|//fieldset|//form|//ilayer|//input|//isindex|//label" +
             "|//layer|//legend|//marquee|//menu|//meta|//noframes|//noscript|//optgroup|//option|//param|//plaintext|//select|//style|//textarea|//xml");
@@ -28,23 +43,20 @@ namespace EveImSync
                 foreach (HtmlNode node in nc)
                 {
                     node.ParentNode.RemoveChild(node, false);
-
                 }
             }
 
-            //remove hrefs to java/j/vbscript URLs
+            // remove hrefs to java/j/vbscript URLs
             nc = doc.DocumentNode.SelectNodes("//a[starts-with(translate(@href, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'javascript')]|//a[starts-with(translate(@href, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'jscript')]|//a[starts-with(translate(@href, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'vbscript')]");
             if (nc != null)
             {
-
                 foreach (HtmlNode node in nc)
                 {
                     node.SetAttributeValue("href", "#");
                 }
             }
 
-
-            //remove img with refs to java/j/vbscript URLs
+            // remove img with refs to java/j/vbscript URLs
             nc = doc.DocumentNode.SelectNodes("//img[starts-with(translate(@src, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'javascript')]|//img[starts-with(translate(@src, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'jscript')]|//img[starts-with(translate(@src, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'vbscript')]");
             if (nc != null)
             {
@@ -54,7 +66,7 @@ namespace EveImSync
                 }
             }
 
-            //remove on<Event> handlers from all tags
+            // remove on<Event> handlers from all tags
             nc = doc.DocumentNode.SelectNodes("//*[@onclick or @onmouseover or @onfocus or @onblur or @onmouseout or @ondoubleclick or @onload or @onunload]");
             if (nc != null)
             {
@@ -87,6 +99,7 @@ namespace EveImSync
             doc.OptionDefaultStreamEncoding = System.Text.Encoding.UTF8;
             doc.Save(stream);
             html = stream.GetStringBuilder().ToString();
+
             // now we have double-escaped sequences like "&amp;uuml;" instead of
             // a simple "&uuml;" - we have to fix those
             Regex rx = new Regex(@"&amp;(\w{1,6}?;)", RegexOptions.IgnoreCase);
@@ -112,16 +125,17 @@ namespace EveImSync
             Content = text;
         }
 
-        public void AddAttachment(byte[] BinaryData, string ContentId, string ContentType, string contentFileName)
+        public void AddAttachment(byte[] binaryData, string contentId, string contentType, string contentFileName)
         {
-            byte[] hash = new MD5CryptoServiceProvider().ComputeHash(BinaryData);
-            string hashHex = BitConverter.ToString(hash).Replace("-", "").ToLower();
-            string cid = ContentId.TrimStart('<', '"');
+            byte[] hash = new MD5CryptoServiceProvider().ComputeHash(binaryData);
+            string hashHex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
+            string cid = contentId.TrimStart('<', '"');
             cid = cid.TrimEnd('>', '"');
             if (content.Contains(cid))
             {
                 // convert the reference tag to a media tag
                 int idIndex = content.IndexOf(cid);
+
                 // go left until the '<' is found
                 int bracketIndex = content.LastIndexOf('<', idIndex);
                 int endBracket = content.IndexOf('>', bracketIndex);
@@ -134,21 +148,22 @@ namespace EveImSync
                 int imgStart = mediaTag.IndexOf('<') + 1;
                 int imgEnd = mediaTag.IndexOfAny(" \t".ToCharArray(), imgStart);
                 string typeString = mediaTag.Substring(imgStart, imgEnd - imgStart);
-                mediaTag = mediaTag.Replace(typeString, "en-media type=\"" + ContentType.ToLower() + "\"");
+                mediaTag = mediaTag.Replace(typeString, "en-media type=\"" + contentType.ToLower() + "\"");
                 Content = content.Replace(refTag, mediaTag);
             }
             else
             {
                 // just link the attachment to the content
-                Content = content + "<en-media hash=\"" + hashHex + "\" type=\"" + ContentType + "\"/>";
+                Content = content + "<en-media hash=\"" + hashHex + "\" type=\"" + contentType + "\"/>";
             }
-            string attachmentString = Convert.ToBase64String(BinaryData);
-            attachmentString = "<data encoding=\"base64\">" + attachmentString + "</data><mime>" + ContentType.ToLower() + "</mime>" +
+
+            string attachmentString = Convert.ToBase64String(binaryData);
+            attachmentString = "<data encoding=\"base64\">" + attachmentString + "</data><mime>" + contentType.ToLower() + "</mime>" +
                 "<resource-attributes><file-name>" + contentFileName + "</file-name></resource-attributes>";
             Attachment at = new Attachment();
             at.Base64Data = attachmentString;
-            at.ContentID = ContentId;
-            at.ContentType = ContentType;
+            at.ContentID = contentId;
+            at.ContentType = contentType;
             at.FileName = contentFileName;
             at.Hash = hashHex;
             attachements.Add(at);
@@ -207,6 +222,7 @@ namespace EveImSync
             {
                 return title;
             }
+
             set
             {
                 title = value;
@@ -219,11 +235,12 @@ namespace EveImSync
             {
                 return content;
             }
+
             set
             {
-                content = value.Replace("\r", "");
+                content = value.Replace("\r", string.Empty);
                 byte[] hash = new MD5CryptoServiceProvider().ComputeHash(System.Text.Encoding.UTF8.GetBytes(content));
-                string hashHex = BitConverter.ToString(hash).Replace("-", "").ToLower();
+                string hashHex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
                 contenthash = hashHex;
             }
         }
@@ -234,6 +251,7 @@ namespace EveImSync
             {
                 return contenthash;
             }
+
             set
             {
                 contenthash = value;
@@ -246,6 +264,7 @@ namespace EveImSync
             {
                 return tags;
             }
+
             set
             {
                 tags = value;
@@ -258,6 +277,7 @@ namespace EveImSync
             {
                 return attachements;
             }
+
             set
             {
                 attachements = value;
@@ -265,12 +285,14 @@ namespace EveImSync
         }
 
         public NoteAction Action { get; set; }
+
         public IFolder IMAPFolder { get; set; }
+        
         public int IMAPMessageUID { get; set; }
 
         private string title;
         private string content;
-        private string contenthash = "";
+        private string contenthash = string.Empty;
         private List<string> tags = new List<string>();
         private List<Attachment> attachements = new List<Attachment>();
     }

@@ -54,6 +54,12 @@ namespace EveImSync
             this.Close();
         }
 
+        private void OptionsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ConfigFrm cf = new ConfigFrm();
+            cf.ShowDialog();
+        }
+
         private void AddInfoLine(string infoLine)
         {
             if (this.progressInfoList.InvokeRequired)

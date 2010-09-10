@@ -212,6 +212,14 @@ namespace EveImSync
                 parentNode.AppendChild(resourceNode);
             }
 
+            if (Date != null)
+            {
+                XmlElement dateNode = xmlDoc.CreateElement("created");
+                XmlText dateText = xmlDoc.CreateTextNode(Date.ToUniversalTime().ToString("yyyyMMddTHHmmssZ"));
+                dateNode.AppendChild(dateText);
+                parentNode.AppendChild(dateNode);
+            }
+
             // Save to the XML file
             xmlDoc.Save(path);
         }
@@ -287,8 +295,10 @@ namespace EveImSync
         public NoteAction Action { get; set; }
 
         public IFolder IMAPFolder { get; set; }
-        
+
         public int IMAPMessageUID { get; set; }
+
+        public DateTime Date { get; set; }
 
         private string title;
         private string content;

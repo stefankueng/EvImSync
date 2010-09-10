@@ -151,6 +151,30 @@ namespace EveImSync
                         note.Tags.Add(n.InnerText);
                     }
 
+                    XmlNodeList datelist = xmlDocItem.GetElementsByTagName("created");
+                    foreach (XmlNode n in datelist)
+                    {
+                        try
+                        {
+                            note.Date = DateTime.ParseExact(n.InnerText, "yyyyMMddTHHmmssZ", null);
+                        }
+                        catch (System.FormatException)
+                        {
+                        }
+                    }
+
+                    XmlNodeList datelist2 = xmlDocItem.GetElementsByTagName("updated");
+                    foreach (XmlNode n in datelist2)
+                    {
+                        try
+                        {
+                            note.Date = DateTime.ParseExact(n.InnerText, "yyyyMMddTHHmmssZ", null);
+                        }
+                        catch (System.FormatException)
+                        {
+                        }
+                    }
+
                     noteList.Add(note);
                 }
             }
@@ -315,6 +339,9 @@ namespace EveImSync
                                 client.MailboxManager.SetMessageFlag(msg, flag, false);
                             }
                         }
+
+                        // add the date
+                        n.Date = msg.DateReceived;
 
                         // update the XEveImHash tag for this email
                         string customFlag = "XEveIm" + n.ContentHash;
@@ -504,6 +531,9 @@ namespace EveImSync
                     mailMsg.To.Add(new MailAddress("EveImSync <eveimsync@tortoisesvn.net>"));
                     mailMsg.Subject = n.Title;
                     string eml = mailMsg.GetEmailAsString();
+
+                    Regex rex = new Regex(@"^date:(.*)$", RegexOptions.IgnoreCase | RegexOptions.Multiline);
+                    eml = rex.Replace(eml, "Date: " + n.Date.ToString("ddd, dd MMM yyyy HH:mm:ss K"));
 
                     // find the folder to upload to
                     IFolder currentFolder = client.MailboxManager.GetFolderByPath(folder);

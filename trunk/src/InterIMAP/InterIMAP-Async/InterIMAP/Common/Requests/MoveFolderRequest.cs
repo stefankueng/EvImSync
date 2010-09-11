@@ -13,7 +13,7 @@ namespace InterIMAP.Common.Requests
             : base(callback)
         {
             Command = new MoveFolderCommand(folder, parentFolder, null);
-            ProcessorType = typeof (MoveFolderProcessor);
+            ProcessorType = typeof(MoveFolderProcessor);
         }
     }
 
@@ -31,13 +31,13 @@ namespace InterIMAP.Common.Requests
                                    ?
                                        folder.Name
                                    : String.Format("{0}/{1}", parentFolder.FullPath, folder.Name);
-            
-            CommandString = String.Format("RENAME \"{0}\" \"{1}\"", folder.FullPath,newFolder);
+
+            CommandString = String.Format("RENAME \"{0}\" \"{1}\"", folder.FullPath, newFolder);
         }
     }
 
     internal class MoveFolderProcessor : BaseProcessor
     {
-        
+
     }
 }

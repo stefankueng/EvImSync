@@ -17,7 +17,6 @@ namespace InterIMAP.Common.Processors
             if (CmdResult.Response == IMAPResponse.IMAP_SUCCESS_RESPONSE)
             {
                 _folderCreated = true;
-                
             }
         }
     }

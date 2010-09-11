@@ -20,6 +20,7 @@ namespace EveImSync.Enums
     {
         UploadToIMAP,
         ImportToEvernote,
-        DeleteOnIMAP
+        DeleteOnIMAP,
+        AdjustTagsOnIMAP
     }
 }

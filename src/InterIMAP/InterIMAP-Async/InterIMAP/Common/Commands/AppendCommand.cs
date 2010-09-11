@@ -27,7 +27,7 @@ namespace InterIMAP.Common.Commands
 
             _parameters.Add(fullFolder);
             CommandData = eml;
-            CommandString = String.Format("APPEND {0} (\\Seen) {{{1}}}", fullFolder, Encoding.ASCII.GetBytes(CommandData.ToCharArray()).GetLength(0) - 2);
+            CommandString = String.Format("APPEND \"{0}\" (\\Seen {1}) {{{2}}}", fullFolder, flags, Encoding.ASCII.GetBytes(CommandData.ToCharArray()).GetLength(0) - 2);
         }
 
         public override string ResponseGoAhead

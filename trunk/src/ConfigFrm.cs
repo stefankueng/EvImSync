@@ -129,5 +129,26 @@ namespace EveImSync
             config.Save();
             this.Close();
         }
+
+        private void DeletePairButton_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in pairList.SelectedItems)
+            {
+                SyncPairSettings sps = config.SyncPairs.Find(findPair => { return findPair.EvernoteNotebook == item.Text; });
+                if (sps != null)
+                {
+                    config.SyncPairs.Remove(sps);
+                }
+            }
+
+            pairList.Items.Clear();
+            foreach (SyncPairSettings sp in config.SyncPairs)
+            {
+                pairList.Items.Add(sp.EvernoteNotebook);
+            }
+
+            pairList.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+            pairList.Update();
+        }
     }
 }

@@ -38,7 +38,7 @@ namespace EveImSync
     public partial class MainFrm : Form
     {
         private IMAPAsyncClient client;
-        
+
         private delegate void StringDelegate(string foo);
 
         private string enscriptpath;
@@ -271,10 +271,34 @@ namespace EveImSync
                 {
                     // Notes with a hash that doesn't exist in Evernote have been removed from
                     // Evernote and should be removed on IMAP
-                    bool existsInEvernote = notesEvernote.Find(delegate(Note findNote) { return findNote.ContentHash == n.ContentHash; }) != null;
+                    Note noteInEvernote = notesEvernote.Find(delegate(Note findNote) { return findNote.ContentHash == n.ContentHash; });
+                    bool existsInEvernote = noteInEvernote != null;
                     if (!existsInEvernote)
                     {
                         n.Action = NoteAction.DeleteOnIMAP;
+                    }
+                    else
+                    {
+                        // if the note already exists in Evernote, we have to check whether tags have changed
+                        foreach (string tag in noteInEvernote.Tags)
+                        {
+                            if (n.Tags.Find(findTag => { return findTag == tag; }) == null)
+                            {
+                                // tag does not exist in the email note
+                                n.Tags.Add(tag);
+                                n.Action = NoteAction.AdjustTagsOnIMAP;
+                            }
+                        }
+
+                        foreach (string tag in n.Tags)
+                        {
+                            if (noteInEvernote.Tags.Find(findTag => { return findTag == tag; }) == null)
+                            {
+                                // tag does not exist in the evernote note
+                                n.Tags.Remove(tag);
+                                n.Action = NoteAction.AdjustTagsOnIMAP;
+                            }
+                        }
                     }
                 }
             }
@@ -329,7 +353,7 @@ namespace EveImSync
 
                         n.Content = "<![CDATA[<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE en-note SYSTEM \"http://xml.evernote.com/pub/enml2.dtd\">" +
                                         "<en-note>" + n.Content + "</en-note>]]>";
-                        
+
                         // remove existing XEveIm flags
                         List<string> fls = new List<string>(msg.GetCustomFlags());
                         foreach (string flag in fls)
@@ -464,7 +488,7 @@ namespace EveImSync
                                         {
                                             attachment.ContentType = mimes.Item(n.Attachments.Count).InnerText;
                                         }
-                                        
+
                                         n.Attachments.Add(attachment);
                                     }
                                 }
@@ -536,13 +560,74 @@ namespace EveImSync
                     eml = rex.Replace(eml, "Date: " + n.Date.ToString("ddd, dd MMM yyyy HH:mm:ss K"));
 
                     // find the folder to upload to
-                    IFolder currentFolder = client.MailboxManager.GetFolderByPath(folder);
+                    string tagfolder = folder;
+                    if (n.Tags.Count > 0)
+                    {
+                        tagfolder = tagfolder + "/" + n.Tags[0];
+                    }
+
+                    IFolder currentFolder = GetOrCreateFolderByPath(tagfolder);
                     string customFlag = "XEveIm" + n.ContentHash;
 
                     // now upload the new note
+                    int numMsg = currentFolder.Messages.Length;
                     client.RequestManager.SubmitAndWait(new AppendRequest(eml, customFlag, currentFolder, null), false);
+
+                    if (n.Tags.Count > 1)
+                    {
+                        IMessage[] oldMsgs = client.MailboxManager.GetMessagesByFolder(currentFolder);
+                        client.RequestManager.SubmitAndWait(new MessageListRequest(currentFolder, null), false);
+                        IMessage[] newMsgs = client.MailboxManager.GetMessagesByFolder(currentFolder);
+                        IMessage newMsg = null;
+                        foreach (IMessage imsg in newMsgs)
+                        {
+                            bool found = false;
+                            foreach (IMessage omsg in oldMsgs)
+                            {
+                                if (imsg.UID == omsg.UID)
+                                {
+                                    found = true;
+                                    break;
+                                }
+                            }
+
+                            if (!found)
+                            {
+                                newMsg = client.MailboxManager.GetMessageByUID(imsg.UID, currentFolder.ID);
+                                break;
+                            }
+                        }
+
+                        // copy the email to all tag folders
+                        for (int i = 1; i < n.Tags.Count; ++i)
+                        {
+                            tagfolder = folder + "/" + n.Tags[i];
+                            IFolder tagFolder = GetOrCreateFolderByPath(tagfolder);
+
+                            client.RequestManager.SubmitAndWait(new CopyMessageRequest(newMsg, tagFolder, null), true);
+                            client.RequestManager.SubmitAndWait(new MessageListRequest(tagFolder, null), true);
+                        }
+                    }
                 }
             }
+        }
+
+        private IFolder GetOrCreateFolderByPath(string folderpath)
+        {
+            IFolder requestedFolder = client.MailboxManager.GetFolderByPath(folderpath);
+            if (requestedFolder == null)
+            {
+                // create the missing folder
+                string parent = folderpath.Substring(0, folderpath.IndexOf('/'));
+                IFolder parentFolder = GetOrCreateFolderByPath(parent);
+                string name = folderpath.Substring(folderpath.LastIndexOf('/') + 1);
+                client.RequestManager.SubmitAndWait(new CreateFolderRequest(name, parentFolder, null), true);
+                client.RequestManager.SubmitAndWait(new FolderTreeRequest(parent, null), false);
+
+                requestedFolder = client.MailboxManager.GetFolderByPath(folderpath);
+            }
+
+            return requestedFolder;
         }
     }
 }

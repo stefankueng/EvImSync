@@ -70,6 +70,7 @@
     <Compile Include="Common\Commands\CapabilityCommand.cs" />
     <Compile Include="Common\Commands\ChangeFlagCommand.cs" />
     <Compile Include="Common\Commands\CommandResult.cs" />
+    <Compile Include="Common\Commands\CopyMessageCommand.cs" />
     <Compile Include="Common\Commands\CreateFolderCommand.cs" />
     <Compile Include="Common\Commands\CustomCommand.cs" />
     <Compile Include="Common\Commands\ExamineFolderCommand.cs" />
@@ -114,6 +115,7 @@
     <Compile Include="Common\Processors\AppendProcessor.cs" />
     <Compile Include="Common\Processors\BaseProcessor.cs" />
     <Compile Include="Common\Processors\ChangeFlagProcessor.cs" />
+    <Compile Include="Common\Processors\CopyMessageProcessor.cs" />
     <Compile Include="Common\Processors\CreateFolderProcessor.cs" />
     <Compile Include="Common\Processors\FolderDataProcessor.cs" />
     <Compile Include="Common\Processors\FolderListProcessor.cs" />
@@ -128,6 +130,7 @@
     <Compile Include="Common\Requests\AsyncBatchRequest.cs" />
     <Compile Include="Common\Requests\BaseRequest.cs" />
     <Compile Include="Common\Requests\ChangeFlagRequest.cs" />
+    <Compile Include="Common\Requests\CopyMessageRequest.cs" />
     <Compile Include="Common\Requests\CreateFolderRequest.cs" />
     <Compile Include="Common\Requests\DeleteFolderRequest.cs" />
     <Compile Include="Common\Requests\DeleteMessageRequest.cs" />
@@ -140,6 +143,7 @@
     <Compile Include="Common\Requests\MessagePartRequest.cs" />
     <Compile Include="Common\Requests\MessageStructureRequest.cs" />
     <Compile Include="Common\Requests\MoveFolderRequest.cs" />
+    <Compile Include="Common\Requests\MoveMessageRequest.cs" />
     <Compile Include="Common\Requests\NewMessagesRequest.cs" />
     <Compile Include="Common\Requests\RenameFolderRequest.cs" />
     <Compile Include="Common\Requests\SearchRequest.cs" />

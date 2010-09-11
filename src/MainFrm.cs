@@ -29,6 +29,7 @@ using InterIMAP;
 using InterIMAP.Asynchronous.Client;
 using InterIMAP.Common.Interfaces;
 using InterIMAP.Common.Requests;
+using System.Threading;
 
 namespace EveImSync
 {
@@ -43,10 +44,13 @@ namespace EveImSync
 
         private string enscriptpath;
 
+        private SynchronizationContext synchronizationContext;
+
         public MainFrm()
         {
             InitializeComponent();
             this.progressInfoList.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+            this.synchronizationContext = SynchronizationContext.Current;
         }
 
         private void ExitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -62,16 +66,11 @@ namespace EveImSync
 
         private void AddInfoLine(string infoLine)
         {
-            if (this.progressInfoList.InvokeRequired)
-            {
-                this.progressInfoList.Invoke(new StringDelegate(AddInfoLine),
-                            new object[] { infoLine });
-            }
-            else
-            {
-                this.progressInfoList.Items.Add(infoLine);
-                this.progressInfoList.Update();
-            }
+            synchronizationContext.Send(new SendOrPostCallback(delegate(object state)
+                                                {
+                                                    this.progressInfoList.Items.Add(infoLine);
+                                                    this.progressInfoList.Update();
+                                                }), null);
         }
 
         private void Startsync_Click(object sender, EventArgs e)
@@ -104,6 +103,11 @@ namespace EveImSync
                     UploadNotesAsMails(syncPair.IMAPNotesFolder, notesEvernote, exportFile);
                 }
             }
+
+            synchronizationContext.Send(new SendOrPostCallback(delegate(object state)
+            {
+                startsync.Enabled = true;
+            }), null);
         }
 
         private string ExtractNotes(string notebook)

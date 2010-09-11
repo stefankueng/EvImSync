@@ -142,6 +142,7 @@ namespace EveImSync
             this.deletePairButton.TabIndex = 1;
             this.deletePairButton.Text = "Delete";
             this.deletePairButton.UseVisualStyleBackColor = true;
+            this.deletePairButton.Click += new System.EventHandler(this.DeletePairButton_Click);
             // 
             // cancelButton
             // 
@@ -154,12 +155,12 @@ namespace EveImSync
             this.cancelButton.Text = "&Cancel";
             this.cancelButton.UseVisualStyleBackColor = true;
             // 
-            // okButton
+            // okayButton
             // 
             this.okayButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.okayButton.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.okayButton.Location = new System.Drawing.Point(275, 256);
-            this.okayButton.Name = "okButton";
+            this.okayButton.Name = "okayButton";
             this.okayButton.Size = new System.Drawing.Size(75, 23);
             this.okayButton.TabIndex = 5;
             this.okayButton.Text = "&Ok";

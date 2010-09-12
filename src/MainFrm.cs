@@ -22,6 +22,7 @@ using System.Net.Mail;
 using System.Net.Mime;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
 using EveImSync.Enums;
@@ -29,7 +30,6 @@ using InterIMAP;
 using InterIMAP.Asynchronous.Client;
 using InterIMAP.Common.Interfaces;
 using InterIMAP.Common.Requests;
-using System.Threading;
 
 namespace EveImSync
 {
@@ -98,6 +98,7 @@ namespace EveImSync
                     AddInfoLine(string.Format("Found {0} notes in IMAP", notesIMAP.Count));
                     AddInfoLine("Analyzing notes, figuring out what notes need syncing");
                     DiffNotesAndMails(ref notesEvernote, ref notesIMAP);
+                    AdjustIMAPTags(syncPair.IMAPNotesFolder, notesIMAP);
                     AddInfoLine("Downloading emails as notes");
                     DownloadAndImportMailsToEvernote(notesIMAP, syncPair.EvernoteNotebook);
                     UploadNotesAsMails(syncPair.IMAPNotesFolder, notesEvernote, exportFile);
@@ -217,9 +218,16 @@ namespace EveImSync
 
                 Note note = new Note();
                 note.Title = msg.Subject;
-                note.Tags.Add(folder);
-                note.IMAPFolder = currentFolder;
-                note.IMAPMessageUID = msg.UID;
+                if (folder.IndexOf('/') >= 0)
+                {
+                    note.Tags.Add(folder.Substring(folder.IndexOf('/') + 1));
+                }
+                else
+                {
+                    note.Tags.Add(folder);
+                }
+
+                note.IMAPMessages.Add(msg);
 
                 string hash = null;
                 List<string> flags = msg.GetCustomFlags();
@@ -241,7 +249,16 @@ namespace EveImSync
                     {
                         if (n.ContentHash == note.ContentHash)
                         {
-                            n.Tags.Add(folder);
+                            if (folder.IndexOf('/') >= 0)
+                            {
+                                n.Tags.Add(folder.Substring(folder.IndexOf('/') + 1));
+                            }
+                            else
+                            {
+                                n.Tags.Add(folder);
+                            }
+
+                            n.IMAPMessages.Add(note.IMAPMessages[0]);
                             toAdd = false;
                             break;
                         }
@@ -289,7 +306,7 @@ namespace EveImSync
                             if (n.Tags.Find(findTag => { return findTag == tag; }) == null)
                             {
                                 // tag does not exist in the email note
-                                n.Tags.Add(tag);
+                                n.NewTags.Add(tag);
                                 n.Action = NoteAction.AdjustTagsOnIMAP;
                             }
                         }
@@ -299,7 +316,7 @@ namespace EveImSync
                             if (noteInEvernote.Tags.Find(findTag => { return findTag == tag; }) == null)
                             {
                                 // tag does not exist in the evernote note
-                                n.Tags.Remove(tag);
+                                n.ObsoleteTags.Add(tag);
                                 n.Action = NoteAction.AdjustTagsOnIMAP;
                             }
                         }
@@ -317,6 +334,40 @@ namespace EveImSync
             }
         }
 
+        private void AdjustIMAPTags(string folder, List<Note> notesIMAP)
+        {
+            foreach (Note note in notesIMAP)
+            {
+                if (note.Action == NoteAction.AdjustTagsOnIMAP)
+                {
+                    AddInfoLine(string.Format("adjusting tags for email\"{0}\"", note.Title));
+
+                    foreach (string tag in note.NewTags)
+                    {
+                        string tagfolder = folder + "/" + tag;
+                        IFolder tagFolder = GetOrCreateFolderByPath(tagfolder);
+
+                        client.RequestManager.SubmitAndWait(new CopyMessageRequest(note.IMAPMessages[0], tagFolder, null), true);
+                        client.RequestManager.SubmitAndWait(new MessageListRequest(tagFolder, null), true);
+                    }
+
+                    foreach (IMessage msg in note.IMAPMessages)
+                    {
+                        string tag = msg.Folder.FullPath;
+                        if (tag.IndexOf('/') >= 0)
+                        {
+                            tag = tag.Substring(tag.IndexOf('/') + 1);
+                        }
+
+                        if (note.ObsoleteTags.Find(findTag => { return findTag == tag; }) != null)
+                        {
+                            client.RequestManager.SubmitAndWait(new DeleteMessageRequest(msg, null), true);
+                        }
+                    }
+                }
+            }
+        }
+
         private void DownloadAndImportMailsToEvernote(List<Note> notesIMAP, string notebook)
         {
             while (notesIMAP.Count > 0)
@@ -324,7 +375,7 @@ namespace EveImSync
                 Note n = notesIMAP[0];
                 if (n.Action == NoteAction.ImportToEvernote)
                 {
-                    IMessage msg = client.MailboxManager.GetMessageByUID(n.IMAPMessageUID, n.IMAPFolder.ID);
+                    IMessage msg = n.IMAPMessages[0];
                     AddInfoLine(string.Format("getting email\"{0}\"", msg.Subject));
 
                     FullMessageRequest fmr = new FullMessageRequest(client, msg);
@@ -383,7 +434,7 @@ namespace EveImSync
                         List<Note> sameTitleNotes = notesIMAP.FindAll(delegate(Note findNote) { return findNote.Title == n.Title; });
                         foreach (Note same in sameTitleNotes)
                         {
-                            IMessage m = client.MailboxManager.GetMessageByUID(same.IMAPMessageUID, same.IMAPFolder.ID);
+                            IMessage m = same.IMAPMessages[0];
                             client.RequestManager.SubmitAndWait(new MessageFlagRequest(m, null), false);
                             string hash = null;
                             List<string> flags = m.GetCustomFlags();
@@ -404,6 +455,7 @@ namespace EveImSync
                                 if (n != same)
                                 {
                                     n.Tags.Add(m.Folder.FullPath);
+                                    n.IMAPMessages.Add(m);
                                     notesIMAP.Remove(same);
                                 }
                             }

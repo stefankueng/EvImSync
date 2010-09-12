@@ -28,6 +28,18 @@ namespace EveImSync
 {
     class Note
     {
+        public Note()
+        {
+            Title = string.Empty;
+            ContentHash = string.Empty;
+            Tags = new List<string>();
+            Attachments = new List<Attachment>();
+            IMAPMessages = new List<IMessage>();
+            NewTags = new List<string>();
+            ObsoleteTags = new List<string>();
+            Action = NoteAction.Nothing;
+        }
+
         public void SetHtmlContent(string html)
         {
             StringWriter stream = new StringWriter();
@@ -166,7 +178,7 @@ namespace EveImSync
             at.ContentType = contentType;
             at.FileName = contentFileName;
             at.Hash = hashHex;
-            attachements.Add(at);
+            Attachments.Add(at);
         }
 
         public void SaveEvernoteExportData(string path)
@@ -197,7 +209,7 @@ namespace EveImSync
             contentNode.InnerXml = Content;
             parentNode.AppendChild(contentNode);
 
-            foreach (string tag in tags)
+            foreach (string tag in Tags)
             {
                 XmlElement tagNode = xmlDoc.CreateElement("tag");
                 XmlText tagText = xmlDoc.CreateTextNode(tag);
@@ -205,7 +217,7 @@ namespace EveImSync
                 parentNode.AppendChild(tagNode);
             }
 
-            foreach (Attachment at in attachements)
+            foreach (Attachment at in Attachments)
             {
                 XmlElement resourceNode = xmlDoc.CreateElement("resource");
                 resourceNode.InnerXml = at.Base64Data;
@@ -224,19 +236,6 @@ namespace EveImSync
             xmlDoc.Save(path);
         }
 
-        public string Title
-        {
-            get
-            {
-                return title;
-            }
-
-            set
-            {
-                title = value;
-            }
-        }
-
         public string Content
         {
             get
@@ -249,61 +248,20 @@ namespace EveImSync
                 content = value.Replace("\r", string.Empty);
                 byte[] hash = new MD5CryptoServiceProvider().ComputeHash(System.Text.Encoding.UTF8.GetBytes(content));
                 string hashHex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
-                contenthash = hashHex;
+                ContentHash = hashHex;
             }
         }
 
-        public string ContentHash
-        {
-            get
-            {
-                return contenthash;
-            }
-
-            set
-            {
-                contenthash = value;
-            }
-        }
-
-        public List<string> Tags
-        {
-            get
-            {
-                return tags;
-            }
-
-            set
-            {
-                tags = value;
-            }
-        }
-
-        public List<Attachment> Attachments
-        {
-            get
-            {
-                return attachements;
-            }
-
-            set
-            {
-                attachements = value;
-            }
-        }
-
+        public string Title { get; set; }
+        public string ContentHash { get; set; }
+        public List<string> Tags { get; set; }
+        public List<Attachment> Attachments { get; set; }
         public NoteAction Action { get; set; }
-
-        public IFolder IMAPFolder { get; set; }
-
-        public int IMAPMessageUID { get; set; }
-
+        public List<IMessage> IMAPMessages { get; set; }
         public DateTime Date { get; set; }
+        public List<string> NewTags { get; set; }
+        public List<string> ObsoleteTags { get; set; }
 
-        private string title;
         private string content;
-        private string contenthash = string.Empty;
-        private List<string> tags = new List<string>();
-        private List<Attachment> attachements = new List<Attachment>();
     }
 }

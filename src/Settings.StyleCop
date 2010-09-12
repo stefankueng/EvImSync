@@ -77,6 +77,11 @@
             <BooleanProperty Name="Enabled">False</BooleanProperty>
           </RuleSettings>
         </Rule>
+        <Rule Name="ElementReturnValueMustBeDocumented">
+          <RuleSettings>
+            <BooleanProperty Name="Enabled">False</BooleanProperty>
+          </RuleSettings>
+        </Rule>
       </Rules>
       <AnalyzerSettings />
     </Analyzer>

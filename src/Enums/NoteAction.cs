@@ -18,6 +18,7 @@ namespace EveImSync.Enums
 {
     public enum NoteAction
     {
+        Nothing,
         UploadToIMAP,
         ImportToEvernote,
         DeleteOnIMAP,

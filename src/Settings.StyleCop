@@ -135,5 +135,15 @@
       </Rules>
       <AnalyzerSettings />
     </Analyzer>
+    <Analyzer AnalyzerId="Microsoft.StyleCop.CSharp.LayoutRules">
+      <Rules>
+        <Rule Name="ElementsMustBeSeparatedByBlankLine">
+          <RuleSettings>
+            <BooleanProperty Name="Enabled">False</BooleanProperty>
+          </RuleSettings>
+        </Rule>
+      </Rules>
+      <AnalyzerSettings />
+    </Analyzer>
   </Analyzers>
 </StyleCopSettings>

@@ -33,9 +33,23 @@ namespace EveImSync
         {
             Configuration c = new Configuration();
             XmlSerializer xs = new XmlSerializer(typeof(Configuration));
-            using (FileStream fs = File.OpenRead(@"D:\Development\EvImSync\config.xml"))
+            bool portable = File.Exists(Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath) + "portable");
+            string configPath = portable
+                ? Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath)
+                : Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData), "EvImSync");
+            configPath = Path.Combine(configPath, "EvImSync.xml");
+            if (File.Exists(configPath))
             {
-                c = (Configuration)xs.Deserialize(fs);
+                using (FileStream fs = File.OpenRead(configPath))
+                {
+                    c = (Configuration)xs.Deserialize(fs);
+                }
+
+                SimpleAES simpleAES = new SimpleAES();
+                foreach (SyncPairSettings sps in c.SyncPairs)
+                {
+                    sps.IMAPPassword = simpleAES.DecryptString(sps.IMAPPassword);
+                }
             }
 
             return c;
@@ -43,10 +57,32 @@ namespace EveImSync
 
         public void Save()
         {
+            SimpleAES simpleAES = new SimpleAES();
+            foreach (SyncPairSettings sps in SyncPairs)
+            {
+                sps.IMAPPassword = simpleAES.EncryptToString(sps.IMAPPassword);
+            }
+
+            bool portable = File.Exists(Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath) + "portable");
+            string configPath = portable 
+                ? Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath) 
+                : Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData), "EvImSync");
+            configPath = Path.Combine(configPath, "EvImSync.xml");
+
             XmlSerializer xs = new XmlSerializer(typeof(Configuration));
-            using (FileStream fs = File.Create(@"D:\Development\EvImSync\config.xml"))
+            if (!Directory.Exists(Path.GetDirectoryName(configPath)))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(configPath));
+            }
+
+            using (FileStream fs = File.Create(configPath))
             {
                 xs.Serialize(fs, this);
+            }
+
+            foreach (SyncPairSettings sps in SyncPairs)
+            {
+                sps.IMAPPassword = simpleAES.DecryptString(sps.IMAPPassword);
             }
         }
 

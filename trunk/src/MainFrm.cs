@@ -39,12 +39,10 @@ namespace EveImSync
     public partial class MainFrm : Form
     {
         private IMAPAsyncClient client;
-
         private delegate void StringDelegate(string foo);
-
         private string enscriptpath;
-
         private SynchronizationContext synchronizationContext;
+        private bool cancelled = false;
 
         public MainFrm()
         {
@@ -75,9 +73,16 @@ namespace EveImSync
 
         private void Startsync_Click(object sender, EventArgs e)
         {
-            startsync.Enabled = false;
-            MethodInvoker syncDelegate = new MethodInvoker(SyncEvernoteWithIMAP);
-            syncDelegate.BeginInvoke(null, null);
+            if (startsync.Text == "Start Sync")
+            {
+                startsync.Text = "Cancel";
+                MethodInvoker syncDelegate = new MethodInvoker(SyncEvernoteWithIMAP);
+                syncDelegate.BeginInvoke(null, null);
+            }
+            else
+            {
+                cancelled = true;
+            }
         }
 
         private void SyncEvernoteWithIMAP()
@@ -86,6 +91,11 @@ namespace EveImSync
             enscriptpath = config.ENScriptPath;
             foreach (SyncPairSettings syncPair in config.SyncPairs)
             {
+                if (cancelled)
+                {
+                    break;
+                }
+
                 AddInfoLine("extracting notes");
                 string exportFile = ExtractNotes(syncPair.EvernoteNotebook);
                 if (exportFile != null && exportFile != string.Empty)
@@ -105,14 +115,24 @@ namespace EveImSync
                 }
             }
 
+            if (cancelled)
+            {
+                AddInfoLine("Sync cancelled by user!");
+            }
+
             synchronizationContext.Send(new SendOrPostCallback(delegate(object state)
             {
-                startsync.Enabled = true;
+                startsync.Text = "Start Sync";
             }), null);
         }
 
         private string ExtractNotes(string notebook)
         {
+            if (cancelled)
+            {
+                return null;
+            }
+
             ENScriptWrapper enscript = new ENScriptWrapper();
             enscript.ENScriptPath = enscriptpath;
 
@@ -129,6 +149,11 @@ namespace EveImSync
         private List<Note> ParseNotes(string exportFile)
         {
             List<Note> noteList = new List<Note>();
+            if (cancelled)
+            {
+                return noteList;
+            }
+
             XmlTextReader xtrInput;
             XmlDocument xmlDocItem;
 
@@ -138,6 +163,11 @@ namespace EveImSync
             {
                 while ((xtrInput.NodeType == XmlNodeType.Element) && (xtrInput.Name.ToLower() == "note"))
                 {
+                    if (cancelled)
+                    {
+                        break;
+                    }
+
                     xmlDocItem = new XmlDocument();
                     xmlDocItem.LoadXml(xtrInput.ReadOuterXml());
                     XmlNode node = xmlDocItem.FirstChild;
@@ -192,10 +222,18 @@ namespace EveImSync
         private List<Note> GetMailList(string server, string username, string password, string notefolder)
         {
             List<Note> noteList = new List<Note>();
+            if (cancelled)
+            {
+                return noteList;
+            }
 
             IMAPConfig config = new IMAPConfig(server, username, password, true, true, "/");
             client = new IMAPAsyncClient(config, 2);
-            client.Start();
+            if (client.Start() == false)
+            {
+                cancelled = true;
+                AddInfoLine("Connection to the IMAP server failed.");
+            }
 
             GetMailsListRecursive(notefolder, ref noteList);
 
@@ -204,6 +242,11 @@ namespace EveImSync
 
         private void GetMailsListRecursive(string folder, ref List<Note> noteList)
         {
+            if (cancelled)
+            {
+                return;
+            }
+
             client.RequestManager.SubmitAndWait(new FolderTreeRequest(folder, null), false);
             IFolder currentFolder = client.MailboxManager.GetFolderByPath(folder);
             client.RequestManager.SubmitAndWait(new MessageListRequest(currentFolder, null), false);
@@ -211,6 +254,11 @@ namespace EveImSync
             IMessage[] msgList = client.MailboxManager.GetMessagesByFolder(currentFolder);
             foreach (IMessage msg in msgList)
             {
+                if (cancelled)
+                {
+                    break;
+                }
+
                 client.RequestManager.SubmitAndWait(new MessageFlagRequest(msg, delegate
                 {
                     client.RequestManager.SubmitAndWait(new MessageHeaderRequest(msg, null), false);
@@ -274,6 +322,11 @@ namespace EveImSync
             IFolder[] subFolders = client.MailboxManager.GetSubFolders(currentFolder);
             foreach (IFolder f in subFolders)
             {
+                if (cancelled)
+                {
+                    break;
+                }
+
                 GetMailsListRecursive(f.FullPath, ref noteList);
             }
         }
@@ -282,6 +335,11 @@ namespace EveImSync
         {
             foreach (Note n in notesIMAP)
             {
+                if (cancelled)
+                {
+                    break;
+                }
+
                 if (n.ContentHash == string.Empty)
                 {
                     // Notes with no hashs haven't been downloaded and processed yet, so they're new
@@ -340,10 +398,20 @@ namespace EveImSync
             {
                 if (note.Action == NoteAction.AdjustTagsOnIMAP)
                 {
+                    if (cancelled)
+                    {
+                        break;
+                    }
+
                     AddInfoLine(string.Format("adjusting tags for email\"{0}\"", note.Title));
 
                     foreach (string tag in note.NewTags)
                     {
+                        if (cancelled)
+                        {
+                            break;
+                        }
+
                         string tagfolder = folder + "/" + tag;
                         IFolder tagFolder = GetOrCreateFolderByPath(tagfolder);
 
@@ -353,6 +421,11 @@ namespace EveImSync
 
                     foreach (IMessage msg in note.IMAPMessages)
                     {
+                        if (cancelled)
+                        {
+                            break;
+                        }
+
                         string tag = msg.Folder.FullPath;
                         if (tag.IndexOf('/') >= 0)
                         {
@@ -372,6 +445,11 @@ namespace EveImSync
         {
             while (notesIMAP.Count > 0)
             {
+                if (cancelled)
+                {
+                    break;
+                }
+
                 Note n = notesIMAP[0];
                 if (n.Action == NoteAction.ImportToEvernote)
                 {
@@ -497,6 +575,11 @@ namespace EveImSync
             AddInfoLine(string.Format("uploading {0} notes to IMAP", uploadcount));
             foreach (Note n in notesEvernote)
             {
+                if (cancelled)
+                {
+                    break;
+                }
+
                 if (n.Action == NoteAction.UploadToIMAP)
                 {
                     AddInfoLine(string.Format("uploading note \"{0}\"", n.Title));
@@ -509,6 +592,11 @@ namespace EveImSync
                     {
                         while ((xtrInput.NodeType == XmlNodeType.Element) && (xtrInput.Name.ToLower() == "note"))
                         {
+                            if (cancelled)
+                            {
+                                break;
+                            }
+
                             xmlDocItem = new XmlDocument();
                             xmlDocItem.LoadXml(xtrInput.ReadOuterXml());
                             XmlNode node = xmlDocItem.FirstChild;
@@ -657,6 +745,11 @@ namespace EveImSync
                         // copy the email to all tag folders
                         for (int i = 1; i < n.Tags.Count; ++i)
                         {
+                            if (cancelled)
+                            {
+                                break;
+                            }
+
                             tagfolder = folder + "/" + n.Tags[i];
                             IFolder tagFolder = GetOrCreateFolderByPath(tagfolder);
 

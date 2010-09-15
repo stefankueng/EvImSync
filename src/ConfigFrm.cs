@@ -78,6 +78,18 @@ namespace EveImSync
 
         private void ApplyPairButton_Click(object sender, EventArgs e)
         {
+            if (evernoteNotebook.Text.Length == 0)
+            {
+                errorProvider.SetError(evernoteNotebook, "Please enter a valid notebook name");
+                return;
+            }
+
+            if ((imapNotebook.Text.Length == 0) || (imapNotebook.Text == "/"))
+            {
+                errorProvider.SetError(imapNotebook, "Please set a subfolder for syncing the notes");
+                return;
+            }
+
             SyncPairSettings sps = config.SyncPairs.Find(findPair => { return findPair.EvernoteNotebook == imapNotebook.Text; });
             if (sps == null)
             {

@@ -45,6 +45,7 @@ namespace EveImSync
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.browseForEnscript = new System.Windows.Forms.Button();
             this.enscriptPath = new System.Windows.Forms.TextBox();
@@ -67,9 +68,11 @@ namespace EveImSync
             this.label2 = new System.Windows.Forms.Label();
             this.pairList = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.errorProvider = new System.Windows.Forms.ErrorProvider(this.components);
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.errorProvider)).BeginInit();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -191,7 +194,7 @@ namespace EveImSync
             // applyPairButton
             // 
             this.applyPairButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.applyPairButton.Location = new System.Drawing.Point(197, 121);
+            this.applyPairButton.Location = new System.Drawing.Point(180, 121);
             this.applyPairButton.Name = "applyPairButton";
             this.applyPairButton.Size = new System.Drawing.Size(75, 23);
             this.applyPairButton.TabIndex = 8;
@@ -232,7 +235,7 @@ namespace EveImSync
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.imapNotebook.Location = new System.Drawing.Point(73, 95);
             this.imapNotebook.Name = "imapNotebook";
-            this.imapNotebook.Size = new System.Drawing.Size(199, 20);
+            this.imapNotebook.Size = new System.Drawing.Size(182, 20);
             this.imapNotebook.TabIndex = 7;
             // 
             // imapPassword
@@ -242,7 +245,7 @@ namespace EveImSync
             this.imapPassword.Location = new System.Drawing.Point(73, 69);
             this.imapPassword.Name = "imapPassword";
             this.imapPassword.PasswordChar = '*';
-            this.imapPassword.Size = new System.Drawing.Size(199, 20);
+            this.imapPassword.Size = new System.Drawing.Size(182, 20);
             this.imapPassword.TabIndex = 5;
             // 
             // imapUsername
@@ -251,7 +254,7 @@ namespace EveImSync
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.imapUsername.Location = new System.Drawing.Point(73, 43);
             this.imapUsername.Name = "imapUsername";
-            this.imapUsername.Size = new System.Drawing.Size(199, 20);
+            this.imapUsername.Size = new System.Drawing.Size(182, 20);
             this.imapUsername.TabIndex = 3;
             // 
             // imapServer
@@ -260,7 +263,7 @@ namespace EveImSync
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.imapServer.Location = new System.Drawing.Point(73, 17);
             this.imapServer.Name = "imapServer";
-            this.imapServer.Size = new System.Drawing.Size(199, 20);
+            this.imapServer.Size = new System.Drawing.Size(182, 20);
             this.imapServer.TabIndex = 1;
             // 
             // label3
@@ -311,6 +314,10 @@ namespace EveImSync
             // 
             this.columnHeader1.Text = "Name";
             // 
+            // errorProvider
+            // 
+            this.errorProvider.ContainerControl = this;
+            // 
             // ConfigFrm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -328,6 +335,7 @@ namespace EveImSync
             this.groupBox2.PerformLayout();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.errorProvider)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -356,5 +364,6 @@ namespace EveImSync
         private System.Windows.Forms.Button applyPairButton;
         private System.Windows.Forms.Button deletePairButton;
         private System.Windows.Forms.ColumnHeader columnHeader1;
+        private System.Windows.Forms.ErrorProvider errorProvider;
     }
 }

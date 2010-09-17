@@ -36,7 +36,7 @@ namespace InterIMAP.Synchronous
     /// The low-level IMAP management class
     /// </summary>
     [Serializable]
-    [Obsolete("The Synchronous code base is no longer supported.", true)]
+    //[Obsolete("The Synchronous code base is no longer supported.", true)]
     public class IMAP : IMAPBase
     {
         #region Private Fields
@@ -47,7 +47,7 @@ namespace InterIMAP.Synchronous
         int m_nTotalMessages = 0;
         int m_nRecentMessages = 0;
         int m_nFirstUnSeenMsgUID = -1;
-        int m_currentConMsgCount = 0;
+        //int m_currentConMsgCount = 0;
         internal string m_selectedFolder = String.Empty;
         internal string m_examinedFolder = String.Empty;
         private IMAPFolder _selectedFolder;

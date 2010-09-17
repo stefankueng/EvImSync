@@ -38,7 +38,7 @@ namespace InterIMAP.Synchronous
     /// Main class for the client wrapper
     /// </summary>
     [Serializable]
-    [Obsolete("The Synchronous code base is no longer supported.")]
+    //[Obsolete("The Synchronous code base is no longer supported.")]
     public class IMAPClient
     {
         #region Private Fields

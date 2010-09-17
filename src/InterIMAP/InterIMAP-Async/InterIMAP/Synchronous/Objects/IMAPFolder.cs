@@ -363,7 +363,7 @@ namespace InterIMAP.Synchronous
 
             msg.Uid = uid;
 
-            string cmd = "APPEND \"{0}\" (\\Seen) {0}\r\n";
+            //string cmd = "APPEND \"{0}\" (\\Seen) {0}\r\n";
             ArrayList result = new ArrayList();
             _client._imap.SendRaw("APPEND \""+FolderPath+"\" (\\Seen) {"+uid+"}\r\n", true);
             //if (!result[0].ToString().StartsWith("+"))

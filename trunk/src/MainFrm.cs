@@ -66,8 +66,9 @@ namespace EveImSync
         {
             synchronizationContext.Send(new SendOrPostCallback(delegate(object state)
                                                 {
-                                                    this.progressInfoList.Items.Add(infoLine);
+                                                    ListViewItem item = this.progressInfoList.Items.Add(infoLine);
                                                     this.progressInfoList.Update();
+                                                    this.progressInfoList.EnsureVisible(item.Index);
                                                 }), null);
         }
 

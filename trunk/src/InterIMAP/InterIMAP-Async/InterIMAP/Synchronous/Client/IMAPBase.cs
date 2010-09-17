@@ -37,7 +37,7 @@ namespace InterIMAP.Synchronous
     /// Provides the basic connection management and server communication methods
     /// </summary>
     [Serializable]
-    [Obsolete("The Synchronous code base is no longer supported.")]
+    //[Obsolete("The Synchronous code base is no longer supported.")]
     public class IMAPBase
     {
         #region Protected Constants

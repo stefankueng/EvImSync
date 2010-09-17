@@ -53,7 +53,7 @@ namespace InterIMAP.Asynchronous.Client
         private ushort _serverPort;
         private string _username;
         private string _password;
-        private bool _isConnected;
+        //private bool _isConnected;
         private int _commandCount;
         //private TcpClient _tcpClient;
         private NetworkStream _stdStream;
@@ -352,7 +352,7 @@ namespace InterIMAP.Asynchronous.Client
             {
                 line = UseSSL ? _sslReader.ReadLine() : _stdReader.ReadLine();
             }
-            catch (IOException ioe)
+            catch (IOException)
             {
 
             }
@@ -460,7 +460,7 @@ namespace InterIMAP.Asynchronous.Client
                         Log(LogType.ERROR, e.Message);
                         //_tcpClient.Close();
                         _socket.Close();
-                        _isConnected = false;
+                        //_isConnected = false;
                         return IMAPResponse.IMAP_FAILURE_RESPONSE;
                     }
 
@@ -477,7 +477,7 @@ namespace InterIMAP.Asynchronous.Client
                 if (result.Contains("OK"))
                 {
                     Log(LogType.IMAP, result);
-                    _isConnected = true;
+                    //_isConnected = true;
                     Capability();
                 }
                 else
@@ -490,7 +490,7 @@ namespace InterIMAP.Asynchronous.Client
             {
                 //Console.WriteLine(e.Message);
                 Log(LogType.ERROR, e.Message);
-                _isConnected = false;
+                //_isConnected = false;
             }
 
             return response;
@@ -513,7 +513,7 @@ namespace InterIMAP.Asynchronous.Client
                 if (_sslReader != null)
                     _sslReader.Close();
 
-                _isConnected = false;
+                //_isConnected = false;
 
                 Log(LogType.INFO, "Disconnected");
             }

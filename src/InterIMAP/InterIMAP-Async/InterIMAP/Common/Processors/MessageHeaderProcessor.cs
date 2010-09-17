@@ -94,7 +94,7 @@ namespace InterIMAP.Common.Processors
                                 pi.SetValue(_msg, date, null);
 
                             }
-                            catch (Exception e) {}
+                            catch (Exception) {}
                         }
                         
                     }

@@ -48,8 +48,8 @@ namespace InterIMAP.Asynchronous.Client
     {
         #region Private Fields
         //private static IMAPMailboxManager _instance;
-        private MailboxType _boxType;                
-        private bool _physMailboxLoaded;
+        private MailboxType _boxType;
+        //private bool _physMailboxLoaded;
         private readonly IMAPAsyncClient _client;
         private string _mailboxFile;
         #endregion
@@ -62,7 +62,7 @@ namespace InterIMAP.Asynchronous.Client
         public IMAPMailboxManager(IMAPAsyncClient client)
         {
             _boxType = MailboxType.Virtual;                        
-            _physMailboxLoaded = false;
+            //_physMailboxLoaded = false;
             _client = client;
             _client.DataManager.New();
         }
@@ -104,7 +104,7 @@ namespace InterIMAP.Asynchronous.Client
         {            
             _boxType = MailboxType.Physical;
             _client.DataManager.Db.ReadXml(mbxFile);
-            _physMailboxLoaded = true;
+            //_physMailboxLoaded = true;
         }
 
         /// <summary>
@@ -455,7 +455,7 @@ namespace InterIMAP.Asynchronous.Client
             mmsg.BodyEncoding = String.IsNullOrEmpty(m.ContentTransferEncoding) ? System.Text.Encoding.Unicode : System.Text.Encoding.GetEncoding(m.ContentTransferEncoding);
             mmsg.From = new MailAddress(m.FromContacts[0].EMail,m.FromContacts[0].FullName);
             mmsg.IsBodyHtml = m.HTMLData != null;
-            mmsg.ReplyTo = String.IsNullOrEmpty(m.InReplyTo) ? new MailAddress(m.FromContacts[0].EMail) : new MailAddress(m.InReplyTo);
+            mmsg.ReplyToList.Add(String.IsNullOrEmpty(m.InReplyTo) ? new MailAddress(m.FromContacts[0].EMail) : new MailAddress(m.InReplyTo));
             mmsg.Subject = m.Subject;
             foreach (IContact c in m.ToContacts)
                 mmsg.To.Add(new MailAddress(c.EMail, c.FullName));

@@ -406,6 +406,13 @@ namespace EveImSync
                     if (!existsInEvernote)
                     {
                         n.Action = NoteAction.DeleteOnIMAP;
+                        bool force = false;
+                        synchronizationContext.Send(new SendOrPostCallback(delegate(object state)
+                        {
+                            force = this.forceDownload.Checked;
+                        }), null);
+                        if (force)
+                            n.Action = NoteAction.ImportToEvernote;
                     }
                     else
                     {

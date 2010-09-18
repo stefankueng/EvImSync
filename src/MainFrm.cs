@@ -296,6 +296,7 @@ namespace EveImSync
                 return;
             }
 
+            SetInfo(null, string.Format("scanning folder \"{0}\"", folder), 0, 0);
             client.RequestManager.SubmitAndWait(new FolderTreeRequest(folder, null), false);
             IFolder currentFolder = client.MailboxManager.GetFolderByPath(folder);
             client.RequestManager.SubmitAndWait(new MessageListRequest(currentFolder, null), false);

@@ -324,12 +324,21 @@ namespace EveImSync
             client.RequestManager.SubmitAndWait(new MessageListRequest(currentFolder, null), false);
 
             IMessage[] msgList = client.MailboxManager.GetMessagesByFolder(currentFolder);
+            int msgCount = 0;
+            int msgCounter = 0;
+            foreach (IMessage cm in msgList)
+            {
+                msgCount++;
+            }
+
             foreach (IMessage msg in msgList)
             {
                 if (cancelled)
                 {
                     break;
                 }
+
+                SetInfo(null, string.Format("scanning folder \"{0}\", message {1} of {2}", folder, ++msgCounter, msgCount), 0, 1);
 
                 client.RequestManager.SubmitAndWait(new MessageFlagRequest(msg, delegate
                 {

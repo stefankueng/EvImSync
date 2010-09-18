@@ -141,9 +141,11 @@ namespace EveImSync
         {
             byte[] hash = new MD5CryptoServiceProvider().ComputeHash(binaryData);
             string hashHex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
-            string cid = contentId.TrimStart('<', '"');
+            string cid = string.Empty;
+            if (contentId != null)
+                cid = contentId.TrimStart('<', '"');
             cid = cid.TrimEnd('>', '"');
-            if (content.Contains(cid))
+            if ((cid.Length > 0) && content.Contains(cid))
             {
                 // convert the reference tag to a media tag
                 int idIndex = content.IndexOf(cid);

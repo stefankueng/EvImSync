@@ -162,6 +162,8 @@ namespace EveImSync
                     SetInfo("Uploading emails", "", 0, 0);
                     UploadNotesAsMails(syncPair.IMAPNotesFolder, notesEvernote, exportFile);
                     syncPair.LastSyncTime = DateTime.Now;
+                    if (client != null)
+                        client.Stop();
                 }
             }
 

@@ -88,7 +88,7 @@ namespace InterIMAP.Asynchronous.Client
         /// </summary>
         public bool IsAlive
         {
-            get { return (_thread.IsAlive && _conn.IsConnected && !_failed); }
+            get { return (_thread.IsAlive && _conn.IsConnected && !_failed && _loggedIn); }
         }
 
         /// <summary>

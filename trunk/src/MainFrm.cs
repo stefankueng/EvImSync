@@ -169,15 +169,19 @@ namespace EveImSync
 
             if (!cancelled)
             {
-                synchronizationContext.Send(new SendOrPostCallback(delegate(object state)
-                {
-                    startsync.Text = "Start Sync";
-                    this.progressIndicator.Minimum = 0;
-                    this.progressIndicator.Maximum = 100000;
-                    this.progressIndicator.Value = 100000;
-                }), null);
+                config.Save();
             }
-            config.Save();
+            else
+            {
+                SetInfo(null, "Operation cancelled", 0, 0);
+            }
+            synchronizationContext.Send(new SendOrPostCallback(delegate(object state)
+            {
+                startsync.Text = "Start Sync";
+                this.progressIndicator.Minimum = 0;
+                this.progressIndicator.Maximum = 100000;
+                this.progressIndicator.Value = 100000;
+            }), null);
         }
 
         private string ExtractNotes(string notebook)

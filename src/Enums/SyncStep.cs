@@ -7,6 +7,7 @@ namespace EveImSync.Enums
 {
     public enum SyncStep
     {
+        Start,
         ExtractNotes,
         ParseNotes,
         GettingImapList,

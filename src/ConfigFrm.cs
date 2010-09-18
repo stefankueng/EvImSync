@@ -98,6 +98,7 @@ namespace EveImSync
             else
             {
                 config.SyncPairs.Remove(sps);
+                sps.LastSyncTime = new DateTime(0);
             }
 
             sps.IMAPServer = imapServer.Text;

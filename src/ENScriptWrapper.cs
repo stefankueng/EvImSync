@@ -107,7 +107,7 @@ namespace EveImSync
                 StreamReader outputReader = process.StandardOutput;
                 StreamReader errorReader = process.StandardError;
                 process.WaitForExit();
-                ret = File.Exists(exportFile);
+                ret = (process.ExitCode == 0) && File.Exists(exportFile);
             }
 
             return ret;

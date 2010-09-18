@@ -272,6 +272,7 @@
       <DependentUpon>Mailbox.xsd</DependentUpon>
     </None>
     <None Include="InterIMAP\InterIMAP-Async\InterIMAP\Diagram\LibraryDagram.cd" />
+    <None Include="Properties\AssemblyInfo.tmpl" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

@@ -43,7 +43,7 @@ namespace EveImSync
         private string enscriptpath;
         private SynchronizationContext synchronizationContext;
         private bool cancelled = false;
-        private SyncStep syncStep = SyncStep.ExtractNotes;
+        private SyncStep syncStep = SyncStep.Start;
 
         public MainFrm()
         {
@@ -144,7 +144,7 @@ namespace EveImSync
                     this.infoText0.Text = string.Format("Syncing notebook {0}", syncPair.EvernoteNotebook);
                 }), null);
 
-                syncStep = SyncStep.ExtractNotes;
+                syncStep = SyncStep.Start;
                 SetInfo("Extracting notes from Evernote", "", 0, 0);
                 string exportFile = ExtractNotes(syncPair.EvernoteNotebook);
                 if (exportFile != null && exportFile != string.Empty)
@@ -209,62 +209,69 @@ namespace EveImSync
 
             xtrInput = new XmlTextReader(exportFile);
 
-            while (xtrInput.Read())
+            try
             {
-                while ((xtrInput.NodeType == XmlNodeType.Element) && (xtrInput.Name.ToLower() == "note"))
+                while (xtrInput.Read())
                 {
-                    if (cancelled)
+                    while ((xtrInput.NodeType == XmlNodeType.Element) && (xtrInput.Name.ToLower() == "note"))
                     {
-                        break;
-                    }
-
-                    xmlDocItem = new XmlDocument();
-                    xmlDocItem.LoadXml(xtrInput.ReadOuterXml());
-                    XmlNode node = xmlDocItem.FirstChild;
-
-                    // node is <note> element
-                    // node.FirstChild.InnerText is <title>
-                    node = node.FirstChild;
-
-                    Note note = new Note();
-                    note.Title = node.InnerText;
-                    node = node.NextSibling;
-                    note.Content = node.InnerXml;
-                    XmlNodeList tagslist = xmlDocItem.GetElementsByTagName("tag");
-                    foreach (XmlNode n in tagslist)
-                    {
-                        note.Tags.Add(n.InnerText);
-                    }
-
-                    XmlNodeList datelist = xmlDocItem.GetElementsByTagName("created");
-                    foreach (XmlNode n in datelist)
-                    {
-                        try
+                        if (cancelled)
                         {
-                            note.Date = DateTime.ParseExact(n.InnerText, "yyyyMMddTHHmmssZ", null);
+                            break;
                         }
-                        catch (System.FormatException)
-                        {
-                        }
-                    }
 
-                    XmlNodeList datelist2 = xmlDocItem.GetElementsByTagName("updated");
-                    foreach (XmlNode n in datelist2)
-                    {
-                        try
-                        {
-                            note.Date = DateTime.ParseExact(n.InnerText, "yyyyMMddTHHmmssZ", null);
-                        }
-                        catch (System.FormatException)
-                        {
-                        }
-                    }
+                        xmlDocItem = new XmlDocument();
+                        xmlDocItem.LoadXml(xtrInput.ReadOuterXml());
+                        XmlNode node = xmlDocItem.FirstChild;
 
-                    noteList.Add(note);
+                        // node is <note> element
+                        // node.FirstChild.InnerText is <title>
+                        node = node.FirstChild;
+
+                        Note note = new Note();
+                        note.Title = node.InnerText;
+                        node = node.NextSibling;
+                        note.Content = node.InnerXml;
+                        XmlNodeList tagslist = xmlDocItem.GetElementsByTagName("tag");
+                        foreach (XmlNode n in tagslist)
+                        {
+                            note.Tags.Add(n.InnerText);
+                        }
+
+                        XmlNodeList datelist = xmlDocItem.GetElementsByTagName("created");
+                        foreach (XmlNode n in datelist)
+                        {
+                            try
+                            {
+                                note.Date = DateTime.ParseExact(n.InnerText, "yyyyMMddTHHmmssZ", null);
+                            }
+                            catch (System.FormatException)
+                            {
+                            }
+                        }
+
+                        XmlNodeList datelist2 = xmlDocItem.GetElementsByTagName("updated");
+                        foreach (XmlNode n in datelist2)
+                        {
+                            try
+                            {
+                                note.Date = DateTime.ParseExact(n.InnerText, "yyyyMMddTHHmmssZ", null);
+                            }
+                            catch (System.FormatException)
+                            {
+                            }
+                        }
+
+                        noteList.Add(note);
+                    }
                 }
-            }
 
-            xtrInput.Close();
+                xtrInput.Close();
+            }
+            catch (System.Xml.XmlException)
+            {
+                // happens if the notebook was empty or does not exist.
+            }
 
             return noteList;
         }
@@ -296,7 +303,7 @@ namespace EveImSync
                 return;
             }
 
-            SetInfo(null, string.Format("scanning folder \"{0}\"", folder), 0, 0);
+            SetInfo(null, string.Format("scanning folder \"{0}\"", folder), 0, 1);
             client.RequestManager.SubmitAndWait(new FolderTreeRequest(folder, null), false);
             IFolder currentFolder = client.MailboxManager.GetFolderByPath(folder);
             client.RequestManager.SubmitAndWait(new MessageListRequest(currentFolder, null), false);

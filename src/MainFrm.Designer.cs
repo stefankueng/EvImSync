@@ -54,6 +54,7 @@ namespace EveImSync
             this.infoText2 = new System.Windows.Forms.Label();
             this.progressIndicator = new System.Windows.Forms.ProgressBar();
             this.infoText0 = new System.Windows.Forms.Label();
+            this.forceDownload = new System.Windows.Forms.CheckBox();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -142,11 +143,22 @@ namespace EveImSync
             this.infoText0.TabIndex = 6;
             this.infoText0.Text = " ";
             // 
+            // forceDownload
+            // 
+            this.forceDownload.AutoSize = true;
+            this.forceDownload.Location = new System.Drawing.Point(12, 27);
+            this.forceDownload.Name = "forceDownload";
+            this.forceDownload.Size = new System.Drawing.Size(143, 17);
+            this.forceDownload.TabIndex = 7;
+            this.forceDownload.Text = "force download of emails";
+            this.forceDownload.UseVisualStyleBackColor = true;
+            // 
             // MainFrm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(521, 133);
+            this.Controls.Add(this.forceDownload);
             this.Controls.Add(this.infoText0);
             this.Controls.Add(this.progressIndicator);
             this.Controls.Add(this.infoText2);
@@ -174,6 +186,7 @@ namespace EveImSync
         private System.Windows.Forms.Label infoText2;
         private System.Windows.Forms.ProgressBar progressIndicator;
         private System.Windows.Forms.Label infoText0;
+        private System.Windows.Forms.CheckBox forceDownload;
     }
 }
 

@@ -123,10 +123,12 @@ namespace InterIMAP.Common.Requests
                     _client.RequestManager.SubmitAndWait(mhr, true);
                 }
             });
+            bool msgComplete = false;
+            // IMessage msg, TimeSpan totalTime
+            MessageComplete += delegate(IMessage msg, TimeSpan totalTime) { msgComplete = true; };
             _client.RequestManager.SubmitAndWait(mfr, false);
 
-            while (!_msg.ContentLoaded) { System.Threading.Thread.Sleep(10); }
-
+            while (!msgComplete) { System.Threading.Thread.Sleep(10); }
         }
 
         #endregion

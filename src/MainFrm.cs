@@ -311,6 +311,12 @@ namespace EveImSync
             SetInfo(null, string.Format("scanning folder \"{0}\"", folder), 0, 1);
             client.RequestManager.SubmitAndWait(new FolderTreeRequest(folder, null), false);
             IFolder currentFolder = client.MailboxManager.GetFolderByPath(folder);
+            if (currentFolder == null)
+            {
+                // folder does not exist
+                cancelled = true;
+                return;
+            }
             client.RequestManager.SubmitAndWait(new MessageListRequest(currentFolder, null), false);
 
             IMessage[] msgList = client.MailboxManager.GetMessagesByFolder(currentFolder);

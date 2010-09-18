@@ -56,21 +56,21 @@ namespace InterIMAP.Common.Processors
             }
             string sContentTransferEncoding = content.ContentTransferEncoding.ToUpper();
             string sContentCharset = content.Charset.ToUpper();
-            
-            bool isBinary = content.ContentTransferEncoding.ToUpper().Equals("BASE64");
+
+            bool isBinary = content.ContentTransferEncoding.ToUpper().Contains("BASE64");
             bool isHTML = content.ContentType.ToUpper().Contains("HTML");
             bool isQuotedPrintable = content.ContentType.ToUpper().Contains("QUOTED");
             StringBuilder sb = new StringBuilder();
-            
+
             foreach (string line in CmdResult.Results)
             {
                 if (Regex.IsMatch(line.ToUpper(), partFetchHeader)) continue;
                 if (Regex.IsMatch(line.ToUpper(), partFetchPreFooter)) continue;
-                if (Regex.IsMatch(line.ToUpper(), partFetchFooter)) 
+                if (Regex.IsMatch(line.ToUpper(), partFetchFooter))
                     continue;
 
                 if (!isBinary)
-                {                    
+                {
                     sb.AppendLine(line);
                 }
                 else
@@ -88,15 +88,20 @@ namespace InterIMAP.Common.Processors
                         {
                             sb.Append(line);
                         }
-                        
+
                     }
-                    
+
                 }
             }
 
             if (isBinary)
             {
-                if (ctType.Contains("TEXT") && (!ctDisposition.Contains("ATTACHMENT")) && sContentTransferEncoding.Contains("BASE64"))
+                if (isHTML && ((ctDisposition == null) || !ctDisposition.Contains("ATTACHMENT")) && sContentTransferEncoding.Contains("BASE64"))
+                {
+                    string preEncoded = sb.ToString().Trim().TrimEnd(')');
+                    content.HTMLData = base64Decode(preEncoded);
+                }
+                else if (ctType.Contains("TEXT") && ((ctDisposition == null) || !ctDisposition.Contains("ATTACHMENT")) && sContentTransferEncoding.Contains("BASE64"))
                 {
                     string preEncoded = sb.ToString().Trim().TrimEnd(')');
                     content.TextData = base64Decode(preEncoded);
@@ -145,7 +150,7 @@ namespace InterIMAP.Common.Processors
             MatchCollection matches = Regex.Matches(input, @"\=(?<num>[0-9A-Fa-f]{2})");
             foreach (Match match in matches)
             {
-                
+
                 int i = int.Parse(match.Groups["num"].Value, System.Globalization.NumberStyles.HexNumber);
                 char str = (char)i;
                 input = input.Replace(match.Groups[0].Value, str.ToString());
@@ -197,34 +202,34 @@ namespace InterIMAP.Common.Processors
 
         }
 
-/*
-        private string Decode(string input)
-        {
-            if (string.IsNullOrEmpty(input))
-                return "";
-            Regex regex = new Regex(@"=\?(?<Encoding>[^\?]+)\?(?<Method>[^\?]+)\?(?<Text>[^\?]+)\?=");
-            MatchCollection matches = regex.Matches(input);
-            string ret = input;
-            foreach (Match match in matches)
-            {
-                string encoding = match.Groups["Encoding"].Value;
-                string method = match.Groups["Method"].Value;
-                string text = match.Groups["Text"].Value;
-                string decoded;
-                if (method == "B")
+        /*
+                private string Decode(string input)
                 {
-                    byte[] bytes = Convert.FromBase64String(text);
-                    Encoding enc = Encoding.GetEncoding(encoding);
-                    decoded = enc.GetString(bytes);
+                    if (string.IsNullOrEmpty(input))
+                        return "";
+                    Regex regex = new Regex(@"=\?(?<Encoding>[^\?]+)\?(?<Method>[^\?]+)\?(?<Text>[^\?]+)\?=");
+                    MatchCollection matches = regex.Matches(input);
+                    string ret = input;
+                    foreach (Match match in matches)
+                    {
+                        string encoding = match.Groups["Encoding"].Value;
+                        string method = match.Groups["Method"].Value;
+                        string text = match.Groups["Text"].Value;
+                        string decoded;
+                        if (method == "B")
+                        {
+                            byte[] bytes = Convert.FromBase64String(text);
+                            Encoding enc = Encoding.GetEncoding(encoding);
+                            decoded = enc.GetString(bytes);
+                        }
+                        else
+                            decoded = Decode(text, Encoding.GetEncoding(encoding));
+                        ret = ret.Replace(match.Groups[0].Value, decoded);
+                    }
+                    return ret;
                 }
-                else
-                    decoded = Decode(text, Encoding.GetEncoding(encoding));
-                ret = ret.Replace(match.Groups[0].Value, decoded);
-            }
-            return ret;
-        }
-*/
+        */
 
-        
+
     }
 }

@@ -358,7 +358,7 @@ namespace InterIMAP.Asynchronous.Objects
         {
             get
             {
-                return MessageContent.Length > 0 && (!String.IsNullOrEmpty(MessageContent[0].TextData) || MessageContent[0].BinaryData != null);
+                return MessageContent.Length > 0 && (!String.IsNullOrEmpty(MessageContent[0].TextData) || !String.IsNullOrEmpty(MessageContent[0].HTMLData) || MessageContent[0].BinaryData != null);
             }
         }
         #endregion

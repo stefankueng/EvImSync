@@ -127,7 +127,12 @@ namespace EveImSync
             rx = new Regex(@"<!--.*?-->", RegexOptions.IgnoreCase | RegexOptions.Singleline);
             html = rx.Replace(html, string.Empty);
             rx = new Regex(@"<body\b[^>]*>(.*?)</body>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
-            Content = rx.Replace(html, "$1");
+
+            // ink notes must not have any content at all
+            if (html.IndexOf("application/vnd.evernote.ink", StringComparison.InvariantCultureIgnoreCase) >= 0)
+                Content = string.Empty;
+            else
+                Content = rx.Replace(html, "$1");
         }
 
         public void SetTextContent(string text)
@@ -168,7 +173,7 @@ namespace EveImSync
             else
             {
                 // just link the attachment to the content
-                Content = content + "<en-media hash=\"" + hashHex + "\" type=\"" + contentType + "\"/>";
+                Content = content + "<en-media hash=\"" + hashHex + "\" type=\"" + contentType.ToLower() + "\"/>";
             }
 
             string attachmentString = Convert.ToBase64String(binaryData);
@@ -177,7 +182,7 @@ namespace EveImSync
             Attachment at = new Attachment();
             at.Base64Data = attachmentString;
             at.ContentID = contentId;
-            at.ContentType = contentType;
+            at.ContentType = contentType.ToLower();
             at.FileName = contentFileName;
             at.Hash = hashHex;
             Attachments.Add(at);

@@ -34,5 +34,7 @@ namespace EveImSync
         public string IMAPServer = string.Empty;
         
         public string IMAPNotesFolder = string.Empty;
+
+        public DateTime LastSyncTime = new DateTime(0);
     }
 }

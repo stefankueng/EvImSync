@@ -154,13 +154,14 @@ namespace EveImSync
                     SetInfo("Fetching list of emails", "", 0, 0);
                     List<Note> notesIMAP = GetMailList(syncPair.IMAPServer, syncPair.IMAPUsername, syncPair.IMAPPassword, syncPair.IMAPNotesFolder);
                     SetInfo("Figuring out what needs to be synced", "", 0, 0);
-                    DiffNotesAndMails(ref notesEvernote, ref notesIMAP);
+                    DiffNotesAndMails(ref notesEvernote, ref notesIMAP, syncPair.LastSyncTime);
                     SetInfo("Adjusting tags in the GMail account", "", 0, 0);
                     AdjustIMAPTags(syncPair.IMAPNotesFolder, notesIMAP);
                     SetInfo("Downloading emails", "", 0, 0);
                     DownloadAndImportMailsToEvernote(notesIMAP, syncPair.EvernoteNotebook);
                     SetInfo("Uploading emails", "", 0, 0);
                     UploadNotesAsMails(syncPair.IMAPNotesFolder, notesEvernote, exportFile);
+                    syncPair.LastSyncTime = DateTime.Now;
                 }
             }
 
@@ -174,6 +175,7 @@ namespace EveImSync
                     this.progressIndicator.Value = 100000;
                 }), null);
             }
+            config.Save();
         }
 
         private string ExtractNotes(string notebook)
@@ -323,6 +325,8 @@ namespace EveImSync
 
                 Note note = new Note();
                 note.Title = msg.Subject;
+                note.Date = msg.DateReceived;
+
                 if (folder.IndexOf('/') >= 0)
                 {
                     note.Tags.Add(folder.Substring(folder.IndexOf('/') + 1));
@@ -388,7 +392,7 @@ namespace EveImSync
             }
         }
 
-        private void DiffNotesAndMails(ref List<Note> notesEvernote, ref List<Note> notesIMAP)
+        private void DiffNotesAndMails(ref List<Note> notesEvernote, ref List<Note> notesIMAP, DateTime lastSync)
         {
             int counter = 0;
             foreach (Note n in notesIMAP)
@@ -420,6 +424,9 @@ namespace EveImSync
                             force = this.forceDownload.Checked;
                         }), null);
                         if (force)
+                            n.Action = NoteAction.ImportToEvernote;
+
+                        if (n.Date > lastSync)
                             n.Action = NoteAction.ImportToEvernote;
                     }
                     else

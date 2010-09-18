@@ -43,11 +43,11 @@ namespace EveImSync
         private string enscriptpath;
         private SynchronizationContext synchronizationContext;
         private bool cancelled = false;
+        private SyncStep syncStep = SyncStep.ExtractNotes;
 
         public MainFrm()
         {
             InitializeComponent();
-            this.progressInfoList.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
             this.synchronizationContext = SynchronizationContext.Current;
         }
 
@@ -62,20 +62,63 @@ namespace EveImSync
             cf.ShowDialog();
         }
 
-        private void AddInfoLine(string infoLine)
+        private void SetInfo(string line1, string line2, int pos, int max)
         {
+            int fullpos = 0;
+
+            switch (this.syncStep)
+            {
+                // full progress is from 0 - 100'000
+                case SyncStep.ExtractNotes:      // 0- 10%
+                    fullpos = max != 0 ? (int)(pos * 100000.0 / max * 0.1) : 0;
+                    break;
+                case SyncStep.ParseNotes:        // 10-20%
+                    fullpos = max != 0 ? (int)(pos * 100000.0 / max * 0.1) + 10000 : 10000;
+                    break;
+                case SyncStep.GettingImapList:   // 20-30%
+                    fullpos = max != 0 ? (int)(pos * 100000.0 / max * 0.1) + 20000 : 20000;
+                    break;
+                case SyncStep.CalculateWhatToDo: // 30-35%
+                    fullpos = max != 0 ? (int)(pos * 100000.0 / max * 0.05) + 30000 : 30000;
+                    break;
+                case SyncStep.AdjustTags:        // 35-40%
+                    fullpos = max != 0 ? (int)(pos * 100000.0 / max * 0.05) + 35000 : 35000;
+                    break;
+                case SyncStep.DownloadNotes:     // 40-70%
+                    fullpos = max != 0 ? (int)(pos * 100000.0 / max * 0.3) + 40000 : 40000;
+                    break;
+                case SyncStep.UploadNotes:       // 70-100%
+                    fullpos = max != 0 ? (int)(pos * 100000.0 / max * 0.3) + 70000 : 70000;
+                    break;
+            }
+
             synchronizationContext.Send(new SendOrPostCallback(delegate(object state)
-                                                {
-                                                    ListViewItem item = this.progressInfoList.Items.Add(infoLine);
-                                                    this.progressInfoList.Update();
-                                                    this.progressInfoList.EnsureVisible(item.Index);
-                                                }), null);
+            {
+                if (line1 != null)
+                    this.infoText1.Text = line1;
+                if (line2 != null)
+                    this.infoText2.Text = line2;
+                this.progressIndicator.Minimum = 0;
+                this.progressIndicator.Maximum = 100000;
+                this.progressIndicator.Value = fullpos;
+            }), null);
+
+            if (max == 0)
+                syncStep++;
         }
 
         private void Startsync_Click(object sender, EventArgs e)
         {
             if (startsync.Text == "Start Sync")
             {
+                Configuration config = Configuration.Create();
+                if (config.SyncPairs.Count == 0)
+                {
+                    ConfigFrm cf = new ConfigFrm();
+                    cf.ShowDialog();
+                    return;
+                }
+
                 startsync.Text = "Cancel";
                 MethodInvoker syncDelegate = new MethodInvoker(SyncEvernoteWithIMAP);
                 syncDelegate.BeginInvoke(null, null);
@@ -96,35 +139,41 @@ namespace EveImSync
                 {
                     break;
                 }
+                synchronizationContext.Send(new SendOrPostCallback(delegate(object state)
+                {
+                    this.infoText0.Text = string.Format("Syncing notebook {0}", syncPair.EvernoteNotebook);
+                }), null);
 
-                AddInfoLine("extracting notes");
+                syncStep = SyncStep.ExtractNotes;
+                SetInfo("Extracting notes from Evernote", "", 0, 0);
                 string exportFile = ExtractNotes(syncPair.EvernoteNotebook);
                 if (exportFile != null && exportFile != string.Empty)
                 {
-                    AddInfoLine("parsing Evernote notes");
+                    SetInfo("Parsing notes from Evernote", "", 0, 0);
                     List<Note> notesEvernote = ParseNotes(exportFile);
-                    AddInfoLine(string.Format("Found {0} notes in Evernote", notesEvernote.Count));
-                    AddInfoLine("fetching list of emails");
+                    SetInfo("Fetching list of emails", "", 0, 0);
                     List<Note> notesIMAP = GetMailList(syncPair.IMAPServer, syncPair.IMAPUsername, syncPair.IMAPPassword, syncPair.IMAPNotesFolder);
-                    AddInfoLine(string.Format("Found {0} notes in IMAP", notesIMAP.Count));
-                    AddInfoLine("Analyzing notes, figuring out what notes need syncing");
+                    SetInfo("Figuring out what needs to be synced", "", 0, 0);
                     DiffNotesAndMails(ref notesEvernote, ref notesIMAP);
+                    SetInfo("Adjusting tags in the GMail account", "", 0, 0);
                     AdjustIMAPTags(syncPair.IMAPNotesFolder, notesIMAP);
-                    AddInfoLine("Downloading emails as notes");
+                    SetInfo("Downloading emails", "", 0, 0);
                     DownloadAndImportMailsToEvernote(notesIMAP, syncPair.EvernoteNotebook);
+                    SetInfo("Uploading emails", "", 0, 0);
                     UploadNotesAsMails(syncPair.IMAPNotesFolder, notesEvernote, exportFile);
                 }
             }
 
-            if (cancelled)
+            if (!cancelled)
             {
-                AddInfoLine("Sync cancelled by user!");
+                synchronizationContext.Send(new SendOrPostCallback(delegate(object state)
+                {
+                    startsync.Text = "Start Sync";
+                    this.progressIndicator.Minimum = 0;
+                    this.progressIndicator.Maximum = 100000;
+                    this.progressIndicator.Value = 100000;
+                }), null);
             }
-
-            synchronizationContext.Send(new SendOrPostCallback(delegate(object state)
-            {
-                startsync.Text = "Start Sync";
-            }), null);
         }
 
         private string ExtractNotes(string notebook)
@@ -233,7 +282,6 @@ namespace EveImSync
             if (client.Start() == false)
             {
                 cancelled = true;
-                AddInfoLine("Connection to the IMAP server failed.");
             }
 
             GetMailsListRecursive(notefolder, ref noteList);
@@ -334,8 +382,10 @@ namespace EveImSync
 
         private void DiffNotesAndMails(ref List<Note> notesEvernote, ref List<Note> notesIMAP)
         {
+            int counter = 0;
             foreach (Note n in notesIMAP)
             {
+                SetInfo(null, "", counter++, notesIMAP.Count);
                 if (cancelled)
                 {
                     break;
@@ -383,6 +433,8 @@ namespace EveImSync
                 }
             }
 
+            if (notesIMAP.Count > 0)
+                SetInfo(null, "", notesIMAP.Count, notesIMAP.Count);
             foreach (Note n in notesEvernote)
             {
                 bool existsInIMAP = notesIMAP.Find(delegate(Note findNote) { return findNote.ContentHash == n.ContentHash; }) != null;
@@ -395,6 +447,7 @@ namespace EveImSync
 
         private void AdjustIMAPTags(string folder, List<Note> notesIMAP)
         {
+            int counter = 0;
             foreach (Note note in notesIMAP)
             {
                 if (note.Action == NoteAction.AdjustTagsOnIMAP)
@@ -404,7 +457,7 @@ namespace EveImSync
                         break;
                     }
 
-                    AddInfoLine(string.Format("adjusting tags for email\"{0}\"", note.Title));
+                    SetInfo(null, string.Format("adjusting tags for email\"{0}\"", note.Title), counter, notesIMAP.Count);
 
                     foreach (string tag in note.NewTags)
                     {
@@ -439,11 +492,20 @@ namespace EveImSync
                         }
                     }
                 }
+                counter++;
             }
         }
 
         private void DownloadAndImportMailsToEvernote(List<Note> notesIMAP, string notebook)
         {
+            int counter = 0;
+            int numNotesToUpload = 0;
+            foreach (Note ntu in notesIMAP)
+            {
+                if (ntu.Action == NoteAction.ImportToEvernote)
+                    numNotesToUpload++;
+            }
+
             while (notesIMAP.Count > 0)
             {
                 if (cancelled)
@@ -455,7 +517,7 @@ namespace EveImSync
                 if (n.Action == NoteAction.ImportToEvernote)
                 {
                     IMessage msg = n.IMAPMessages[0];
-                    AddInfoLine(string.Format("getting email\"{0}\"", msg.Subject));
+                    SetInfo(null, string.Format("getting email\"{0}\"", msg.Subject), counter++, numNotesToUpload);
 
                     FullMessageRequest fmr = new FullMessageRequest(client, msg);
 
@@ -540,8 +602,6 @@ namespace EveImSync
                             }
                         }
 
-                        AddInfoLine(string.Format("importing note\"{0}\"", msg.Subject));
-
                         // generate the Evernote export file
                         string path = Path.GetTempFileName();
                         n.SaveEvernoteExportData(path);
@@ -551,7 +611,7 @@ namespace EveImSync
                         enscript.ENScriptPath = enscriptpath;
                         if (!enscript.ImportNotes(path, notebook))
                         {
-                            AddInfoLine(string.Format("failed to import note \"{0}\"", msg.Subject));
+                            // failed to import note
                         }
 
                         File.Delete(path);
@@ -573,7 +633,7 @@ namespace EveImSync
                 }
             }
 
-            AddInfoLine(string.Format("uploading {0} notes to IMAP", uploadcount));
+            int counter = 0;
             foreach (Note n in notesEvernote)
             {
                 if (cancelled)
@@ -583,7 +643,8 @@ namespace EveImSync
 
                 if (n.Action == NoteAction.UploadToIMAP)
                 {
-                    AddInfoLine(string.Format("uploading note \"{0}\"", n.Title));
+                    SetInfo(null, string.Format("uploading note \"{0}\"", n.Title), counter++, uploadcount);
+
                     XmlTextReader xtrInput;
                     XmlDocument xmlDocItem;
 

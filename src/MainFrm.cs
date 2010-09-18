@@ -291,6 +291,7 @@ namespace EveImSync
             if (client.Start() == false)
             {
                 cancelled = true;
+                return noteList;
             }
 
             GetMailsListRecursive(notefolder, ref noteList);

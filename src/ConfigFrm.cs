@@ -90,7 +90,7 @@ namespace EveImSync
                 return;
             }
 
-            SyncPairSettings sps = config.SyncPairs.Find(findPair => { return findPair.EvernoteNotebook == imapNotebook.Text; });
+            SyncPairSettings sps = config.SyncPairs.Find(findPair => { return findPair.EvernoteNotebook == evernoteNotebook.Text; });
             if (sps == null)
             {
                 sps = new SyncPairSettings();

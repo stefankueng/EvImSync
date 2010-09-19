@@ -513,8 +513,11 @@ namespace EveImSync
                         string tagfolder = folder + "/" + tag;
                         IFolder tagFolder = GetOrCreateFolderByPath(tagfolder);
 
-                        client.RequestManager.SubmitAndWait(new CopyMessageRequest(note.IMAPMessages[0], tagFolder, null), true);
-                        client.RequestManager.SubmitAndWait(new MessageListRequest(tagFolder, null), true);
+                        if (tagFolder != null)
+                        {
+                            client.RequestManager.SubmitAndWait(new CopyMessageRequest(note.IMAPMessages[0], tagFolder, null), true);
+                            client.RequestManager.SubmitAndWait(new MessageListRequest(tagFolder, null), true);
+                        }
                     }
 
                     foreach (IMessage msg in note.IMAPMessages)

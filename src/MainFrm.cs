@@ -355,7 +355,7 @@ namespace EveImSync
                 }
                 else
                 {
-                    note.Tags.Add(folder);
+                    note.Tags.Add(string.Empty);
                 }
 
                 note.IMAPMessages.Add(msg);
@@ -386,7 +386,7 @@ namespace EveImSync
                             }
                             else
                             {
-                                n.Tags.Add(folder);
+                                n.Tags.Add(string.Empty);
                             }
 
                             n.IMAPMessages.Add(note.IMAPMessages[0]);
@@ -532,6 +532,10 @@ namespace EveImSync
                         {
                             tag = tag.Substring(tag.IndexOf('/') + 1);
                         }
+                        else
+                        {
+                            tag = string.Empty;
+                        }
 
                         if (note.ObsoleteTags.Find(findTag => { return findTag == tag; }) != null)
                         {
@@ -642,7 +646,16 @@ namespace EveImSync
                                 // to this note
                                 if (n != same)
                                 {
-                                    n.Tags.Add(m.Folder.FullPath);
+                                    string tag = m.Folder.FullPath;
+                                    if (tag.IndexOf('/') >= 0)
+                                    {
+                                        tag = tag.Substring(tag.IndexOf('/') + 1);
+                                    }
+                                    else
+                                    {
+                                        tag = string.Empty;
+                                    }
+                                    n.Tags.Add(tag);
                                     n.IMAPMessages.Add(m);
                                     notesIMAP.Remove(same);
                                 }

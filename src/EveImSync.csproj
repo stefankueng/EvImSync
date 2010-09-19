@@ -246,6 +246,7 @@
     <Compile Include="Settings.cs" />
     <Compile Include="SimpleAES.cs" />
     <Compile Include="SyncPairSettings.cs" />
+    <Compile Include="XmlSanitizer.cs" />
     <EmbeddedResource Include="ConfigFrm.resx">
       <DependentUpon>ConfigFrm.cs</DependentUpon>
     </EmbeddedResource>

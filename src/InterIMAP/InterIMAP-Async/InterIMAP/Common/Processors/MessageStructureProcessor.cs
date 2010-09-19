@@ -111,8 +111,8 @@ namespace InterIMAP.Common.Processors
 
         private void ParseContentPart(IMessageContent part, string s)
         {
-            const string non_attach = "^\\((?<type>(\"[^\"]*\"|NIL))\\s(?<subtype>(\"[^\"]*\"|NIL))\\s(?<attr>(\\([^\\)]*\\)|NIL))\\s(?<id>(\"[^\"]*\"|NIL))\\s(?<desc>(\"[^\"]*\"|NIL))\\s(?<encoding>(\"[^\"]*\"|NIL))\\s(?<size>(\\d+|NIL))\\s(?<lines>(\\d+|NIL))\\s(?<md5>(\"[^\"]*\"|NIL))\\s(?<disposition>(\\([^\\)]*\\)|NIL))\\s(?<lang>(\"[^\"]*\"|NIL))\\)$";
-            const string attachment = "^\\((?<type>(\"[^\"]*\"|NIL))\\s(?<subtype>(\"[^\"]*\"|NIL))\\s(?<attr>(\\([^\\)]*\\)|NIL))\\s(?<id>(\"[^\"]*\"|NIL))\\s(?<desc>(\"[^\"]*\"|NIL))\\s(?<encoding>(\"[^\"]*\"|NIL))\\s(?<size>(\\d+|NIL))\\s((?<data>(.*))\\s|)(?<lines>(\"[^\"]*\"|NIL))\\s(?<disposition>((?>\\((?<LEVEL>)|\\)(?<-LEVEL>)|(?!\\(|\\)).)+(?(LEVEL)(?!))|NIL))\\s(?<lang>(\"[^\"]*\"|NIL))\\)$";
+            const string non_attach = "^\\((?<type>(\"[^\"]*\"|NIL))\\s(?<subtype>(\"[^\"]*\"|NIL))\\s(?<attr>(\\(.*\\)|NIL))\\s(?<id>(\"[^\"]*\"|NIL))\\s(?<desc>(\"[^\"]*\"|NIL))\\s(?<encoding>(\"[^\"]*\"|NIL))\\s(?<size>(\\d+|NIL))\\s(?<lines>(\\d+|NIL))\\s(?<md5>(\"[^\"]*\"|NIL))\\s(?<disposition>(\\([^\\)]*\\)|NIL))\\s(?<lang>(\"[^\"]*\"|NIL))\\)$";
+            const string attachment = "^\\((?<type>(\"[^\"]*\"|NIL))\\s(?<subtype>(\"[^\"]*\"|NIL))\\s(?<attr>(\\(.*\\)|NIL))\\s(?<id>(\"[^\"]*\"|NIL))\\s(?<desc>(\"[^\"]*\"|NIL))\\s(?<encoding>(\"[^\"]*\"|NIL))\\s(?<size>(\\d+|NIL))\\s((?<data>(.*))\\s|)(?<lines>(\"[^\"]*\"|NIL))\\s(?<disposition>((?>\\((?<LEVEL>)|\\)(?<-LEVEL>)|(?!\\(|\\)).)+(?(LEVEL)(?!))|NIL))\\s(?<lang>(\"[^\"]*\"|NIL))\\)$";
             const string alt_attach = "^\\([\"]*(?<type>([\\w]*))[\"\\s]*(?<subtype>(\\w*))[\"\\s]*\\([\"*]\\w*[\"\\s\"]*(?<filename>([^\"]*))[\")\\s]*NIL\\sNIL\\s\"(?<encoding>(\\w*))[\"]\\s(?<size>(\\d*))";
             Match match;
             if ((match = Regex.Match(s, non_attach, RegexOptions.ExplicitCapture)).Success)

@@ -139,6 +139,8 @@ namespace EveImSync
         {
             // encode CDATA end tags
             text = text.Replace("]]>", "]]]]><![CDATA[>");
+            // strip invalid xml chars
+            text = XmlSanitizer.SanitizeXmlString(text);
             Content = "<pre>" + text + "</pre>";
         }
 

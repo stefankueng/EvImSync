@@ -574,11 +574,11 @@ namespace EveImSync
                         {
                             if (!msgcontent.IsAttachment)
                             {
-                                if ((msgcontent.TextData != null) && (msgcontent.TextData.Length > 0) && (n.ContentHash == string.Empty))
+                                if ((msgcontent.TextData != null) && (msgcontent.TextData.Length > 0) && ((n.ContentHash == string.Empty) || (n.Content == null)))
                                 {
                                     n.SetTextContent(msgcontent.TextData);
                                 }
-                                else if (msgcontent.HTMLData != null)
+                                else if ((msgcontent.HTMLData != null) && ((msgcontent.HTMLData.Length > 0) || (n.Content == null)))
                                 {
                                     n.SetHtmlContent(msgcontent.HTMLData);
                                 }

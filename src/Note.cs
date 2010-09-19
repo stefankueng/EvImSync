@@ -139,7 +139,7 @@ namespace EveImSync
         {
             // encode CDATA end tags
             text = text.Replace("]]>", "]]]]><![CDATA[>");
-            Content = text;
+            Content = "<pre>" + text + "</pre>";
         }
 
         public void AddAttachment(byte[] binaryData, string contentId, string contentType, string contentFileName)

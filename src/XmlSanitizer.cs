@@ -28,7 +28,7 @@ namespace EveImSync
         {
             if (xml == null)
             {
-                throw new ArgumentNullException("xml");
+                return string.Empty;
             }
 
             StringBuilder buffer = new StringBuilder(xml.Length);

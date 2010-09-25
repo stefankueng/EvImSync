@@ -55,7 +55,6 @@ namespace InterIMAP.Common.Processors
                 ctDisposition = content.ContentDisposition.ToString().ToUpper();
             }
             string sContentTransferEncoding = content.ContentTransferEncoding.ToUpper();
-            string sContentCharset = content.Charset.ToUpper();
 
             bool isBinary = content.ContentTransferEncoding.ToUpper().Contains("BASE64");
             bool isHTML = content.ContentType.ToUpper().Contains("HTML");

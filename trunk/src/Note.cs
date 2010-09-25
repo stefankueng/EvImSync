@@ -180,7 +180,7 @@ namespace EveImSync
 
             string attachmentString = Convert.ToBase64String(binaryData);
             attachmentString = "<data encoding=\"base64\">" + attachmentString + "</data><mime>" + contentType.ToLower() + "</mime>" +
-                "<resource-attributes><file-name>" + XmlSanitizer.SanitizeXmlString(contentFileName) + "</file-name></resource-attributes>";
+                "<resource-attributes><file-name>" + XmlSanitizer.SanitizeXmlString(contentFileName).Replace("&", string.Empty) + "</file-name></resource-attributes>";
             Attachment at = new Attachment();
             at.Base64Data = attachmentString;
             at.ContentID = contentId;

@@ -46,13 +46,12 @@ namespace InterIMAP.Asynchronous.Objects
         #region Private Fields
         private readonly int _id;
         private readonly IMAPAsyncClient _client;
-        private List<string> _customFlags = new List<string>();
         #endregion
 
         #region Public Properties
         public int ID
         {
-            get { return _id; }            
+            get { return _id; }
         }
 
         public int UID
@@ -71,7 +70,6 @@ namespace InterIMAP.Asynchronous.Objects
                 if (temp.StartsWith("=?"))
                 {
                     temp = DecodeSubject(temp);
-
                 }
                 _client.DataManager.SetValue(this, "Subject", temp);
             }
@@ -211,7 +209,7 @@ namespace InterIMAP.Asynchronous.Objects
             set { _client.DataManager.SetValue(this, "MessageID", value); }
         }
 
-        [HeaderName("xmstnefcorrelator")]   
+        [HeaderName("xmstnefcorrelator")]
         [HeaderName("x-ms-tnef-correlator")]
         public string XMSTNEFCorrelator
         {
@@ -245,38 +243,34 @@ namespace InterIMAP.Asynchronous.Objects
         public IContact[] ToContacts
         {
             get { return GetContacts("ToContacts"); }
-            
         }
 
         [ConnectingTable("MessageFromContacts")]
         public IContact[] FromContacts
         {
             get { return GetContacts("FromContacts"); }
-            
         }
 
         [ConnectingTable("MessageCcContacts")]
         public IContact[] CcContacts
         {
             get { return GetContacts("CcContacts"); }
-            
         }
 
         [ConnectingTable("MessageBccContacts")]
         public IContact[] BccContacts
         {
             get { return GetContacts("BccContacts"); }
-            
         }
 
         public IMessageContent[] MessageContent
         {
-            get { return _client.MailboxManager.GetMessageContent(_id); }            
+            get { return _client.MailboxManager.GetMessageContent(_id); }
         }
 
         public IFolder Folder
         {
-            get { return _client.MailboxManager.GetFolderByID(FolderID);  }
+            get { return _client.MailboxManager.GetFolderByID(FolderID); }
         }
 
         public string TextData
@@ -302,7 +296,7 @@ namespace InterIMAP.Asynchronous.Objects
                         return content.HTMLData;
 
                 return null;
-            }           
+            }
         }
 
         public bool Seen
@@ -385,10 +379,10 @@ namespace InterIMAP.Asynchronous.Objects
         public void AssociateContacts(string propName, IContact[] contacts)
         {
             if (contacts == null) return;
-            
+
             string sourceTable = GetSourceTable(propName);
             if (sourceTable == null) return;
-            
+
             foreach (IContact contact in contacts)
             {
                 if (!CanAssociate(sourceTable, contact)) continue;
@@ -401,7 +395,14 @@ namespace InterIMAP.Asynchronous.Objects
         /// </summary>
         public List<string> GetCustomFlags()
         {
-            return _customFlags;
+            string flaglines = _client.DataManager.GetValue<Message, string>(this, "CustomFlags");
+            string[] f = flaglines.Split('\n');
+            List<string> flags = new List<string>();
+            foreach (string s in f)
+            {
+                flags.Add(s);
+            }
+            return flags;
         }
 
         /// <summary>
@@ -409,7 +410,14 @@ namespace InterIMAP.Asynchronous.Objects
         /// </summary>
         public bool GetCustomFlag(string flag)
         {
-            return _customFlags.Find(delegate(string s) { return s == flag; }) != null;
+            string flaglines = _client.DataManager.GetValue<Message, string>(this, "CustomFlags");
+            string[] f = flaglines.Split('\n');
+            foreach (string s in f)
+            {
+                if (s == flag)
+                    return true;
+            }
+            return false;
         }
 
         /// <summary>
@@ -419,10 +427,17 @@ namespace InterIMAP.Asynchronous.Objects
         /// <param name="value">true to set the flag, false to remove it</param>
         public void SetCustomFlag(string flag, bool value)
         {
-            if ((value)&&(!GetCustomFlag(flag)))
-                _customFlags.Add(flag);
-            else
-                _customFlags.Remove(flag);
+            string newFlagLines = string.Empty;
+            string flaglines = _client.DataManager.GetValue<Message, string>(this, "CustomFlags");
+            string[] f = flaglines.Split('\n');
+            foreach (string s in f)
+            {
+                if ((!value) || (s != flag))
+                    newFlagLines = newFlagLines + "\n" + s;
+            }
+            if (value)
+                newFlagLines += "\n" + flag;
+            _client.DataManager.SetValue(this, "CustomFlags", newFlagLines);
         }
 
         #endregion
@@ -434,11 +449,11 @@ namespace InterIMAP.Asynchronous.Objects
         /// <param name="sourceTable"></param>
         /// <param name="contact"></param>
         /// <returns></returns>
-// ReSharper disable SuggestBaseTypeForParameter
+        // ReSharper disable SuggestBaseTypeForParameter
         private bool CanAssociate(string sourceTable, IContact contact)
-// ReSharper restore SuggestBaseTypeForParameter
+        // ReSharper restore SuggestBaseTypeForParameter
         {
-            return _client.DataManager.CanAssociate(ID, contact.ID, sourceTable);                                                
+            return _client.DataManager.CanAssociate(ID, contact.ID, sourceTable);
         }
 
         /// <summary>
@@ -456,10 +471,10 @@ namespace InterIMAP.Asynchronous.Objects
 
             DataTable dt = _client.DataManager.Db.Tables[sourceTable];
             Mailbox.ContactDataTable cdt = _client.DataManager.ContactTable;
-            foreach (DataRow row in dt.Select("MessageID = "+ID))
+            foreach (DataRow row in dt.Select("MessageID = " + ID))
             {
-                int id = (int) row["ContactID"];
-                foreach (Mailbox.ContactRow crow in cdt.Select("ID = "+id))
+                int id = (int)row["ContactID"];
+                foreach (Mailbox.ContactRow crow in cdt.Select("ID = " + id))
                 {
                     _contacts.Add(new Contact(_client, crow.ID));
                 }
@@ -475,13 +490,13 @@ namespace InterIMAP.Asynchronous.Objects
         /// <param name="propName"></param>
         /// <returns></returns>
         private string GetSourceTable(string propName)
-        {            
+        {
             PropertyInfo pi = GetType().GetProperty(propName);
             foreach (object obj in pi.GetCustomAttributes(true))
             {
                 if (obj is ConnectingTable)
                 {
-                    return ((ConnectingTable) obj).ConnectingTableName;
+                    return ((ConnectingTable)obj).ConnectingTableName;
                 }
             }
             return null;
@@ -507,7 +522,6 @@ namespace InterIMAP.Asynchronous.Objects
 
                 Encoding enc = Encoding.GetEncoding(charSet.ToLower());
 
-
                 if (encoding.ToLower().Equals("b"))
                 {
                     byte[] d = Convert.FromBase64String(data);
@@ -528,14 +542,10 @@ namespace InterIMAP.Asynchronous.Objects
             }
 
             return sb.ToString();
-
         }
-
-
 
         private string HexDecoderEvaluator(Match m)
         {
-
             string hex = m.Groups[2].Value;
             int iHex = Convert.ToInt32(hex, 16);
 

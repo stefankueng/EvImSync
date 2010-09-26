@@ -9,7 +9,7 @@
     <Shape ID="DesignTable:Config" ZOrder="20" X="-34" Y="-27" Height="113" Width="150" AdapterExpanded="true" DataTableExpanded="true" OldAdapterHeight="0" OldDataTableHeight="22" SplitterPosition="109" />
     <Shape ID="DesignTable:Contact" ZOrder="1" X="-34" Y="135" Height="144" Width="150" AdapterExpanded="true" DataTableExpanded="true" OldAdapterHeight="0" OldDataTableHeight="0" SplitterPosition="140" />
     <Shape ID="DesignTable:Folder" ZOrder="5" X="18" Y="298" Height="162" Width="150" AdapterExpanded="true" DataTableExpanded="true" OldAdapterHeight="0" OldDataTableHeight="0" SplitterPosition="125" />
-    <Shape ID="DesignTable:Message" ZOrder="4" X="199" Y="-6" Height="470" Width="181" AdapterExpanded="true" DataTableExpanded="true" OldAdapterHeight="0" OldDataTableHeight="0" SplitterPosition="466" />
+    <Shape ID="DesignTable:Message" ZOrder="4" X="196" Y="-10" Height="470" Width="181" AdapterExpanded="true" DataTableExpanded="true" OldAdapterHeight="0" OldDataTableHeight="0" SplitterPosition="466" />
     <Shape ID="DesignTable:MessageFromContacts" ZOrder="13" X="-22" Y="485" Height="61" Width="193" AdapterExpanded="true" DataTableExpanded="true" OldAdapterHeight="0" OldDataTableHeight="0" SplitterPosition="57" />
     <Shape ID="DesignTable:MessageToContacts" ZOrder="16" X="241" Y="497" Height="61" Width="178" AdapterExpanded="true" DataTableExpanded="true" OldAdapterHeight="0" OldDataTableHeight="0" SplitterPosition="57" />
     <Shape ID="DesignTable:MessageCcContacts" ZOrder="12" X="392" Y="27" Height="61" Width="178" AdapterExpanded="true" DataTableExpanded="true" OldAdapterHeight="0" OldDataTableHeight="0" SplitterPosition="57" />
@@ -21,11 +21,11 @@
       <RoutePoints>
         <Point>
           <X>168</X>
-          <Y>345</Y>
+          <Y>341</Y>
         </Point>
         <Point>
-          <X>199</X>
-          <Y>345</Y>
+          <X>196</X>
+          <Y>341</Y>
         </Point>
       </RoutePoints>
     </Connector>
@@ -44,11 +44,11 @@
     <Connector ID="DesignRelation:FK_Message_MessageFromContacts" ZOrder="19" LineWidth="11">
       <RoutePoints>
         <Point>
-          <X>231</X>
-          <Y>464</Y>
+          <X>228</X>
+          <Y>460</Y>
         </Point>
         <Point>
-          <X>231</X>
+          <X>228</X>
           <Y>512</Y>
         </Point>
         <Point>
@@ -76,11 +76,11 @@
     <Connector ID="DesignRelation:FK_Message_MessageToContacts" ZOrder="15" LineWidth="11">
       <RoutePoints>
         <Point>
-          <X>304</X>
-          <Y>464</Y>
+          <X>301</X>
+          <Y>460</Y>
         </Point>
         <Point>
-          <X>304</X>
+          <X>301</X>
           <Y>497</Y>
         </Point>
       </RoutePoints>
@@ -104,12 +104,12 @@
     <Connector ID="DesignRelation:FK_Message_MessageCcContacts" ZOrder="11" LineWidth="11">
       <RoutePoints>
         <Point>
-          <X>380</X>
-          <Y>57</Y>
+          <X>377</X>
+          <Y>53</Y>
         </Point>
         <Point>
           <X>392</X>
-          <Y>57</Y>
+          <Y>53</Y>
         </Point>
       </RoutePoints>
     </Connector>
@@ -128,24 +128,24 @@
     <Connector ID="DesignRelation:FK_Message_MessageBccContacts" ZOrder="8" LineWidth="11">
       <RoutePoints>
         <Point>
-          <X>380</X>
-          <Y>177</Y>
+          <X>377</X>
+          <Y>173</Y>
         </Point>
         <Point>
           <X>422</X>
-          <Y>177</Y>
+          <Y>173</Y>
         </Point>
       </RoutePoints>
     </Connector>
     <Connector ID="DesignRelation:FK_Message_Content" ZOrder="2" LineWidth="11">
       <RoutePoints>
         <Point>
-          <X>380</X>
-          <Y>346</Y>
+          <X>377</X>
+          <Y>342</Y>
         </Point>
         <Point>
           <X>447</X>
-          <Y>346</Y>
+          <Y>342</Y>
         </Point>
       </RoutePoints>
     </Connector>

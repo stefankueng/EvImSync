@@ -705,7 +705,7 @@ namespace InterIMAP.Common.Data {
         ///</summary>
         [global::System.Serializable()]
         [global::System.Xml.Serialization.XmlSchemaProviderAttribute("GetTypedTableSchema")]
-        public partial class ConfigDataTable : global::System.Data.DataTable, global::System.Collections.IEnumerable {
+        public partial class ConfigDataTable : global::System.Data.TypedTableBase<ConfigRow> {
             
             private global::System.Data.DataColumn columnPort;
             
@@ -838,12 +838,6 @@ namespace InterIMAP.Common.Data {
                 rowConfigRow.ItemArray = columnValuesArray;
                 this.Rows.Add(rowConfigRow);
                 return rowConfigRow;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-            public virtual global::System.Collections.IEnumerator GetEnumerator() {
-                return this.Rows.GetEnumerator();
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -1018,7 +1012,7 @@ namespace InterIMAP.Common.Data {
         ///</summary>
         [global::System.Serializable()]
         [global::System.Xml.Serialization.XmlSchemaProviderAttribute("GetTypedTableSchema")]
-        public partial class ContactDataTable : global::System.Data.DataTable, global::System.Collections.IEnumerable {
+        public partial class ContactDataTable : global::System.Data.TypedTableBase<ContactRow> {
             
             private global::System.Data.DataColumn columnFirstName;
             
@@ -1158,12 +1152,6 @@ namespace InterIMAP.Common.Data {
             public ContactRow FindByID(int ID) {
                 return ((ContactRow)(this.Rows.Find(new object[] {
                             ID})));
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-            public virtual global::System.Collections.IEnumerator GetEnumerator() {
-                return this.Rows.GetEnumerator();
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -1343,7 +1331,7 @@ namespace InterIMAP.Common.Data {
         ///</summary>
         [global::System.Serializable()]
         [global::System.Xml.Serialization.XmlSchemaProviderAttribute("GetTypedTableSchema")]
-        public partial class FolderDataTable : global::System.Data.DataTable, global::System.Collections.IEnumerable {
+        public partial class FolderDataTable : global::System.Data.TypedTableBase<FolderRow> {
             
             private global::System.Data.DataColumn columnID;
             
@@ -1508,12 +1496,6 @@ namespace InterIMAP.Common.Data {
             public FolderRow FindByID(int ID) {
                 return ((FolderRow)(this.Rows.Find(new object[] {
                             ID})));
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-            public virtual global::System.Collections.IEnumerator GetEnumerator() {
-                return this.Rows.GetEnumerator();
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -1702,7 +1684,7 @@ namespace InterIMAP.Common.Data {
         ///</summary>
         [global::System.Serializable()]
         [global::System.Xml.Serialization.XmlSchemaProviderAttribute("GetTypedTableSchema")]
-        public partial class MessageDataTable : global::System.Data.DataTable, global::System.Collections.IEnumerable {
+        public partial class MessageDataTable : global::System.Data.TypedTableBase<MessageRow> {
             
             private global::System.Data.DataColumn columnID;
             
@@ -1765,6 +1747,8 @@ namespace InterIMAP.Common.Data {
             private global::System.Data.DataColumn columnRecent;
             
             private global::System.Data.DataColumn columnFlagged;
+            
+            private global::System.Data.DataColumn columnCustomFlags;
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
@@ -2049,6 +2033,14 @@ namespace InterIMAP.Common.Data {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
+            public global::System.Data.DataColumn CustomFlagsColumn {
+                get {
+                    return this.columnCustomFlags;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
             [global::System.ComponentModel.Browsable(false)]
             public int Count {
                 get {
@@ -2114,7 +2106,8 @@ namespace InterIMAP.Common.Data {
                         bool Draft, 
                         bool Deleted, 
                         bool Recent, 
-                        bool Flagged) {
+                        bool Flagged, 
+                        string CustomFlags) {
                 MessageRow rowMessageRow = ((MessageRow)(this.NewRow()));
                 object[] columnValuesArray = new object[] {
                         null,
@@ -2147,7 +2140,8 @@ namespace InterIMAP.Common.Data {
                         Draft,
                         Deleted,
                         Recent,
-                        Flagged};
+                        Flagged,
+                        CustomFlags};
                 if ((parentFolderRowByFK_Folder_Message != null)) {
                     columnValuesArray[24] = parentFolderRowByFK_Folder_Message[0];
                 }
@@ -2161,12 +2155,6 @@ namespace InterIMAP.Common.Data {
             public MessageRow FindByID(int ID) {
                 return ((MessageRow)(this.Rows.Find(new object[] {
                             ID})));
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-            public virtual global::System.Collections.IEnumerator GetEnumerator() {
-                return this.Rows.GetEnumerator();
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -2217,6 +2205,7 @@ namespace InterIMAP.Common.Data {
                 this.columnDeleted = base.Columns["Deleted"];
                 this.columnRecent = base.Columns["Recent"];
                 this.columnFlagged = base.Columns["Flagged"];
+                this.columnCustomFlags = base.Columns["CustomFlags"];
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -2284,6 +2273,8 @@ namespace InterIMAP.Common.Data {
                 base.Columns.Add(this.columnRecent);
                 this.columnFlagged = new global::System.Data.DataColumn("Flagged", typeof(bool), null, global::System.Data.MappingType.Element);
                 base.Columns.Add(this.columnFlagged);
+                this.columnCustomFlags = new global::System.Data.DataColumn("CustomFlags", typeof(string), null, global::System.Data.MappingType.Element);
+                base.Columns.Add(this.columnCustomFlags);
                 this.Constraints.Add(new global::System.Data.UniqueConstraint("Constraint1", new global::System.Data.DataColumn[] {
                                 this.columnID}, true));
                 this.columnID.AutoIncrement = true;
@@ -2320,6 +2311,7 @@ namespace InterIMAP.Common.Data {
                 this.columnDeleted.DefaultValue = ((bool)(false));
                 this.columnRecent.DefaultValue = ((bool)(false));
                 this.columnFlagged.DefaultValue = ((bool)(false));
+                this.columnCustomFlags.DefaultValue = ((string)(""));
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -2451,7 +2443,7 @@ namespace InterIMAP.Common.Data {
         ///</summary>
         [global::System.Serializable()]
         [global::System.Xml.Serialization.XmlSchemaProviderAttribute("GetTypedTableSchema")]
-        public partial class MessageFromContactsDataTable : global::System.Data.DataTable, global::System.Collections.IEnumerable {
+        public partial class MessageFromContactsDataTable : global::System.Data.TypedTableBase<MessageFromContactsRow> {
             
             private global::System.Data.DataColumn columnMessageID;
             
@@ -2557,12 +2549,6 @@ namespace InterIMAP.Common.Data {
                 rowMessageFromContactsRow.ItemArray = columnValuesArray;
                 this.Rows.Add(rowMessageFromContactsRow);
                 return rowMessageFromContactsRow;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-            public virtual global::System.Collections.IEnumerator GetEnumerator() {
-                return this.Rows.GetEnumerator();
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -2726,7 +2712,7 @@ namespace InterIMAP.Common.Data {
         ///</summary>
         [global::System.Serializable()]
         [global::System.Xml.Serialization.XmlSchemaProviderAttribute("GetTypedTableSchema")]
-        public partial class MessageToContactsDataTable : global::System.Data.DataTable, global::System.Collections.IEnumerable {
+        public partial class MessageToContactsDataTable : global::System.Data.TypedTableBase<MessageToContactsRow> {
             
             private global::System.Data.DataColumn columnMessageID;
             
@@ -2832,12 +2818,6 @@ namespace InterIMAP.Common.Data {
                 rowMessageToContactsRow.ItemArray = columnValuesArray;
                 this.Rows.Add(rowMessageToContactsRow);
                 return rowMessageToContactsRow;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-            public virtual global::System.Collections.IEnumerator GetEnumerator() {
-                return this.Rows.GetEnumerator();
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -2999,7 +2979,7 @@ namespace InterIMAP.Common.Data {
         ///</summary>
         [global::System.Serializable()]
         [global::System.Xml.Serialization.XmlSchemaProviderAttribute("GetTypedTableSchema")]
-        public partial class MessageCcContactsDataTable : global::System.Data.DataTable, global::System.Collections.IEnumerable {
+        public partial class MessageCcContactsDataTable : global::System.Data.TypedTableBase<MessageCcContactsRow> {
             
             private global::System.Data.DataColumn columnMessageID;
             
@@ -3105,12 +3085,6 @@ namespace InterIMAP.Common.Data {
                 rowMessageCcContactsRow.ItemArray = columnValuesArray;
                 this.Rows.Add(rowMessageCcContactsRow);
                 return rowMessageCcContactsRow;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-            public virtual global::System.Collections.IEnumerator GetEnumerator() {
-                return this.Rows.GetEnumerator();
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -3272,7 +3246,7 @@ namespace InterIMAP.Common.Data {
         ///</summary>
         [global::System.Serializable()]
         [global::System.Xml.Serialization.XmlSchemaProviderAttribute("GetTypedTableSchema")]
-        public partial class MessageBccContactsDataTable : global::System.Data.DataTable, global::System.Collections.IEnumerable {
+        public partial class MessageBccContactsDataTable : global::System.Data.TypedTableBase<MessageBccContactsRow> {
             
             private global::System.Data.DataColumn columnMessageID;
             
@@ -3378,12 +3352,6 @@ namespace InterIMAP.Common.Data {
                 rowMessageBccContactsRow.ItemArray = columnValuesArray;
                 this.Rows.Add(rowMessageBccContactsRow);
                 return rowMessageBccContactsRow;
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-            public virtual global::System.Collections.IEnumerator GetEnumerator() {
-                return this.Rows.GetEnumerator();
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -3545,7 +3513,7 @@ namespace InterIMAP.Common.Data {
         ///</summary>
         [global::System.Serializable()]
         [global::System.Xml.Serialization.XmlSchemaProviderAttribute("GetTypedTableSchema")]
-        public partial class ContentDataTable : global::System.Data.DataTable, global::System.Collections.IEnumerable {
+        public partial class ContentDataTable : global::System.Data.TypedTableBase<ContentRow> {
             
             private global::System.Data.DataColumn columnID;
             
@@ -3848,12 +3816,6 @@ namespace InterIMAP.Common.Data {
             public ContentRow FindByID(int ID) {
                 return ((ContentRow)(this.Rows.Find(new object[] {
                             ID})));
-            }
-            
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
-            public virtual global::System.Collections.IEnumerator GetEnumerator() {
-                return this.Rows.GetEnumerator();
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -5012,6 +4974,22 @@ namespace InterIMAP.Common.Data {
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
+            public string CustomFlags {
+                get {
+                    if (this.IsCustomFlagsNull()) {
+                        return string.Empty;
+                    }
+                    else {
+                        return ((string)(this[this.tableMessage.CustomFlagsColumn]));
+                    }
+                }
+                set {
+                    this[this.tableMessage.CustomFlagsColumn] = value;
+                }
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
             public FolderRow FolderRow {
                 get {
                     return ((FolderRow)(this.GetParentRow(this.Table.ParentRelations["FK_Folder_Message"])));
@@ -5331,6 +5309,18 @@ namespace InterIMAP.Common.Data {
             [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
             public void SetFlaggedNull() {
                 this[this.tableMessage.FlaggedColumn] = global::System.Convert.DBNull;
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
+            public bool IsCustomFlagsNull() {
+                return this.IsNull(this.tableMessage.CustomFlagsColumn);
+            }
+            
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+            [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "4.0.0.0")]
+            public void SetCustomFlagsNull() {
+                this[this.tableMessage.CustomFlagsColumn] = global::System.Convert.DBNull;
             }
             
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]

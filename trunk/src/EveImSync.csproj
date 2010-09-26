@@ -38,6 +38,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
@@ -268,7 +269,10 @@
     <None Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Data\Mailbox.xsc">
       <DependentUpon>Mailbox.xsd</DependentUpon>
     </None>
-    <None Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Data\Mailbox.xsd" />
+    <None Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Data\Mailbox.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>Mailbox1.Designer.cs</LastGenOutput>
+    </None>
     <None Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Data\Mailbox.xss">
       <DependentUpon>Mailbox.xsd</DependentUpon>
     </None>

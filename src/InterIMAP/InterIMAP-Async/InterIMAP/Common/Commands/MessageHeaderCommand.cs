@@ -56,5 +56,24 @@ namespace InterIMAP.Common.Commands
 
             CommandString = String.Format("UID FETCH {0} (FLAGS BODY.PEEK[HEADER])", Parameters);
         }
+
+        /// <summary>
+        /// Create a new MessageHeaderCommand for all messages inside a folder
+        /// </summary>
+        /// <param name="msg"></param>
+        /// <param name="callback"></param>
+        public MessageHeaderCommand(IFolder folder, CommandDataReceivedCallback callback)
+            : base(callback)
+        {
+            if (folder == null)
+                throw new ArgumentNullException("folder", "MessageHeaderCommand, folder cannot be null");
+
+            //_parameters.Add(msg.UID.ToString());
+            _parameters.Add("1:*");
+            _parameterObjs.Add(folder.Messages);
+
+            CommandString = String.Format("UID FETCH {0} (FLAGS BODY.PEEK[HEADER])", Parameters);
+        }
+
     }
 }

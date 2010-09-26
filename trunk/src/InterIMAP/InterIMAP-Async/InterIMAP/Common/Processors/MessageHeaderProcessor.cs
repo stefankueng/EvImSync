@@ -40,7 +40,7 @@ namespace InterIMAP.Common.Processors
     {
         private IMessage _msg;
         private readonly Dictionary<string, string> headerPairs = new Dictionary<string, string>();
-        
+
         /// <summary>
         /// The message object this processor is working on
         /// </summary>
@@ -48,26 +48,110 @@ namespace InterIMAP.Common.Processors
         {
             get { return _msg; }
         }
-        
+
         public override void ProcessResult()
         {
             base.ProcessResult();
 
-            _msg = (IMessage) Request.Command.ParameterObjects[0];
-            Message msg = (Message) _msg;
+            if (Request.Command.ParameterObjects[0] is IMessage[])
+            {
+                foreach (IMessage imsg in (IMessage[])Request.Command.ParameterObjects[0])
+                {
+                    _msg = imsg;
+                    Message msg = (Message)_msg;
+                    headerPairs.Clear();
 
-            ProcessHeader();
-            
-            msg.AssociateContacts("ToContacts", ProcessContactField("to"));
-            msg.AssociateContacts("FromContacts", ProcessContactField("from"));
-            msg.AssociateContacts("CcContacts", ProcessContactField("cc"));
-            msg.AssociateContacts("BccContacts", ProcessContactField("bcc"));
-            
-            PopulateMessageObject();
+                    ProcessHeader();
+                    ProcessFlags();
+
+                    msg.AssociateContacts("ToContacts", ProcessContactField("to"));
+                    msg.AssociateContacts("FromContacts", ProcessContactField("from"));
+                    msg.AssociateContacts("CcContacts", ProcessContactField("cc"));
+                    msg.AssociateContacts("BccContacts", ProcessContactField("bcc"));
+
+                    PopulateMessageObject();
+
+                }
+            }
+            else
+            {
+                _msg = (IMessage)Request.Command.ParameterObjects[0];
+                Message msg = (Message)_msg;
+
+                ProcessHeader();
+                ProcessFlags();
+
+                msg.AssociateContacts("ToContacts", ProcessContactField("to"));
+                msg.AssociateContacts("FromContacts", ProcessContactField("from"));
+                msg.AssociateContacts("CcContacts", ProcessContactField("cc"));
+                msg.AssociateContacts("BccContacts", ProcessContactField("bcc"));
+
+                PopulateMessageObject();
+            }
 
         }
 
-        
+        private void ProcessFlags()
+        {
+            // \Recent
+            // \Seen
+            // \Deleted
+            // \Flagged
+            // \Answered
+            // \Draft
+            //* 726 FETCH (UID 6666 FLAGS ())
+            string flags = null;
+
+            foreach (string firstLine in CmdResult.Results)
+            {
+                Match match = Regex.Match(firstLine, string.Format("^\\*\\s{0}\\s\\w+\\s\\(\\w+\\s\\d+\\s[Ff][Ll][Aa][Gg][Ss]\\s\\((?<flags>(.+))\\).*$", _msg.UID), RegexOptions.ExplicitCapture);
+                if (match.Success)
+                {
+                    flags = match.Groups["flags"].Value;
+                    break;
+                }
+
+                match = Regex.Match(firstLine,
+                                    @"^\*\s+\d+\s+[Ff][Ee][Tt][Cc][Hh]\s+\([Uu][Ii][Dd]\s+\d+\s+[Ff][Ll][Aa][Gg][Ss]\s+\((?<flags>(.*\b))\)\)");
+                if (match.Success)
+                {
+                    flags = match.Groups["flags"].Value;
+                    break;
+                }
+            }
+
+            if (flags == null) return;
+
+            if (flags.Contains(MessageFlag.Seen.ToString()))
+            {
+                _client.MailboxManager.SetMessageFlag(_msg, MessageFlag.Seen, true, true);
+            }
+            else
+            {
+                _client.MailboxManager.SetMessageFlag(_msg, MessageFlag.Seen, false, true);
+            }
+            if (flags.Equals(")")) return;
+            string[] separateFlag = flags.Split(new char[] { ' ' });
+            foreach (string flag in separateFlag)
+            {
+                object tempFlag = null;
+                string flagname = flag.TrimStart('\\').TrimEnd(')');
+                try
+                {
+                    tempFlag = Enum.Parse(typeof(MessageFlag), flagname);
+                }
+                catch (System.Exception)
+                {
+                    // flag is not in the enum
+                    // just add it to the message object as a string
+                    _msg.SetCustomFlag(flagname, true);
+                }
+                if (tempFlag == null) continue;
+                MessageFlag f = (MessageFlag)tempFlag;
+                _client.MailboxManager.SetMessageFlag(_msg, f, true, true);
+            }
+        }
+
 
         private void PopulateMessageObject()
         {
@@ -78,7 +162,7 @@ namespace InterIMAP.Common.Processors
                 {
                     if (pi == null) continue;
 
-                    if (pi.PropertyType == typeof (DateTime))
+                    if (pi.PropertyType == typeof(DateTime))
                     {
                         Match match = Regex.Match(headerPairs[key], "^.{4}\\s(?<date>(\\d+\\s\\w{3}\\s\\d+\\s\\d+:\\d+:\\d+)).*$",
                                                   RegexOptions.ExplicitCapture);
@@ -94,16 +178,16 @@ namespace InterIMAP.Common.Processors
                                 pi.SetValue(_msg, date, null);
 
                             }
-                            catch (Exception) {}
+                            catch (Exception) { }
                         }
-                        
+
                     }
                     else
                     {
                         pi.SetValue(_msg, headerPairs[key], null);
                     }
                 }
-            }        
+            }
         }
 
         private DateTime ParseDate(string date)
@@ -169,7 +253,7 @@ namespace InterIMAP.Common.Processors
 
         private PropertyInfo[] FindPropertyByKey(string key)
         {
-            PropertyInfo[] pis = typeof (Message).GetProperties();
+            PropertyInfo[] pis = typeof(Message).GetProperties();
             List<PropertyInfo> foundPI = new List<PropertyInfo>();
 
             foreach (PropertyInfo pi in pis)
@@ -191,33 +275,52 @@ namespace InterIMAP.Common.Processors
 
         private void ProcessHeader()
         {
-            for (int i = 0; i < CmdResult.Results.Count; i++)
+            // * 1 FETCH (UID 1 FLAGS (XEveIm00c6a5fee9f5dbfe8260aed08c3ace6d \Seen) BODY[HEADER] {1490}
+            int i = 0;
+            while (i < CmdResult.Results.Count)
+            {
+                if (Regex.IsMatch(CmdResult.Results[i].ToString(), string.Format(@"\*\s+\d+\s+FETCH\s+\(UID\s+{0}\s+.*", _msg.UID)))
+                    break;
+                ++i;
+            }
+            int j = i + 1;
+            while (j < CmdResult.Results.Count)
+            {
+                if (CmdResult.Results[j].ToString().StartsWith("* "))
+                    break;
+                ++j;
+            }
+            System.Diagnostics.Debug.Assert(j <= CmdResult.Results.Count);
+            if (j >= CmdResult.Results.Count)
+                j = CmdResult.Results.Count;
+            for (; i < j; i++)
             {
                 string currentLine = CmdResult.Results[i].ToString();
                 string nextLine = GetNextLine(i);
-                if (currentLine.StartsWith("*") || 
-                    currentLine.StartsWith(" ") || 
-                    String.IsNullOrEmpty(currentLine) || 
+                if (currentLine.StartsWith("*") ||
+                    currentLine.StartsWith(" ") ||
+                    String.IsNullOrEmpty(currentLine) ||
                     currentLine.Equals(")") ||
                     Regex.IsMatch(currentLine, "^IMAP[0-9]+\\s[Oo][Kk].*$")
-                    ) 
+                    )
                     continue;
 
-                if (nextLine == null) 
+                if (nextLine == null)
                     break;
                 // check if current line continues on next line
                 while (LineContinues(nextLine))
-                {                    
+                {
                     // take the current line and its continuation on the next and combine them and put them back
                     // into the results array for further processing
                     currentLine = CombineLines(i);
                     ResetIndex(currentLine, i);
-                    RemoveLine(i+1);
+                    RemoveLine(i + 1);
+                    --j;
                     nextLine = GetNextLine(i);
                 }
 
                 string headerField = currentLine.Substring(0, currentLine.IndexOf(':')).ToLower();
-                string headerValue = currentLine.Substring(currentLine.IndexOf(':') + 1).Trim();                
+                string headerValue = currentLine.Substring(currentLine.IndexOf(':') + 1).Trim();
                 StoreFieldValue(headerField, headerValue);
             }
         }
@@ -251,16 +354,16 @@ namespace InterIMAP.Common.Processors
             headerPairs.Remove(field);
             return GetContacts(data);
         }
-        
+
         private IContact[] GetContacts(string str)
         {
             List<IContact> contacts = new List<IContact>();
-            
+
             string[] addresses = ExtractAddresses(str);
 
             foreach (string addr in addresses)
             {
-                Dictionary<string, string> parts = ParseAddress(addr.Trim(new char[] {','}));
+                Dictionary<string, string> parts = ParseAddress(addr.Trim(new char[] { ',' }));
 
                 IContact contact = _client.MailboxManager.GetContactByEMail(parts["email"]) ??
                                    (parts["name"] != null ? _client.MailboxManager.AddContact(parts["name"], parts["email"]) : _client.MailboxManager.AddContact(parts["first"], parts["last"], parts["email"]));
@@ -286,9 +389,9 @@ namespace InterIMAP.Common.Processors
                 first = match.Groups["first"].Value.Trim();
                 last = match.Groups["last"].Value.Trim();
                 email = match.Groups["email"].Value.Trim();
-// ReSharper disable RedundantAssignment
+                // ReSharper disable RedundantAssignment
                 name = null;
-// ReSharper restore RedundantAssignment
+                // ReSharper restore RedundantAssignment
             }
 
             match = Regex.Match(addr, "^[\"]*(?<last>([^,]*)),\\s*(?<first>([^\"]*))\\W*\\s[<]*(?<email>([^>]*))[>]*$");
@@ -297,9 +400,9 @@ namespace InterIMAP.Common.Processors
                 first = match.Groups["first"].Value.Trim();
                 last = match.Groups["last"].Value.Trim();
                 email = match.Groups["email"].Value.Trim();
-// ReSharper disable RedundantAssignment
+                // ReSharper disable RedundantAssignment
                 name = null;
-// ReSharper restore RedundantAssignment
+                // ReSharper restore RedundantAssignment
             }
 
             match = Regex.Match(addr, "^[<]*(?<email>(\\w+@\\w+\\.\\w+))[>]*$");
@@ -308,9 +411,9 @@ namespace InterIMAP.Common.Processors
                 first = null;
                 last = null;
                 email = match.Groups["email"].Value.Trim();
-// ReSharper disable RedundantAssignment
+                // ReSharper disable RedundantAssignment
                 name = null;
-// ReSharper restore RedundantAssignment
+                // ReSharper restore RedundantAssignment
             }
 
             match = Regex.Match(addr, "^(?<name>(.[^<>@\\.,]*))$");
@@ -319,9 +422,9 @@ namespace InterIMAP.Common.Processors
                 first = match.Groups["name"].Value.Trim();
                 last = null;
                 email = null;
-// ReSharper disable RedundantAssignment
+                // ReSharper disable RedundantAssignment
                 name = null;
-// ReSharper restore RedundantAssignment
+                // ReSharper restore RedundantAssignment
             }
 
             match = Regex.Match(addr, "^\\s*[\"']*(?<name>([^<\"']*))[\"\']*\\s*[<]*(?<email>([^>]*))[>]*$");
@@ -341,7 +444,7 @@ namespace InterIMAP.Common.Processors
                 name = match.Groups["name"].Value.Trim();
                 email = match.Groups["email"].Value.Trim();
             }
-            
+
             addrParts.Add("first", first);
             addrParts.Add("last", last);
             addrParts.Add("email", email);
@@ -368,13 +471,13 @@ namespace InterIMAP.Common.Processors
                 if (commaIdx > atIdx && atIdx > 0)
                 {
                     // we are at a comma after an '@'
-                    string temp = str.Substring(lastComma, commaIdx-lastComma);
-                    addresses.Add(temp.Trim(new char[]{' ',','}));
+                    string temp = str.Substring(lastComma, commaIdx - lastComma);
+                    addresses.Add(temp.Trim(new char[] { ' ', ',' }));
                     lastComma = commaIdx;
                     atIdx = commaIdx;
                 }
 
-                if (c == str.Length-1 && lastComma > 0 && c != lastComma)
+                if (c == str.Length - 1 && lastComma > 0 && c != lastComma)
                 {
                     string temp = str.Substring(lastComma, str.Length - lastComma);
                     addresses.Add(temp);
@@ -402,12 +505,12 @@ namespace InterIMAP.Common.Processors
 
         private string CombineLines(int lineIdx)
         {
-            return String.Format("{0}{1}", CmdResult.Results[lineIdx], CmdResult.Results[lineIdx + 1].ToString().Replace("\t",""));
+            return String.Format("{0}{1}", CmdResult.Results[lineIdx], CmdResult.Results[lineIdx + 1].ToString().Replace("\t", ""));
         }
 
         private bool LineContinues(string line1)
         {
-            return line1.StartsWith("\t") || line1.StartsWith(" ");                
+            return line1.StartsWith("\t") || line1.StartsWith(" ");
         }
 
         private void RemoveLine(int idx)

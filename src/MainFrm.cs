@@ -350,15 +350,28 @@ namespace EveImSync
 
                 string hash = null;
                 List<string> flags = msg.GetCustomFlags();
+                int eveImFlagCount = 0;
                 foreach (string flag in flags)
                 {
                     if (flag.StartsWith("XEveIm"))
                     {
+                        eveImFlagCount++;
                         hash = flag.Substring(6);
-                        break;
                     }
                 }
 
+                if (eveImFlagCount > 1)
+                {
+                    // remove all XEveIm tags
+                    foreach (string flag in flags)
+                    {
+                        if (flag.StartsWith("XEveIm"))
+                        {
+                            client.MailboxManager.SetMessageFlag(msg, flag, false);
+                        }
+                    }
+                    hash = null;
+                }
                 bool toAdd = true;
                 if ((hash != null) && (hash != string.Empty))
                 {
@@ -759,7 +772,7 @@ namespace EveImSync
                     foreach (Attachment attachment in n.Attachments)
                     {
                         Regex rx = new Regex(@"<en-media\b[^>]*?hash=""" + attachment.Hash + @"""[^>]*/>", RegexOptions.IgnoreCase);
-                        if (attachment.ContentType.Contains("image") && rx.Match(htmlBody).Success)
+                        if ((attachment.ContentType != null) && (attachment.ContentType.Contains("image") && rx.Match(htmlBody).Success))
                         {
                             // replace the <en-media /> tag with an <img /> tag
                             htmlBody = rx.Replace(htmlBody, @"<img src=""cid:" + attachment.Hash + @"""/>");
@@ -777,8 +790,8 @@ namespace EveImSync
                             byte[] data = Convert.FromBase64String(attachment.Base64Data);
                             Stream s = new MemoryStream(data);
                             ContentType ct = new ContentType();
-                            ct.Name = attachment.FileName;
-                            ct.MediaType = attachment.ContentType;
+                            ct.Name = attachment.FileName != null ? attachment.FileName : string.Empty;
+                            ct.MediaType = attachment.ContentType != null ? attachment.ContentType : string.Empty;
                             System.Net.Mail.Attachment a = new System.Net.Mail.Attachment(s, ct);
                             attachedResources.Add(a);
                         }

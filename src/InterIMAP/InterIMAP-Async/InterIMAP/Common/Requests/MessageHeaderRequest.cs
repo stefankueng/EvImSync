@@ -54,5 +54,20 @@ namespace InterIMAP.Common.Requests
             ProcessorType = typeof (MessageHeaderProcessor);
         }
 
+        /// <summary>
+        /// Create a new MessageHeaderRequest
+        /// </summary>
+        /// <param name="msg"></param>
+        /// <param name="callback"></param>
+        public MessageHeaderRequest(IFolder folder, RequestCompletedCallback callback)
+            : base(callback)
+        {
+            if (folder == null)
+                throw new NullReferenceException("MessageHeaderRequest: folder is null");
+
+            PreCommand = new ExamineFolderCommand(folder, null);
+            Command = new MessageHeaderCommand(folder, null);
+            ProcessorType = typeof(MessageHeaderProcessor);
+        }
     }
 }

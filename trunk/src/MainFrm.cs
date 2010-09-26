@@ -321,29 +321,17 @@ namespace EveImSync
                 cancelled = true;
                 return;
             }
+            SetInfo(null, string.Format("scanning folder \"{0}\"", folder), 0, 1);
             client.RequestManager.SubmitAndWait(new MessageListRequest(currentFolder, null), false);
 
-            IMessage[] msgList = client.MailboxManager.GetMessagesByFolder(currentFolder);
-            int msgCount = 0;
-            int msgCounter = 0;
-            foreach (IMessage cm in msgList)
-            {
-                msgCount++;
-            }
+            client.RequestManager.SubmitAndWait(new MessageHeaderRequest(currentFolder, null), false);
 
-            foreach (IMessage msg in msgList)
+            foreach (IMessage msg in currentFolder.Messages)
             {
                 if (cancelled)
                 {
                     break;
                 }
-
-                SetInfo(null, string.Format("scanning folder \"{0}\", message {1} of {2}", folder, ++msgCounter, msgCount), 0, 1);
-
-                client.RequestManager.SubmitAndWait(new MessageFlagRequest(msg, delegate
-                {
-                    client.RequestManager.SubmitAndWait(new MessageHeaderRequest(msg, null), false);
-                }), false);
 
                 Note note = new Note();
                 note.Title = msg.Subject;

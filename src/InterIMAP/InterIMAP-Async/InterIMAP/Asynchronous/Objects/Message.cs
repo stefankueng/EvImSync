@@ -67,7 +67,7 @@ namespace InterIMAP.Asynchronous.Objects
             set
             {
                 string temp = value.Trim();
-                if (temp.StartsWith("=?"))
+                if (temp.Contains("=?"))
                 {
                     temp = DecodeSubject(temp);
                 }
@@ -549,7 +549,7 @@ namespace InterIMAP.Asynchronous.Objects
             string hex = m.Groups[2].Value;
             int iHex = Convert.ToInt32(hex, 16);
 
-            // Rerutn the string in the charset defined
+            // Return the string in the charset defined
             byte[] bytes = new byte[1];
             bytes[0] = Convert.ToByte(iHex);
             return Encoding.GetEncoding(charSet).GetString(bytes);

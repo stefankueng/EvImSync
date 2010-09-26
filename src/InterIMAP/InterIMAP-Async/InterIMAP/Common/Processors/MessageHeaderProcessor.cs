@@ -104,7 +104,7 @@ namespace InterIMAP.Common.Processors
 
             foreach (string firstLine in CmdResult.Results)
             {
-                Match match = Regex.Match(firstLine, string.Format("^\\*\\s{0}\\s\\w+\\s\\(\\w+\\s\\d+\\s[Ff][Ll][Aa][Gg][Ss]\\s\\((?<flags>(.+))\\).*$", _msg.UID), RegexOptions.ExplicitCapture);
+                Match match = Regex.Match(firstLine, string.Format(@"^\*\s\d+\s\w+\s\(\w+\s{0}\s[Ff][Ll][Aa][Gg][Ss]\s\((?<flags>(.+))\).*$", _msg.UID), RegexOptions.ExplicitCapture);
                 if (match.Success)
                 {
                     flags = match.Groups["flags"].Value;

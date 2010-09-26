@@ -195,7 +195,9 @@ namespace EveImSync
             enscript.ENScriptPath = enscriptpath;
 
             string exportFile = Path.GetTempFileName();
-
+#if DEBUG
+            exportFile = @"D:\Development\evimsync\" + notebook + ".xml";
+#endif
             if (enscript.ExportNotebook(notebook, exportFile))
             {
                 return exportFile;
@@ -353,7 +355,7 @@ namespace EveImSync
                 int eveImFlagCount = 0;
                 foreach (string flag in flags)
                 {
-                    if (flag.StartsWith("XEveIm"))
+                    if (flag.ToLower().StartsWith("xeveim"))
                     {
                         eveImFlagCount++;
                         hash = flag.Substring(6);
@@ -365,7 +367,7 @@ namespace EveImSync
                     // remove all XEveIm tags
                     foreach (string flag in flags)
                     {
-                        if (flag.StartsWith("XEveIm"))
+                        if (flag.ToLower().StartsWith("xeveim"))
                         {
                             client.MailboxManager.SetMessageFlag(msg, flag, false);
                         }
@@ -606,7 +608,7 @@ namespace EveImSync
                         List<string> fls = new List<string>(msg.GetCustomFlags());
                         foreach (string flag in fls)
                         {
-                            if (flag.StartsWith("XEveIm"))
+                            if (flag.ToLower().StartsWith("xeveim"))
                             {
                                 client.MailboxManager.SetMessageFlag(msg, flag, false);
                             }
@@ -616,7 +618,7 @@ namespace EveImSync
                         n.Date = msg.DateReceived;
 
                         // update the XEveImHash tag for this email
-                        string customFlag = "XEveIm" + n.ContentHash;
+                        string customFlag = "xeveim" + n.ContentHash;
                         msg.SetCustomFlag(customFlag, false);
                         client.MailboxManager.SetMessageFlag(msg, customFlag, true);
 
@@ -633,7 +635,7 @@ namespace EveImSync
                             List<string> flags = m.GetCustomFlags();
                             foreach (string flag in flags)
                             {
-                                if (flag.StartsWith("XEveIm"))
+                                if (flag.ToLower().StartsWith("xeveim"))
                                 {
                                     hash = flag.Substring(6);
                                     break;
@@ -665,6 +667,9 @@ namespace EveImSync
 
                         // generate the Evernote export file
                         string path = Path.GetTempFileName();
+#if DEBUG
+                        path = @"D:\Development\evimsync\email.xml";
+#endif
                         n.SaveEvernoteExportData(path);
 
                         // import the export file into Evernote
@@ -834,7 +839,7 @@ namespace EveImSync
                     }
 
                     IFolder currentFolder = GetOrCreateFolderByPath(tagfolder);
-                    string customFlag = "XEveIm" + n.ContentHash;
+                    string customFlag = "xeveim" + n.ContentHash;
 
                     // now upload the new note
                     int numMsg = currentFolder.Messages.Length;

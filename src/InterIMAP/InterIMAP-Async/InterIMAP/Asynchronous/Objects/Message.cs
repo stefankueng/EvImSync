@@ -352,7 +352,14 @@ namespace InterIMAP.Asynchronous.Objects
         {
             get
             {
-                return MessageContent.Length > 0 && (!String.IsNullOrEmpty(MessageContent[0].TextData) || !String.IsNullOrEmpty(MessageContent[0].HTMLData) || MessageContent[0].BinaryData != null);
+                bool loaded = false;
+                foreach (IMessageContent content in MessageContent)
+                {
+                    loaded = loaded || (MessageContent.Length > 0 && (!String.IsNullOrEmpty(content.TextData) || !String.IsNullOrEmpty(content.HTMLData) || content.BinaryData != null));
+                    if (loaded)
+                        break;
+                }
+                return loaded;
             }
         }
         #endregion

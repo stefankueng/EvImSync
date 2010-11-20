@@ -90,6 +90,9 @@ namespace EveImSync
         public bool ExportNotebook(string notebook, string exportFile)
         {
             bool ret = false;
+            if (!File.Exists(exePath))
+                return ret;
+
             ProcessStartInfo processStartInfo = new ProcessStartInfo(this.exePath, "exportNotes /q \"notebook:" + notebook + "\" /f " + exportFile);
             processStartInfo.UseShellExecute = false;
             processStartInfo.ErrorDialog = false;

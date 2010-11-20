@@ -186,7 +186,7 @@ namespace InterIMAP.Common.Processors
                                 RegexOptions.IgnoreCase
                         );
 
-            string decoded = re.Replace(encoded, new MatchEvaluator(HexDecoderEvaluator));
+            string decoded = re.Replace(encoded, new MatchEvaluator(HexDecoderEvaluator)).Replace("=\r\n", "").Replace("=\n", "");
             return decoded.Replace("_", " ");
         }
 

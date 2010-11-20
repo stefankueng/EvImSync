@@ -348,14 +348,8 @@ namespace InterIMAP.Asynchronous.Client
         private string ReadLine()
         {
             string line = "";
-            try
-            {
-                line = UseSSL ? _sslReader.ReadLine() : _stdReader.ReadLine();
-            }
-            catch (IOException)
-            {
+            line = UseSSL ? _sslReader.ReadLine() : _stdReader.ReadLine();
 
-            }
             return line;
         }
 

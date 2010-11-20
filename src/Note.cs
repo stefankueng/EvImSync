@@ -114,7 +114,7 @@ namespace EveImSync
 
             // now we have double-escaped sequences like "&amp;uuml;" instead of
             // a simple "&uuml;" - we have to fix those
-            Regex rx = new Regex(@"&amp;(\w{1,6}?;)", RegexOptions.IgnoreCase);
+            Regex rx = new Regex(@"&amp;([A-Za-z#0-9]{1,6}?;)", RegexOptions.IgnoreCase);
             html = rx.Replace(html, "&$1");
             rx = new Regex(@"<!doctype\b[^>]*>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
             html = rx.Replace(html, string.Empty);

@@ -58,7 +58,7 @@ namespace InterIMAP.Common.Processors
 
             bool isBinary = content.ContentTransferEncoding.ToUpper().Contains("BASE64");
             bool isHTML = content.ContentType.ToUpper().Contains("HTML");
-            bool isQuotedPrintable = content.ContentType.ToUpper().Contains("QUOTED");
+            bool isQuotedPrintable = content.ContentType.ToUpper().Contains("QUOTED") || content.ContentTransferEncoding.ToUpper().Contains("QUOTED");
             StringBuilder sb = new StringBuilder();
 
             foreach (string line in CmdResult.Results)

@@ -165,6 +165,10 @@ namespace EveImSync
                     if (client != null)
                         client.Stop();
                 }
+                else
+                {
+                    MessageBox.Show(string.Format("The notebook \"{0}\" either does not exist or might be empty\nMake sure the notebook exists and has at least one note in it!", syncPair.EvernoteNotebook));
+                }
             }
 
             if (!cancelled)
@@ -314,7 +318,6 @@ namespace EveImSync
                 return;
             }
 
-            SetInfo(null, string.Format("scanning folder \"{0}\"", folder), 0, 1);
             client.RequestManager.SubmitAndWait(new FolderTreeRequest(folder, null), false);
             IFolder currentFolder = client.MailboxManager.GetFolderByPath(folder);
             if (currentFolder == null)
@@ -323,7 +326,6 @@ namespace EveImSync
                 cancelled = true;
                 return;
             }
-            SetInfo(null, string.Format("scanning folder \"{0}\"", folder), 0, 1);
             client.RequestManager.SubmitAndWait(new MessageListRequest(currentFolder, null), false);
 
             client.RequestManager.SubmitAndWait(new MessageHeaderRequest(currentFolder, null), false);
@@ -379,23 +381,21 @@ namespace EveImSync
                 {
                     // does this note already exist?
                     note.ContentHash = hash;
-                    foreach (Note n in noteList)
+                    Note n = noteList.Find(delegate(Note findNote) { return findNote.ContentHash == note.ContentHash; });
+                    if (n != null)
                     {
-                        if (n.ContentHash == note.ContentHash)
+                        if (folder.IndexOf('/') >= 0)
                         {
-                            if (folder.IndexOf('/') >= 0)
-                            {
-                                n.Tags.Add(folder.Substring(folder.IndexOf('/') + 1));
-                            }
-                            else
-                            {
-                                n.Tags.Add(string.Empty);
-                            }
-
-                            n.IMAPMessages.Add(note.IMAPMessages[0]);
-                            toAdd = false;
-                            break;
+                            n.Tags.Add(folder.Substring(folder.IndexOf('/') + 1));
                         }
+                        else
+                        {
+                            n.Tags.Add(string.Empty);
+                        }
+
+                        n.IMAPMessages.Add(note.IMAPMessages[0]);
+                        toAdd = false;
+                        break;
                     }
                 }
 
@@ -406,13 +406,16 @@ namespace EveImSync
             }
 
             IFolder[] subFolders = client.MailboxManager.GetSubFolders(currentFolder);
+            int subfolderCounter = 0;
             foreach (IFolder f in subFolders)
             {
                 if (cancelled)
                 {
                     break;
                 }
+                subfolderCounter++;
 
+                SetInfo(null, string.Format("scanning folder \"{0}\" ({1} of {2})", f.FullPath, subfolderCounter, subFolders.Length), subfolderCounter, subFolders.Length);
                 GetMailsListRecursive(f.FullPath, ref noteList);
             }
         }
@@ -504,7 +507,7 @@ namespace EveImSync
                         break;
                     }
 
-                    SetInfo(null, string.Format("adjusting tags for email\"{0}\"", note.Title), counter, notesIMAP.Count);
+                    SetInfo(null, string.Format("adjusting tags for email\"{0}\" ({1} of {2})", note.Title, counter, notesIMAP.Count), counter, notesIMAP.Count);
 
                     foreach (string tag in note.NewTags)
                     {

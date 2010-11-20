@@ -124,11 +124,19 @@ namespace EveImSync
             html = rx.Replace(html, "$1");
             rx = new Regex(@"<\?xml\b[^>]*\?>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
             html = rx.Replace(html, string.Empty);
+            // remove office/word tags
+            rx = new Regex(@"</?o:p>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            html = rx.Replace(html, string.Empty);
+            rx = new Regex(@"</?_o3a_p>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            html = rx.Replace(html, string.Empty);
+            rx = new Regex(@"</?_st13a_city>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+            html = rx.Replace(html, string.Empty);
+            // remove comments
             rx = new Regex(@"<!--.*?-->", RegexOptions.IgnoreCase | RegexOptions.Singleline);
             html = rx.Replace(html, string.Empty);
-            rx = new Regex(@"<body\b[^>]*>(.*?)</body>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
             // ink notes must not have any content at all
+            rx = new Regex(@"<body\b[^>]*>(.*?)</body>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
             if (html.IndexOf("application/vnd.evernote.ink", StringComparison.InvariantCultureIgnoreCase) >= 0)
                 Content = string.Empty;
             else
@@ -168,8 +176,8 @@ namespace EveImSync
                 mediaTag = mediaTag.Replace(srcString, '"' + hashHex + '"');
                 int imgStart = mediaTag.IndexOf('<') + 1;
                 int imgEnd = mediaTag.IndexOfAny(" \t".ToCharArray(), imgStart);
-                string typeString = mediaTag.Substring(imgStart, imgEnd - imgStart);
-                mediaTag = mediaTag.Replace(typeString, "en-media type=\"" + contentType.ToLower() + "\"");
+                mediaTag = mediaTag.Remove(imgStart, imgEnd - imgStart);
+                mediaTag = mediaTag.Insert(imgStart, "en-media type=\"" + contentType.ToLower() + "\"");
                 Content = content.Replace(refTag, mediaTag);
             }
             else

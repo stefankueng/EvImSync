@@ -115,7 +115,7 @@ namespace EveImSync
             // now we have double-escaped sequences like "&amp;uuml;" instead of
             // a simple "&uuml;" - we have to fix those
             Regex rx = new Regex(@"&amp;(\w{1,6}?;)", RegexOptions.IgnoreCase);
-            html = rx.Replace(html, "&$1").Replace("&lt;", "<").Replace("&gt;", ">").Replace("&quot;", "\"");
+            html = rx.Replace(html, "&$1");
             rx = new Regex(@"<!doctype\b[^>]*>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
             html = rx.Replace(html, string.Empty);
             rx = new Regex(@"<head\b[^>]*>(.*?)</head>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
@@ -161,7 +161,7 @@ namespace EveImSync
                 int bracketIndex = content.LastIndexOf('<', idIndex);
                 int endBracket = content.IndexOf('>', bracketIndex);
                 string refTag = content.Substring(bracketIndex, endBracket - bracketIndex + 1);
-                int srcStart = refTag.IndexOf('"');
+                int srcStart = refTag.ToLower().IndexOf("src=\"")+4;
                 int srcEnd = refTag.IndexOf('"', srcStart + 1);
                 string srcString = refTag.Substring(srcStart, srcEnd - srcStart + 1);
                 string mediaTag = refTag.Replace("src=", "hash=");

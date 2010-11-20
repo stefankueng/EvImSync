@@ -507,7 +507,7 @@ namespace EveImSync
                         break;
                     }
 
-                    SetInfo(null, string.Format("adjusting tags for email\"{0}\" ({1} of {2})", note.Title, counter, notesIMAP.Count), counter, notesIMAP.Count);
+                    SetInfo(null, string.Format("adjusting tags for email\"{0}\" ({1} of {2})", note.Title, counter+1, notesIMAP.Count), counter, notesIMAP.Count);
 
                     foreach (string tag in note.NewTags)
                     {
@@ -574,7 +574,7 @@ namespace EveImSync
                 if (n.Action == NoteAction.ImportToEvernote)
                 {
                     IMessage msg = n.IMAPMessages[0];
-                    SetInfo(null, string.Format("getting email\"{0}\"", msg.Subject), counter++, numNotesToUpload);
+                    SetInfo(null, string.Format("getting email ({0} of {1}) : \"{2}\"", counter+1, numNotesToUpload, msg.Subject), counter++, numNotesToUpload);
 
                     FullMessageRequest fmr = new FullMessageRequest(client, msg);
 
@@ -712,7 +712,7 @@ namespace EveImSync
 
                 if (n.Action == NoteAction.UploadToIMAP)
                 {
-                    SetInfo(null, string.Format("uploading note \"{0}\"", n.Title), counter++, uploadcount);
+                    SetInfo(null, string.Format("uploading note ({0} of {1}) : \"{2}\"", counter+1, uploadcount, n.Title), counter++, uploadcount);
 
                     XmlTextReader xtrInput;
                     XmlDocument xmlDocItem;

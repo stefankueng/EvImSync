@@ -149,6 +149,7 @@ namespace EveImSync
             text = text.Replace("]]>", "]]]]><![CDATA[>");
             // strip invalid xml chars
             text = XmlSanitizer.SanitizeXmlString(text).Replace("&", string.Empty);
+            text = System.Security.SecurityElement.Escape(text);
             Content = "<pre>" + text + "</pre>";
         }
 

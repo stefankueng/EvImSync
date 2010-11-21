@@ -147,10 +147,14 @@ namespace EveImSync
                 syncStep = SyncStep.Start;
                 SetInfo("Extracting notes from Evernote", "", 0, 0);
                 string exportFile = ExtractNotes(syncPair.EvernoteNotebook);
-                if (exportFile != null && exportFile != string.Empty)
+                if (exportFile != null)
                 {
-                    SetInfo("Parsing notes from Evernote", "", 0, 0);
-                    List<Note> notesEvernote = ParseNotes(exportFile);
+                    List<Note> notesEvernote = new List<Note>();
+                    if (exportFile != string.Empty)
+                    {
+                        SetInfo("Parsing notes from Evernote", "", 0, 0);
+                        notesEvernote = ParseNotes(exportFile);
+                    }
                     SetInfo("Fetching list of emails", "", 0, 0);
                     List<Note> notesIMAP = GetMailList(syncPair.IMAPServer, syncPair.IMAPUsername, syncPair.IMAPPassword, syncPair.IMAPNotesFolder);
                     SetInfo("Figuring out what needs to be synced", "", 0, 0);
@@ -159,15 +163,18 @@ namespace EveImSync
                     AdjustIMAPTags(syncPair.IMAPNotesFolder, notesIMAP);
                     SetInfo("Downloading emails", "", 0, 0);
                     DownloadAndImportMailsToEvernote(notesIMAP, syncPair.EvernoteNotebook);
-                    SetInfo("Uploading emails", "", 0, 0);
-                    UploadNotesAsMails(syncPair.IMAPNotesFolder, notesEvernote, exportFile);
+                    if (exportFile != string.Empty)
+                    {
+                        SetInfo("Uploading emails", "", 0, 0);
+                        UploadNotesAsMails(syncPair.IMAPNotesFolder, notesEvernote, exportFile);
+                    }
                     syncPair.LastSyncTime = DateTime.Now;
                     if (client != null)
                         client.Stop();
                 }
                 else
                 {
-                    MessageBox.Show(string.Format("The notebook \"{0}\" either does not exist or might be empty\nMake sure the notebook exists and has at least one note in it!", syncPair.EvernoteNotebook));
+                    MessageBox.Show(string.Format("The notebook \"{0}\" either does not exist or isn't accessible!", syncPair.EvernoteNotebook));
                 }
             }
 
@@ -206,6 +213,12 @@ namespace EveImSync
             {
                 return exportFile;
             }
+
+            // in case the selected notebook is empty, we don't get
+            // an exportFile. But just to make sure the notebook
+            // exists anyway, we check that here before giving up
+            if (enscript.GetNotebooks().Contains(notebook))
+                return string.Empty;
 
             return null;
         }
@@ -507,7 +520,7 @@ namespace EveImSync
                         break;
                     }
 
-                    SetInfo(null, string.Format("adjusting tags for email\"{0}\" ({1} of {2})", note.Title, counter+1, notesIMAP.Count), counter, notesIMAP.Count);
+                    SetInfo(null, string.Format("adjusting tags for email\"{0}\" ({1} of {2})", note.Title, counter + 1, notesIMAP.Count), counter, notesIMAP.Count);
 
                     foreach (string tag in note.NewTags)
                     {
@@ -574,7 +587,7 @@ namespace EveImSync
                 if (n.Action == NoteAction.ImportToEvernote)
                 {
                     IMessage msg = n.IMAPMessages[0];
-                    SetInfo(null, string.Format("getting email ({0} of {1}) : \"{2}\"", counter+1, numNotesToUpload, msg.Subject), counter++, numNotesToUpload);
+                    SetInfo(null, string.Format("getting email ({0} of {1}) : \"{2}\"", counter + 1, numNotesToUpload, msg.Subject), counter++, numNotesToUpload);
 
                     FullMessageRequest fmr = new FullMessageRequest(client, msg);
 
@@ -594,6 +607,10 @@ namespace EveImSync
                                 else if ((msgcontent.HTMLData != null) && ((msgcontent.HTMLData.Length > 0) || (n.Content == null)))
                                 {
                                     n.SetHtmlContent(msgcontent.HTMLData);
+                                }
+                                else if ((msgcontent.ContentFilename != null) && (msgcontent.ContentFilename.Length > 0))
+                                {
+                                    n.AddAttachment(System.Text.Encoding.ASCII.GetBytes(msgcontent.TextData), msgcontent.ContentId, msgcontent.ContentType, msgcontent.ContentFilename);
                                 }
 
                                 Debug.Assert(n.ContentHash != string.Empty, "Hash is empty!");
@@ -712,7 +729,7 @@ namespace EveImSync
 
                 if (n.Action == NoteAction.UploadToIMAP)
                 {
-                    SetInfo(null, string.Format("uploading note ({0} of {1}) : \"{2}\"", counter+1, uploadcount, n.Title), counter++, uploadcount);
+                    SetInfo(null, string.Format("uploading note ({0} of {1}) : \"{2}\"", counter + 1, uploadcount, n.Title), counter++, uploadcount);
 
                     XmlTextReader xtrInput;
                     XmlDocument xmlDocItem;

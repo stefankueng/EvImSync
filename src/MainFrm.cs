@@ -395,7 +395,7 @@ namespace EveImSync
                     // does this note already exist?
                     note.ContentHash = hash;
                     Note n = noteList.Find(delegate(Note findNote) { return findNote.ContentHash == note.ContentHash; });
-                    if (n != null)
+                    if ((n != null)&&(n.Title.Equals(note.Title)))
                     {
                         if (folder.IndexOf('/') >= 0)
                         {

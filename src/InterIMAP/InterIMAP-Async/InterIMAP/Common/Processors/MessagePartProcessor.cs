@@ -44,7 +44,6 @@ namespace InterIMAP.Common.Processors
             //* 72 FETCH (UID 4913 BODY[1] {6508}
             //const string partFetchHeader = @"^[\*] [0-9]+ FETCH \([UID [0-9]+]*BODY\[[0-9]+\] \{[0-9]+\}$";
             const string partFetchHeader = "^\\*\\s*\\d*\\s*\\w*";
-            const string partFetchPreFooter = "^\\s*\\w*\\s*[0-9]*\\)$";
             const string partFetchFooter = "^IMAP[0-9]+\\s[Oo][Kk]";
 
 
@@ -64,7 +63,6 @@ namespace InterIMAP.Common.Processors
             foreach (string line in CmdResult.Results)
             {
                 if (Regex.IsMatch(line.ToUpper(), partFetchHeader)) continue;
-                if (Regex.IsMatch(line.ToUpper(), partFetchPreFooter)) continue;
                 if (Regex.IsMatch(line.ToUpper(), partFetchFooter))
                     continue;
 
@@ -100,7 +98,7 @@ namespace InterIMAP.Common.Processors
                     string preEncoded = sb.ToString().Trim().TrimEnd(')');
                     content.HTMLData = base64Decode(preEncoded);
                 }
-                else if (ctType.Contains("TEXT") && ((ctDisposition == null) || !ctDisposition.Contains("ATTACHMENT")) && sContentTransferEncoding.Contains("BASE64"))
+                else if (ctType.Contains("TEXT") && !ctType.Contains("APPLICATION") && ((ctDisposition == null) || !ctDisposition.Contains("ATTACHMENT")) && sContentTransferEncoding.Contains("BASE64"))
                 {
                     string preEncoded = sb.ToString().Trim().TrimEnd(')');
                     content.TextData = base64Decode(preEncoded);

@@ -395,7 +395,7 @@ namespace EveImSync
                     // does this note already exist?
                     note.ContentHash = hash;
                     Note n = noteList.Find(delegate(Note findNote) { return findNote.ContentHash == note.ContentHash; });
-                    if ((n != null)&&(n.Title.Equals(note.Title)))
+                    if ((n != null) && (n.Title.Equals(note.Title)))
                     {
                         if (folder.IndexOf('/') >= 0)
                         {
@@ -408,7 +408,6 @@ namespace EveImSync
 
                         n.IMAPMessages.Add(note.IMAPMessages[0]);
                         toAdd = false;
-                        break;
                     }
                 }
 
@@ -444,7 +443,7 @@ namespace EveImSync
                     break;
                 }
 
-                if (n.ContentHash == string.Empty)
+                if ((n.ContentHash == string.Empty) || (n.ContentHash == null))
                 {
                     // Notes with no hashs haven't been downloaded and processed yet, so they're new
                     // and must be imported into Evernote

@@ -101,10 +101,10 @@ namespace InterIMAP.Common.Processors
             // \Draft
             //* 726 FETCH (UID 6666 FLAGS ())
             string flags = null;
-
+            int msgUID = _msg.UID;
             foreach (string firstLine in CmdResult.Results)
             {
-                Match match = Regex.Match(firstLine, string.Format(@"^\*\s\d+\s\w+\s\(\w+\s{0}\s[Ff][Ll][Aa][Gg][Ss]\s\((?<flags>(.+))\).*$", _msg.UID), RegexOptions.ExplicitCapture);
+                Match match = Regex.Match(firstLine, string.Format(@"^\*\s\d+\s\w+\s\(\w+\s{0}\s[Ff][Ll][Aa][Gg][Ss]\s\((?<flags>(.+))\).*$", msgUID), RegexOptions.ExplicitCapture);
                 if (match.Success)
                 {
                     flags = match.Groups["flags"].Value;
@@ -277,9 +277,10 @@ namespace InterIMAP.Common.Processors
         {
             // * 1 FETCH (UID 1 FLAGS (XEveIm00c6a5fee9f5dbfe8260aed08c3ace6d \Seen) BODY[HEADER] {1490}
             int i = 0;
+            int msgUID = _msg.UID;
             while (i < CmdResult.Results.Count)
             {
-                if (Regex.IsMatch(CmdResult.Results[i].ToString(), string.Format(@"\*\s+\d+\s+FETCH\s+\(UID\s+{0}\s+.*", _msg.UID)))
+                if (Regex.IsMatch(CmdResult.Results[i].ToString(), string.Format(@"\*\s+\d+\s+FETCH\s+\(UID\s+{0}\s+.*", msgUID)))
                     break;
                 ++i;
             }

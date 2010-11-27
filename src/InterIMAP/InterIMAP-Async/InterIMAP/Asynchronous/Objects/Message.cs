@@ -520,19 +520,21 @@ namespace InterIMAP.Asynchronous.Objects
         private string DecodeSubject(string input)
         {
             StringBuilder sb = new StringBuilder();
-            MatchCollection matches = Regex.Matches(input, @"=\?(?<charset>[\S]+)\?(?<encoding>.)\?(?<data>[\S]+[=]*)\?=");
+            MatchCollection matches = Regex.Matches(input, @"(?<predata>[\w\s]+)?=\?(?<charset>[\S]+)\?(?<encoding>.)\?(?<data>[\S]+[=]*)\?=");
             foreach (Match m in matches)
             {
                 charSet = m.Groups["charset"].Value;
                 string encoding = m.Groups["encoding"].Value;
                 string data = m.Groups["data"].Value;
+                string predata = m.Groups["predata"].Value;
+                sb.Append(predata);
 
                 Encoding enc = Encoding.GetEncoding(charSet.ToLower());
 
                 if (encoding.ToLower().Equals("b"))
                 {
                     byte[] d = Convert.FromBase64String(data);
-                    sb.Append(Encoding.ASCII.GetString(d));
+                    sb.Append(enc.GetString(d));
                 }
                 else
                 {

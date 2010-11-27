@@ -40,6 +40,7 @@ namespace InterIMAP.Common.Processors
     {
         private IMessage _msg;
         private readonly Dictionary<string, string> headerPairs = new Dictionary<string, string>();
+        private static List<KeyValuePair<string, PropertyInfo>> headernames = null;
 
         /// <summary>
         /// The message object this processor is working on
@@ -253,20 +254,31 @@ namespace InterIMAP.Common.Processors
 
         private PropertyInfo[] FindPropertyByKey(string key)
         {
-            PropertyInfo[] pis = typeof(Message).GetProperties();
-            List<PropertyInfo> foundPI = new List<PropertyInfo>();
-
-            foreach (PropertyInfo pi in pis)
+            if (headernames == null)
             {
-                object[] attribs = pi.GetCustomAttributes(false);
-                foreach (object obj in attribs)
+                headernames = new List<KeyValuePair<string, PropertyInfo>>();
+                PropertyInfo[] pis = typeof(Message).GetProperties();
+
+                foreach (PropertyInfo pi in pis)
                 {
-                    if (obj is HeaderName)
+                    object[] attribs = pi.GetCustomAttributes(false);
+                    foreach (object obj in attribs)
                     {
-                        if (((HeaderName)obj).Name.Equals(key))
-                            foundPI.Add(pi);
+                        if (obj is HeaderName)
+                        {
+                            string name = ((HeaderName)obj).Name;
+                            KeyValuePair<string, PropertyInfo> namePropPair = new KeyValuePair<string, PropertyInfo>(name, pi);
+                            headernames.Add(namePropPair);
+                        }
                     }
                 }
+            }
+
+            List<PropertyInfo> foundPI = new List<PropertyInfo>();
+            foreach (KeyValuePair<string, PropertyInfo> n in headernames)
+            {
+                if (n.Key.Equals(key))
+                    foundPI.Add(n.Value);
             }
 
             return foundPI.ToArray();

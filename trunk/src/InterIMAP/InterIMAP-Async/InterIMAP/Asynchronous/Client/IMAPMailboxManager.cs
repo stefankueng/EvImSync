@@ -61,7 +61,7 @@ namespace InterIMAP.Asynchronous.Client
         /// <param name="client"></param>
         public IMAPMailboxManager(IMAPAsyncClient client)
         {
-            _boxType = MailboxType.Virtual;                        
+            _boxType = MailboxType.Virtual;
             //_physMailboxLoaded = false;
             _client = client;
             _client.DataManager.New();
@@ -101,7 +101,7 @@ namespace InterIMAP.Asynchronous.Client
         /// </summary>
         /// <param name="mbxFile"></param>
         public void LoadMailbox(string mbxFile)
-        {            
+        {
             _boxType = MailboxType.Physical;
             _client.DataManager.Db.ReadXml(mbxFile);
             //_physMailboxLoaded = true;
@@ -114,7 +114,7 @@ namespace InterIMAP.Asynchronous.Client
         /// </summary>
         /// <param name="mbxFile"></param>
         public void SaveNewMailbox(string mbxFile)
-        {            
+        {
             _boxType = MailboxType.Physical;
             _client.DataManager.Db.WriteXml(mbxFile);
         }
@@ -130,7 +130,7 @@ namespace InterIMAP.Asynchronous.Client
         /// Creates an empty mailbox
         /// </summary>
         public void InitializeMailbox()
-        {            
+        {
             _boxType = MailboxType.Virtual;
         }
 
@@ -140,7 +140,7 @@ namespace InterIMAP.Asynchronous.Client
         /// </summary>
         public void Synchronize()
         {
-            
+
         }
 
         /// <summary>
@@ -211,19 +211,19 @@ namespace InterIMAP.Asynchronous.Client
             {
                 _client.RequestManager.SubmitAndWait(new DeleteFolderRequest(deadFolder,
                     delegate(IRequest req)
-                        {
-                            if (req.Result.Response == IMAPResponse.IMAP_SUCCESS_RESPONSE)
-                                _client.DataManager.DeleteFolder(deadFolder);
-                            
-                        }),false);
+                    {
+                        if (req.Result.Response == IMAPResponse.IMAP_SUCCESS_RESPONSE)
+                            _client.DataManager.DeleteFolder(deadFolder);
+
+                    }), false);
 
                 return true;
             }
-            
+
             string deadFolderPath = deadFolder.FullPath;
             int newParentID = deadFolder.ParentID;
 
-                
+
             List<IFolder> foldersToChange = new List<IFolder>(deadFolder.SubFolders);
             foreach (IFolder f in foldersToChange)
             {
@@ -231,27 +231,27 @@ namespace InterIMAP.Asynchronous.Client
                 IFolder f1 = f;
                 _client.RequestManager.SubmitAndWait(new MoveFolderRequest(f, deadFolder.Parent,
                                                                            delegate(IRequest req)
-                                                                               {
-                                                                                   _client.DataManager.MoveFolder(f1, deadFolder.Parent);
-                                                                               }), false);
+                                                                           {
+                                                                               _client.DataManager.MoveFolder(f1, deadFolder.Parent);
+                                                                           }), false);
 
                 string newFolderName = String.Format("{0}_{1}", deadFolder.Name, f.Name);
                 // then we rename each of those folders to include the dead folders name
-                    
+
                 _client.RequestManager.SubmitAndWait(new RenameFolderRequest(f, newFolderName,
                                                                              delegate(IRequest req)
-                                                                                 {
-                                                                                     _client.DataManager.RenameFolder(f1, newFolderName);
-                                                                                 }), false);
+                                                                             {
+                                                                                 _client.DataManager.RenameFolder(f1, newFolderName);
+                                                                             }), false);
             }
 
-            _client.RequestManager.SubmitAndWait(new DeleteFolderRequest(deadFolder, 
+            _client.RequestManager.SubmitAndWait(new DeleteFolderRequest(deadFolder,
                                                                          delegate(IRequest req)
-                                                                             {
-                                                                                 if (req.Result.Response == IMAPResponse.IMAP_SUCCESS_RESPONSE)
-                                                                                     _client.DataManager.DeleteFolder(deadFolder);
+                                                                         {
+                                                                             if (req.Result.Response == IMAPResponse.IMAP_SUCCESS_RESPONSE)
+                                                                                 _client.DataManager.DeleteFolder(deadFolder);
 
-                                                                             }), false);
+                                                                         }), false);
 
             return true;
         }
@@ -286,7 +286,7 @@ namespace InterIMAP.Asynchronous.Client
         public IMessageContent AddMessageContent(int messageID)
         {
             return _client.DataManager.NewContent(messageID);
-        }        
+        }
 
         /// <summary>
         /// Returns the list of folders that have their parent sent to the ID of rootFolder
@@ -316,7 +316,7 @@ namespace InterIMAP.Asynchronous.Client
         {
             if (parentFolder == null)
                 return GetAllFolders();
-            
+
             Mailbox.FolderDataTable folderTable = _client.DataManager.FolderTable;
             List<IFolder> folders = new List<IFolder>();
             foreach (Mailbox.FolderRow row in folderTable.Select(String.Format("ParentID = {0}", parentFolder.ID)))
@@ -341,14 +341,14 @@ namespace InterIMAP.Asynchronous.Client
         /// </summary>
         /// <returns></returns>
         public IFolder[] GetAllFolders()
-        {            
+        {
             Mailbox.FolderDataTable folderTable =
                 _client.DataManager.FolderTable;
             List<IFolder> _folderList = new List<IFolder>();
 
             foreach (Mailbox.FolderRow row in folderTable.Rows)
             {
-                IFolder f = new Folder(_client, row.ID);                                
+                IFolder f = new Folder(_client, row.ID);
                 _folderList.Add(f);
             }
 
@@ -361,10 +361,10 @@ namespace InterIMAP.Asynchronous.Client
         /// <param name="id">ID of folder to find</param>
         /// <returns>IFolder object, or null if ID not found</returns>
         public IFolder GetFolderByID(int id)
-        {                        
+        {
             Mailbox.FolderDataTable folderTable =
                 _client.DataManager.FolderTable;
-            
+
             Mailbox.FolderRow[] rows = (Mailbox.FolderRow[])folderTable.Select(String.Format("ID = {0}", id));
             if (rows.Length == 1)
                 return new Folder(_client, rows[0].ID);
@@ -427,12 +427,12 @@ namespace InterIMAP.Asynchronous.Client
                                                    StoreMessage(m);
                                                    ts.Add(totalTime);
                                                    if (messagesCompleted >= totalMessages)
-                                                        mre.Set();
+                                                       mre.Set();
                                                };
                     fmr.MessageProgress += delegate(IMessage m, long receieved, long total)
                                                {
                                                    Console.CursorLeft = 0;
-                                                   Console.Write("{0}/{1}k downloaded", receieved/1024, total/1024);
+                                                   Console.Write("{0}/{1}k downloaded", receieved / 1024, total / 1024);
                                                };
                     fmr.MessageProgress += delegate(IMessage m, long bytesReceived, long totalBytes) { };
                     fmr.Start();
@@ -443,7 +443,7 @@ namespace InterIMAP.Asynchronous.Client
 
             completedCallback(folderList.Length, messagesCompleted, ts.Ticks);
 
-            
+
         }
 
         private void StoreMessage(IMessage m)
@@ -453,14 +453,14 @@ namespace InterIMAP.Asynchronous.Client
             MailMessage mmsg = new MailMessage();
             mmsg.Body = m.HTMLData ?? m.TextData;
             mmsg.BodyEncoding = String.IsNullOrEmpty(m.ContentTransferEncoding) ? System.Text.Encoding.Unicode : System.Text.Encoding.GetEncoding(m.ContentTransferEncoding);
-            mmsg.From = new MailAddress(m.FromContacts[0].EMail,m.FromContacts[0].FullName);
+            mmsg.From = new MailAddress(m.FromContacts[0].EMail, m.FromContacts[0].FullName);
             mmsg.IsBodyHtml = m.HTMLData != null;
             mmsg.ReplyToList.Add(String.IsNullOrEmpty(m.InReplyTo) ? new MailAddress(m.FromContacts[0].EMail) : new MailAddress(m.InReplyTo));
             mmsg.Subject = m.Subject;
             foreach (IContact c in m.ToContacts)
                 mmsg.To.Add(new MailAddress(c.EMail, c.FullName));
 
-            
+
             foreach (IMessageContent content in m.MessageContent)
             {
                 if (!content.IsAttachment) continue;
@@ -480,7 +480,7 @@ namespace InterIMAP.Asynchronous.Client
             string pathToEml = files[0].FullName;
             string messagePath = String.Format(@"{0}\{1}\{2}", m.Folder.FullPath, m.UID, Path.GetFileName(pathToEml));
             ZipStorer zip = ZipStorer.Open(_mailboxFile, FileAccess.ReadWrite);
-            zip.AddFile(pathToEml, messagePath,messagePath);
+            zip.AddFile(pathToEml, messagePath, messagePath);
             zip.Close();
 
             // TODO: add folder and filename info to some kind of xml file stored inside the zip
@@ -494,13 +494,13 @@ namespace InterIMAP.Asynchronous.Client
         public static string GetObjectTableName(Type type)
         {
             object[] attribs = type.GetCustomAttributes(true);
-            
+
             foreach (object attr in attribs)
             {
                 if (attr is LinkToTable)
                 {
-                    return ((LinkToTable) attr).TableName;
-                }                
+                    return ((LinkToTable)attr).TableName;
+                }
             }
 
             throw new Exception(String.Format("Type: {0} does not contain a LinkToTable attribute", type.Name));
@@ -595,14 +595,16 @@ namespace InterIMAP.Asynchronous.Client
         /// <param name="flag"></param>
         /// <param name="value"></param>
         /// <param name="localOnly">Indicates if the flag should be set only on the local object, and not on the server</param>
-        public void SetMessageFlag(IMessage msg, MessageFlag flag, bool value, bool localOnly)
+        public bool SetMessageFlag(IMessage msg, MessageFlag flag, bool value, bool localOnly)
         {
             bool currentValue = _client.DataManager.GetValue<Message, bool>((Message)msg, flag.ToString());
-            if (currentValue == value) return;
+            if (currentValue == value) return true;
             _client.DataManager.SetValue(msg, flag.ToString(), value);
-            if (localOnly) return;
+            if (localOnly) return true;
             ChangeFlagRequest cfr = new ChangeFlagRequest(msg, flag, value, null);
             _client.RequestManager.SubmitRequest(cfr, true);
+
+            return cfr.Result.Response == IMAPResponse.IMAP_SUCCESS_RESPONSE;
         }
 
         /// <summary>
@@ -611,22 +613,28 @@ namespace InterIMAP.Asynchronous.Client
         /// <param name="msg"></param>
         /// <param name="flag"></param>
         /// <param name="value"></param>
-        public void SetMessageFlag(IMessage msg, string flag, bool value)
+        public bool SetMessageFlag(IMessage msg, string flag, bool value)
         {
             bool currentValue = msg.GetCustomFlag(flag);
-            if (currentValue == value) return;
-            msg.SetCustomFlag(flag, value);
+            if (currentValue == value) return true;
             ChangeFlagRequest cfr = new ChangeFlagRequest(msg, flag, value, null);
             _client.RequestManager.SubmitAndWait(cfr, true);
+            if (cfr.Result.Response != IMAPResponse.IMAP_SUCCESS_RESPONSE)
+                _client.RequestManager.SubmitAndWait(cfr, true);    // retry once
+
+            if (cfr.Result.Response == IMAPResponse.IMAP_SUCCESS_RESPONSE)
+                msg.SetCustomFlag(flag, value);
+
+            return cfr.Result.Response == IMAPResponse.IMAP_SUCCESS_RESPONSE;
         }
 
         /// <summary>
         /// Marks the specified message as \Seen on the server
         /// </summary>
         /// <param name="msg"></param>
-        public void MarkMessageAsRead(IMessage msg)
+        public bool MarkMessageAsRead(IMessage msg)
         {
-            SetMessageFlag(msg, MessageFlag.Seen, true, false);
+            return SetMessageFlag(msg, MessageFlag.Seen, true, false);
         }
 
         /// <summary>
@@ -646,7 +654,7 @@ namespace InterIMAP.Asynchronous.Client
             fstream.Close();
         }
 
-        
+
         #endregion
     }
 }

@@ -14,6 +14,7 @@ namespace EveImSync.Enums
         CalculateWhatToDo,
         AdjustTags,
         DownloadNotes,
+        CalculateWhatToDo2,
         UploadNotes
     }
 }

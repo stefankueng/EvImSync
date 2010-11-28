@@ -447,6 +447,7 @@ namespace EveImSync
                 {
                     break;
                 }
+                n.Action = NoteAction.Nothing;
 
                 if ((n.ContentHash == string.Empty) || (n.ContentHash == null))
                 {

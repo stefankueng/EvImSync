@@ -87,8 +87,11 @@ namespace EveImSync
                 case SyncStep.DownloadNotes:     // 40-70%
                     fullpos = max != 0 ? (int)(pos * 100000.0 / max * 0.3) + 40000 : 40000;
                     break;
+                case SyncStep.CalculateWhatToDo2: // 70-75%
+                    fullpos = max != 0 ? (int)(pos * 100000.0 / max * 0.05) + 70000 : 70000;
+                    break;
                 case SyncStep.UploadNotes:       // 70-100%
-                    fullpos = max != 0 ? (int)(pos * 100000.0 / max * 0.3) + 70000 : 70000;
+                    fullpos = max != 0 ? (int)(pos * 100000.0 / max * 0.25) + 75000 : 75000;
                     break;
             }
 
@@ -162,9 +165,11 @@ namespace EveImSync
                     SetInfo("Adjusting tags in the GMail account", "", 0, 0);
                     AdjustIMAPTags(syncPair.IMAPNotesFolder, notesIMAP);
                     SetInfo("Downloading emails", "", 0, 0);
-                    DownloadAndImportMailsToEvernote(notesIMAP, syncPair.EvernoteNotebook);
+                    DownloadAndImportMailsToEvernote(notesIMAP, notesEvernote, syncPair.EvernoteNotebook);
                     if (exportFile != string.Empty)
                     {
+                        SetInfo("Figuring out what needs to be synced", "", 0, 0);
+                        DiffNotesAndMails(ref notesEvernote, ref notesIMAP, syncPair.LastSyncTime);
                         SetInfo("Uploading emails", "", 0, 0);
                         UploadNotesAsMails(syncPair.IMAPNotesFolder, notesEvernote, exportFile);
                     }
@@ -565,7 +570,7 @@ namespace EveImSync
             }
         }
 
-        private void DownloadAndImportMailsToEvernote(List<Note> notesIMAP, string notebook)
+        private void DownloadAndImportMailsToEvernote(List<Note> notesIMAP, List<Note> notesEvernote, string notebook)
         {
             int counter = 0;
             int numNotesToUpload = 0;
@@ -639,67 +644,79 @@ namespace EveImSync
                         // update the XEveImHash tag for this email
                         string customFlag = "xeveim" + n.ContentHash;
                         msg.SetCustomFlag(customFlag, false);
-                        client.MailboxManager.SetMessageFlag(msg, customFlag, true);
-
-                        // now, since GMail uses IMAP folders for tags and a message can have multiple tags,
-                        // we have to see if the changed flag affected not just this IMAP message but
-                        // others in other IMAP folders as well. If it has, those are the same message
-                        // and we have to add those folder names to the tag list of this note.
-                        List<Note> sameTitleNotes = notesIMAP.FindAll(delegate(Note findNote) { return findNote.Title == n.Title; });
-                        foreach (Note same in sameTitleNotes)
+                        if (client.MailboxManager.SetMessageFlag(msg, customFlag, true))
                         {
-                            IMessage m = same.IMAPMessages[0];
-                            client.RequestManager.SubmitAndWait(new MessageFlagRequest(m, null), false);
-                            string hash = null;
-                            List<string> flags = m.GetCustomFlags();
-                            foreach (string flag in flags)
+                            // sometimes it happens that the flag wasn't set, so now that we have
+                            // the hash of the email, we check whether that note/email
+                            // already exists in Evernote.
+                            bool existsInEvernote = notesEvernote.Find(delegate(Note findNote) { return findNote.ContentHash == n.ContentHash; }) != null;
+                            if (!existsInEvernote)
                             {
-                                if (flag.ToLower().StartsWith("xeveim"))
+                                // now, since GMail uses IMAP folders for tags and a message can have multiple tags,
+                                // we have to see if the changed flag affected not just this IMAP message but
+                                // others in other IMAP folders as well. If it has, those are the same message
+                                // and we have to add those folder names to the tag list of this note.
+                                List<Note> sameTitleNotes = notesIMAP.FindAll(delegate(Note findNote) { return findNote.Title == n.Title; });
+                                foreach (Note same in sameTitleNotes)
                                 {
-                                    hash = flag.Substring(6);
-                                    break;
-                                }
-                            }
-
-                            if ((hash != null) && (hash == n.ContentHash))
-                            {
-                                // yes, this is the same message!
-                                // remove it from the list and add its folder name as a tag
-                                // to this note
-                                if (n != same)
-                                {
-                                    string tag = m.Folder.FullPath;
-                                    if (tag.IndexOf('/') >= 0)
+                                    IMessage m = same.IMAPMessages[0];
+                                    client.RequestManager.SubmitAndWait(new MessageFlagRequest(m, null), false);
+                                    string hash = null;
+                                    List<string> flags = m.GetCustomFlags();
+                                    foreach (string flag in flags)
                                     {
-                                        tag = tag.Substring(tag.IndexOf('/') + 1);
+                                        if (flag.ToLower().StartsWith("xeveim"))
+                                        {
+                                            hash = flag.Substring(6);
+                                            break;
+                                        }
                                     }
-                                    else
-                                    {
-                                        tag = string.Empty;
-                                    }
-                                    n.Tags.Add(tag);
-                                    n.IMAPMessages.Add(m);
-                                    notesIMAP.Remove(same);
-                                }
-                            }
-                        }
 
-                        // generate the Evernote export file
-                        string path = Path.GetTempFileName();
+                                    if ((hash != null) && (hash == n.ContentHash))
+                                    {
+                                        // yes, this is the same message!
+                                        // remove it from the list and add its folder name as a tag
+                                        // to this note
+                                        if (n != same)
+                                        {
+                                            string tag = m.Folder.FullPath;
+                                            if (tag.IndexOf('/') >= 0)
+                                            {
+                                                tag = tag.Substring(tag.IndexOf('/') + 1);
+                                            }
+                                            else
+                                            {
+                                                tag = string.Empty;
+                                            }
+                                            n.Tags.Add(tag);
+                                            n.IMAPMessages.Add(m);
+                                            notesIMAP.Remove(same);
+                                        }
+                                    }
+                                }
+
+                                // generate the Evernote export file
+                                string path = Path.GetTempFileName();
 #if DEBUG
-                        path = @"D:\Development\evimsync\email.xml";
+                                path = @"D:\Development\evimsync\email.xml";
 #endif
-                        n.SaveEvernoteExportData(path);
+                                n.SaveEvernoteExportData(path);
 
-                        // import the export file into Evernote
-                        ENScriptWrapper enscript = new ENScriptWrapper();
-                        enscript.ENScriptPath = enscriptpath;
-                        if (!enscript.ImportNotes(path, notebook))
-                        {
-                            // failed to import note
+                                // import the export file into Evernote
+                                ENScriptWrapper enscript = new ENScriptWrapper();
+                                enscript.ENScriptPath = enscriptpath;
+                                if (!enscript.ImportNotes(path, notebook))
+                                {
+                                    // failed to import note
+                                }
+
+                                File.Delete(path);
+                            }
+                            else
+                            {
+                                //Debug.Assert(false);
+                            }
                         }
-
-                        File.Delete(path);
                     }
                 }
 

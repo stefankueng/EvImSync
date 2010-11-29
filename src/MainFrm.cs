@@ -165,7 +165,8 @@ namespace EveImSync
                     SetInfo("Adjusting tags in the GMail account", "", 0, 0);
                     AdjustIMAPTags(syncPair.IMAPNotesFolder, notesIMAP);
                     SetInfo("Downloading emails", "", 0, 0);
-                    DownloadAndImportMailsToEvernote(notesIMAP, notesEvernote, syncPair.EvernoteNotebook);
+                    List<Note> imapnotes = new List<Note>(notesIMAP);
+                    DownloadAndImportMailsToEvernote(imapnotes, notesEvernote, syncPair.EvernoteNotebook);
                     if (exportFile != string.Empty)
                     {
                         SetInfo("Figuring out what needs to be synced", "", 0, 0);
@@ -503,12 +504,15 @@ namespace EveImSync
 
             if (notesIMAP.Count > 0)
                 SetInfo(null, "", notesIMAP.Count, notesIMAP.Count);
-            foreach (Note n in notesEvernote)
+            foreach (Note no in notesEvernote)
             {
-                bool existsInIMAP = notesIMAP.Find(delegate(Note findNote) { return findNote.ContentHash == n.ContentHash; }) != null;
-                if (!existsInIMAP)
+                if (no.Action == NoteAction.Nothing)
                 {
-                    n.Action = NoteAction.UploadToIMAP;
+                    bool existsInIMAP = notesIMAP.Find(delegate(Note findNote) { return findNote.ContentHash == no.ContentHash; }) != null;
+                    if (!existsInIMAP)
+                    {
+                        no.Action = NoteAction.UploadToIMAP;
+                    }
                 }
             }
         }
@@ -635,7 +639,8 @@ namespace EveImSync
                         {
                             if (flag.ToLower().StartsWith("xeveim"))
                             {
-                                client.MailboxManager.SetMessageFlag(msg, flag, false);
+                                if (flag.ToLower().Substring(6) != n.ContentHash.ToLower())
+                                    client.MailboxManager.SetMessageFlag(msg, flag, false);
                             }
                         }
 

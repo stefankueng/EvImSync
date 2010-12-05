@@ -337,6 +337,9 @@ namespace EveImSync
                 return;
             }
 
+            if (folder == "/evernote trash")
+                return;
+
             client.RequestManager.SubmitAndWait(new FolderTreeRequest(folder, null), false);
             IFolder currentFolder = client.MailboxManager.GetFolderByPath(folder);
             if (currentFolder == null)
@@ -567,6 +570,15 @@ namespace EveImSync
 
                         if (note.ObsoleteTags.Find(findTag => { return findTag == tag; }) != null)
                         {
+                            if ((note.IMAPMessages.Count - note.ObsoleteTags.Count + note.NewTags.Count) == 0)
+                            {
+                                IFolder tagFolder = GetOrCreateFolderByPath(folder + "/evernote trash");
+
+                                if (tagFolder != null)
+                                {
+                                    client.RequestManager.SubmitAndWait(new CopyMessageRequest(note.IMAPMessages[0], tagFolder, null), true);
+                                }
+                            }
                             client.RequestManager.SubmitAndWait(new DeleteMessageRequest(msg, null), true);
                         }
                     }
@@ -711,7 +723,11 @@ namespace EveImSync
                                 // import the export file into Evernote
                                 ENScriptWrapper enscript = new ENScriptWrapper();
                                 enscript.ENScriptPath = enscriptpath;
-                                if (!enscript.ImportNotes(path, notebook))
+                                if (enscript.ImportNotes(path, notebook))
+                                {
+                                    notesEvernote.Add(n);
+                                }
+                                else
                                 {
                                     // failed to import note
                                 }

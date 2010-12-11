@@ -523,6 +523,12 @@ namespace EveImSync
         private void AdjustIMAPTags(string folder, List<Note> notesIMAP)
         {
             int counter = 0;
+            int totalcount = 0;
+            foreach (Note note in notesIMAP)
+            {
+                if (note.Action == NoteAction.AdjustTagsOnIMAP)
+                    totalcount++;
+            }
             foreach (Note note in notesIMAP)
             {
                 if (note.Action == NoteAction.AdjustTagsOnIMAP)
@@ -532,7 +538,8 @@ namespace EveImSync
                         break;
                     }
 
-                    SetInfo(null, string.Format("adjusting tags for email\"{0}\" ({1} of {2})", note.Title, counter + 1, notesIMAP.Count), counter, notesIMAP.Count);
+                    counter++;
+                    SetInfo(null, string.Format("adjusting tags for email\"{0}\" ({1} of {2})", note.Title, counter, totalcount), counter, totalcount);
 
                     foreach (string tag in note.NewTags)
                     {
@@ -583,7 +590,6 @@ namespace EveImSync
                         }
                     }
                 }
-                counter++;
             }
         }
 

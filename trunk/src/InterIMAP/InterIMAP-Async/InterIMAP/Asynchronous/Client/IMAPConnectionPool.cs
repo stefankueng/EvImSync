@@ -109,15 +109,15 @@ namespace InterIMAP.Asynchronous.Client
         /// <summary>
         /// Start all of the connection threads
         /// </summary>        
-        public void StartUp()
+        public void StartUp(bool doLogging)
         {
-            StartUp(_numConnections);
+            StartUp(_numConnections, doLogging);
         }
         /// <summary>
         /// Start all of the connection threads
         /// </summary>        
         /// <param name="maxConns">Maxiumum number of worker connections to use</param>
-        public void StartUp(int maxConns)
+        public void StartUp(int maxConns, bool doLogging)
         {            
             _numConnections = maxConns;
             
@@ -135,7 +135,7 @@ namespace InterIMAP.Asynchronous.Client
                 _loggers.Add(worker.Logger);
                 worker.Logger.MessageLogged += Logger_MessageLogged;
                 _workers.Add(worker);
-                worker.Start();
+                worker.Start(doLogging);
             }
 
         }

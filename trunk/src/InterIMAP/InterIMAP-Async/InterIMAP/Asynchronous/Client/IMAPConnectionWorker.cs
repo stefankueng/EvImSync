@@ -80,7 +80,7 @@ namespace InterIMAP.Asynchronous.Client
         /// </summary>
         public int WorkerID
         {
-            get { return _workerID;  }
+            get { return _workerID; }
         }
 
         /// <summary>
@@ -125,7 +125,7 @@ namespace InterIMAP.Asynchronous.Client
             _shuttingDown = false;
             _loggedIn = false;
             _processingRequest = false;
-            
+
         }
         #endregion
 
@@ -133,12 +133,13 @@ namespace InterIMAP.Asynchronous.Client
         /// <summary>
         /// Start this worker
         /// </summary>
-        public void Start()
+        public void Start(bool doLogging)
         {
             _thread = new Thread(DoWork);
             _thread.IsBackground = true;
             _thread.Name = String.Format("Worker{0}", _workerID);
-            _logger.Start();
+            if (doLogging)
+                _logger.Start();
             _logger.Log(LogType.INFO, "{0} Starting...", _thread.Name);
             _thread.Start();
             _connectionTries = 0;
@@ -153,22 +154,22 @@ namespace InterIMAP.Asynchronous.Client
             {
                 _shuttingDown = true;
             }
-                
+
         }
 
         private void DoWork()
         {
-            
-            
+
+
             Login();
             ts = new TimeSpan(DateTime.Now.Ticks);
             while (true)
-            {                
+            {
                 if (!_conn.IsConnected)
                 {
                     Login();
                 }
-                
+
                 if (_shuttingDown)
                 {
                     ShutDown();
@@ -230,7 +231,7 @@ namespace InterIMAP.Asynchronous.Client
             }
 
             LoginCommand lc = new LoginCommand(_config.UserName, _config.Password, null);
-            CommandResult cr = _conn.ExecuteCommand(lc);            
+            CommandResult cr = _conn.ExecuteCommand(lc);
             if (((LoginProcessor)BaseProcessor.RunProcessor(typeof(LoginProcessor), cr)).LoggedIn)
             {
                 _loggedIn = true;
@@ -247,11 +248,11 @@ namespace InterIMAP.Asynchronous.Client
         private void DoRequest(IRequest req)
         {
             _processingRequest = true;
-            
+
             if (req.PreCommand != null)
                 _conn.ExecuteCommand(req.PreCommand);
 
-            req.Result = _conn.ExecuteCommand(req.Command);            
+            req.Result = _conn.ExecuteCommand(req.Command);
             req.RunProcessor();
 
             if (req.PostCommand != null)
@@ -261,15 +262,15 @@ namespace InterIMAP.Asynchronous.Client
             _client.RequestManager.RequestCompleted(req);
             _completedRequests++;
             _processingRequest = false;
-            
+
         }
 
         private void HeartBeat()
         {
             if (_processingRequest) return;
-            
+
             TimeSpan ts2 = new TimeSpan(DateTime.Now.Ticks);
-            
+
             if (ts2.TotalSeconds < ts.TotalSeconds + HEARTBEAT_INTERVAL) return;
             _conn.ExecuteCommand(new HeartBeatCommand(null));
             //Console.WriteLine("Worker{0} idle", _workerID);

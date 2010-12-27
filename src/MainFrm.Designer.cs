@@ -153,12 +153,13 @@ namespace EveImSync
             this.forceDownload.TabIndex = 7;
             this.forceDownload.Text = "force download of emails";
             this.forceDownload.UseVisualStyleBackColor = true;
+            this.forceDownload.Visible = false;
             // 
             // MainFrm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(521, 133);
+            this.ClientSize = new System.Drawing.Size(521, 142);
             this.Controls.Add(this.forceDownload);
             this.Controls.Add(this.infoText0);
             this.Controls.Add(this.progressIndicator);
@@ -168,7 +169,10 @@ namespace EveImSync
             this.Controls.Add(this.menuStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
+            this.MaximumSize = new System.Drawing.Size(537, 180);
+            this.MinimumSize = new System.Drawing.Size(537, 180);
             this.Name = "MainFrm";
+            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "EvImSync";
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();

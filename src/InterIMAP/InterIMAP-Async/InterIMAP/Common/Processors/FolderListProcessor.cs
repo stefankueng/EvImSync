@@ -119,6 +119,29 @@ namespace InterIMAP.Common.Processors
         {            
             int idx = folderString.IndexOf(")");
             string temp = folderString.Substring(idx + 2);
+
+            temp = temp.Replace(',', '/');
+            System.Text.StringBuilder b = new System.Text.StringBuilder(temp);
+            for (int i = 0; i < b.Length; ++i)
+            {
+                if (b[i] == '+')
+                    b[i] = '&';
+                else if (b[i] == '&')
+                    b[i] = '+';
+            }
+            temp = b.ToString();
+            byte[] asciiString = System.Text.Encoding.ASCII.GetBytes(temp);
+            temp = System.Text.Encoding.UTF7.GetString(asciiString);
+            b = new System.Text.StringBuilder(temp);
+            for (int i = 0; i < b.Length; ++i)
+            {
+                if (b[i] == '+')
+                    b[i] = '&';
+                else if (b[i] == '&')
+                    b[i] = '+';
+            }
+            temp = b.ToString();
+
             _delimiter = temp[1];
             return temp.Substring(3).Replace("\"","").Trim().Split(new char[] { _delimiter });            
         }

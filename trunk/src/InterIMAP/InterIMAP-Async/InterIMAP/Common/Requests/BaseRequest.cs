@@ -154,8 +154,13 @@ namespace InterIMAP.Common.Requests
             proc.CmdResult = Result;
             proc.Request = this;
             proc.Client = Client;
-            proc.ProcessResult();
-            
+            try
+            {
+                proc.ProcessResult();
+            }
+            catch (System.NullReferenceException)
+            {
+            }
         }
 
         #region CTOR

@@ -48,6 +48,7 @@ namespace InterIMAP.Common.Processors
             //T proc = new T();
             IProcessor proc = (IProcessor)Activator.CreateInstance(procType);
 
+            System.Diagnostics.Debug.Assert(result != null);
             proc.CmdResult = result;
             proc.Request = null;
             proc.ProcessResult();

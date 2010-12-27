@@ -152,9 +152,9 @@ namespace InterIMAP.Asynchronous.Client
         /// or an error was detected
         /// </summary>
         /// <returns></returns>
-        public bool Start()
+        public bool Start(bool doLogging)
         {
-            _connectionPool.StartUp(_numConnections);
+            _connectionPool.StartUp(_numConnections, doLogging);
             while (true)
             {
                 if (ReadyToGo) return true;

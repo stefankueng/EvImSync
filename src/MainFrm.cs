@@ -365,7 +365,7 @@ namespace EveImSync
 
                 if (folder.IndexOf('/') >= 0)
                 {
-                    note.Tags.Add(folder.Substring(folder.IndexOf('/') + 1));
+                    note.Tags.Add(folder.Substring(folder.LastIndexOf('/') + 1));
                 }
                 else
                 {
@@ -408,7 +408,7 @@ namespace EveImSync
                     {
                         if (folder.IndexOf('/') >= 0)
                         {
-                            n.Tags.Add(folder.Substring(folder.IndexOf('/') + 1));
+                            n.Tags.Add(folder.Substring(folder.LastIndexOf('/') + 1));
                         }
                         else
                         {
@@ -568,7 +568,7 @@ namespace EveImSync
                         string tag = msg.Folder.FullPath;
                         if (tag.IndexOf('/') >= 0)
                         {
-                            tag = tag.Substring(tag.IndexOf('/') + 1);
+                            tag = tag.Substring(tag.LastIndexOf('/') + 1);
                         }
                         else
                         {
@@ -956,6 +956,13 @@ namespace EveImSync
         private IFolder GetOrCreateFolderByPath(string folderpath)
         {
             IFolder requestedFolder = client.MailboxManager.GetFolderByPath(folderpath);
+            if (requestedFolder == null)
+            {
+                string f = folderpath;
+                if (f.LastIndexOf('/') >= 0)
+                    f = f.Substring(f.LastIndexOf('/') + 1);
+                requestedFolder = client.MailboxManager.GetFolderByName(f);
+            }
             if (requestedFolder == null)
             {
                 // create the missing folder

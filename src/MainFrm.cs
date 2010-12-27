@@ -319,7 +319,7 @@ namespace EveImSync
 
             IMAPConfig config = new IMAPConfig(server, username, password, true, true, "/");
             client = new IMAPAsyncClient(config, 2);
-            if (client.Start() == false)
+            if (client.Start(false) == false)
             {
                 cancelled = true;
                 return noteList;

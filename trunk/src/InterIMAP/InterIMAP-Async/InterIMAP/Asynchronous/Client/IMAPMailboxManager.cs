@@ -389,6 +389,23 @@ namespace InterIMAP.Asynchronous.Client
         }
 
         /// <summary>
+        /// Finds a folder in the mailbox based on its name. If there are more than one folder
+        /// with the same name, the function returns the first one found.
+        /// </summary>
+        /// <param name="name">The name of the folder to search for</param>
+        /// <returns>IFolder object, or null if the folder was not found</returns>
+        public IFolder GetFolderByName(string name)
+        {
+            foreach (IFolder folder in GetAllFolders())
+            {
+                if (folder.FullPath.EndsWith("/" + name))
+                    return folder;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Submits an Examine request for each folder to store its message count data
         /// </summary>
         public void PopulateFolderData(AsyncBatchProgressCallback progCallback, AsyncBatchCompletedCallback completedCallback)

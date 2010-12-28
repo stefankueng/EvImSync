@@ -27,7 +27,7 @@ namespace InterIMAP.Common.Commands
             //  UID COPY 4963 "DestFolder"
             const string cmd = "UID COPY {0} \"{1}\"";
             _parameters.Add(msg.UID.ToString());
-            _parameters.Add(destFolder.FullPath);
+            _parameters.Add(destFolder.FullEncodedPath);
             _parameterObjs.Add(msg);
 
             CommandString = String.Format(cmd, Parameters);

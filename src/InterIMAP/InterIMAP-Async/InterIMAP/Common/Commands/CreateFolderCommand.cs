@@ -29,7 +29,7 @@ namespace InterIMAP.Common.Commands
             folderName = folderName.Replace('/', ',').Replace('+', '&');
 
             string fullFolder = parentFolder != null
-                                    ? String.Format("{0}/{1}", parentFolder.FullPath, folderName)
+                                    ? String.Format("{0}/{1}", parentFolder.FullEncodedPath, folderName)
                                     : folderName;
 
             fullFolder = fullFolder.Replace("\"", "");

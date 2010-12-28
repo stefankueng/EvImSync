@@ -46,7 +46,7 @@ namespace InterIMAP.Common.Commands
         public SelectFolderCommand(IFolder folder, CommandDataReceivedCallback callback)
             : base(callback)
         {
-            _parameters.Add(folder.FullPath);
+            _parameters.Add(folder.FullEncodedPath);
             _parameterObjs.Add(folder);
             CommandString = String.Format("SELECT \"{0}\"", Parameters);
         }

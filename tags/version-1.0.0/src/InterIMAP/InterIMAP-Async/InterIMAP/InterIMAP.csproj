@@ -1,0 +1,201 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{12A005BE-C03F-4950-8568-9814FDF61776}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>InterIMAP</RootNamespace>
+    <AssemblyName>InterIMAP</AssemblyName>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <UpgradeBackupLocation />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>0</WarningLevel>
+    <DocumentationFile>bin\Debug\InterIMAP.XML</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>0</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Asynchronous\Client\IMAPAsyncClient.cs" />
+    <Compile Include="Asynchronous\Client\IMAPConnection.cs" />
+    <Compile Include="Asynchronous\Client\IMAPConnectionPool.cs" />
+    <Compile Include="Asynchronous\Client\IMAPConnectionWorker.cs" />
+    <Compile Include="Asynchronous\Client\IMAPMailboxManager.cs" />
+    <Compile Include="Asynchronous\Client\IMAPRequestManager.cs" />
+    <Compile Include="Asynchronous\Helpers\LoggerAggregator.cs" />
+    <Compile Include="Asynchronous\Helpers\WorkerLogger.cs" />
+    <Compile Include="Asynchronous\Objects\Contact.cs" />
+    <Compile Include="Asynchronous\Objects\Folder.cs" />
+    <Compile Include="Asynchronous\Objects\Message.cs" />
+    <Compile Include="Asynchronous\Objects\MessageContent.cs" />
+    <Compile Include="Common\Attributes\ConnectingTable.cs" />
+    <Compile Include="Common\Attributes\HeaderName.cs" />
+    <Compile Include="Common\Attributes\LinkToTable.cs" />
+    <Compile Include="Common\BatchRequests\BaseBatchRequest.cs" />
+    <Compile Include="Common\Commands\AppendCommand.cs" />
+    <Compile Include="Common\Commands\BaseCommand.cs" />
+    <Compile Include="Common\Commands\CapabilityCommand.cs" />
+    <Compile Include="Common\Commands\ChangeFlagCommand.cs" />
+    <Compile Include="Common\Commands\CommandResult.cs" />
+    <Compile Include="Common\Commands\CopyMessageCommand.cs" />
+    <Compile Include="Common\Commands\CreateFolderCommand.cs" />
+    <Compile Include="Common\Commands\CustomCommand.cs" />
+    <Compile Include="Common\Commands\ExamineFolderCommand.cs" />
+    <Compile Include="Common\Commands\ExpungeCommand.cs" />
+    <Compile Include="Common\Commands\FolderListCommand.cs" />
+    <Compile Include="Common\Commands\HeartBeatCommand.cs" />
+    <Compile Include="Common\Commands\LoginCommand.cs" />
+    <Compile Include="Common\Commands\MessageFlagCommand.cs" />
+    <Compile Include="Common\Commands\MessageHeaderCommand.cs" />
+    <Compile Include="Common\Commands\MessageListCommand.cs" />
+    <Compile Include="Common\Commands\MessagePartCommand.cs" />
+    <Compile Include="Common\Commands\MessageStructureCommand.cs" />
+    <Compile Include="Common\Commands\SearchCommand.cs" />
+    <Compile Include="Common\Commands\SearchCriteria.cs" />
+    <Compile Include="Common\Commands\SelectFolderCommand.cs" />
+    <Compile Include="Common\Data\DataManager.cs" />
+    <Compile Include="Common\Data\Mailbox.cs">
+      <DependentUpon>Mailbox.xsd</DependentUpon>
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Common\Data\Mailbox.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Mailbox.xsd</DependentUpon>
+    </Compile>
+    <Compile Include="Common\Data\ZipStorer.cs" />
+    <Compile Include="Common\Enums\IMAPError.cs" />
+    <Compile Include="Common\Enums\IMAPResponse.cs" />
+    <Compile Include="Common\Enums\LogType.cs" />
+    <Compile Include="Common\Enums\MailboxType.cs" />
+    <Compile Include="Common\Enums\MessageFlag.cs" />
+    <Compile Include="Common\Enums\MessageListDirection.cs" />
+    <Compile Include="Common\Interfaces\IBaseObject.cs" />
+    <Compile Include="Common\Interfaces\IBatchRequest.cs" />
+    <Compile Include="Common\Interfaces\ICommand.cs" />
+    <Compile Include="Common\Interfaces\IContact.cs" />
+    <Compile Include="Common\Interfaces\IFolder.cs" />
+    <Compile Include="Common\Interfaces\IMessage.cs" />
+    <Compile Include="Common\Interfaces\IMessageContent.cs" />
+    <Compile Include="Common\Interfaces\IProcessor.cs" />
+    <Compile Include="Common\Interfaces\IRequest.cs" />
+    <Compile Include="Common\Processors\AppendProcessor.cs" />
+    <Compile Include="Common\Processors\BaseProcessor.cs" />
+    <Compile Include="Common\Processors\ChangeFlagProcessor.cs" />
+    <Compile Include="Common\Processors\CopyMessageProcessor.cs" />
+    <Compile Include="Common\Processors\CreateFolderProcessor.cs" />
+    <Compile Include="Common\Processors\FolderDataProcessor.cs" />
+    <Compile Include="Common\Processors\FolderListProcessor.cs" />
+    <Compile Include="Common\Processors\LoginProcessor.cs" />
+    <Compile Include="Common\Processors\MessageFlagProcessor.cs" />
+    <Compile Include="Common\Processors\MessageHeaderProcessor.cs" />
+    <Compile Include="Common\Processors\MessageListProcessor.cs" />
+    <Compile Include="Common\Processors\MessagePartProcessor.cs" />
+    <Compile Include="Common\Processors\MessageStructureProcessor.cs" />
+    <Compile Include="Common\Processors\SearchProcessor.cs" />
+    <Compile Include="Common\Requests\AppendRequest.cs" />
+    <Compile Include="Common\Requests\AsyncBatchRequest.cs" />
+    <Compile Include="Common\Requests\BaseRequest.cs" />
+    <Compile Include="Common\Requests\ChangeFlagRequest.cs" />
+    <Compile Include="Common\Requests\CopyMessageRequest.cs" />
+    <Compile Include="Common\Requests\CreateFolderRequest.cs" />
+    <Compile Include="Common\Requests\DeleteFolderRequest.cs" />
+    <Compile Include="Common\Requests\DeleteMessageRequest.cs" />
+    <Compile Include="Common\Requests\FolderDataRequest.cs" />
+    <Compile Include="Common\Requests\FolderTreeRequest.cs" />
+    <Compile Include="Common\Requests\FullMessageRequest.cs" />
+    <Compile Include="Common\Requests\MessageFlagRequest.cs" />
+    <Compile Include="Common\Requests\MessageHeaderRequest.cs" />
+    <Compile Include="Common\Requests\MessageListRequest.cs" />
+    <Compile Include="Common\Requests\MessagePartRequest.cs" />
+    <Compile Include="Common\Requests\MessageStructureRequest.cs" />
+    <Compile Include="Common\Requests\MoveFolderRequest.cs" />
+    <Compile Include="Common\Requests\MoveMessageRequest.cs" />
+    <Compile Include="Common\Requests\NewMessagesRequest.cs" />
+    <Compile Include="Common\Requests\RenameFolderRequest.cs" />
+    <Compile Include="Common\Requests\SearchRequest.cs" />
+    <Compile Include="Common\Requests\SimpleBatchRequest.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Synchronous\Client\IMAP.cs" />
+    <Compile Include="Synchronous\Client\IMAPBase.cs" />
+    <Compile Include="Common\IMAPException.cs" />
+    <Compile Include="Common\IMAPLogger.cs" />
+    <Compile Include="Synchronous\Objects\IMAPFileAttachment.cs" />
+    <Compile Include="Synchronous\Objects\IMAPFolder.cs" />
+    <Compile Include="Synchronous\Objects\IMAPFolderCollection.cs" />
+    <Compile Include="Synchronous\Objects\IMAPFolderQuota.cs" />
+    <Compile Include="Synchronous\Objects\IMAPMailAddress.cs" />
+    <Compile Include="Synchronous\Objects\IMAPMessage.cs" />
+    <Compile Include="Synchronous\Objects\IMAPMessageCollection.cs" />
+    <Compile Include="Synchronous\Objects\IMAPMessageContent.cs" />
+    <Compile Include="Synchronous\Objects\IMAPMessageFlags.cs" />
+    <Compile Include="Synchronous\Objects\IMAPSearchQuery.cs" />
+    <Compile Include="Synchronous\Objects\IMAPSearchResult.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Synchronous\Client\IMAPClient.cs" />
+    <Compile Include="Common\IMAPConfig.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Common\Data\Mailbox.xsc">
+      <DependentUpon>Mailbox.xsd</DependentUpon>
+    </None>
+    <EmbeddedResource Include="Common\Data\Mailbox.xsd">
+      <SubType>Designer</SubType>
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>Mailbox.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <None Include="Common\Data\Mailbox.xss">
+      <DependentUpon>Mailbox.xsd</DependentUpon>
+    </None>
+    <None Include="Diagram\LibraryDagram.cd" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

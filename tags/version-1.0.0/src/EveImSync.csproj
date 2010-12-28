@@ -1,0 +1,308 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{1DA51BEB-7870-485F-80F4-A716279AA32F}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>EveImSync</RootNamespace>
+    <AssemblyName>EveImSync</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>evimsync.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Attachment.cs" />
+    <Compile Include="ConfigFrm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ConfigFrm.Designer.cs">
+      <DependentUpon>ConfigFrm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Configuration.cs" />
+    <Compile Include="Enums\SyncStep.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\crc32.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\EncodingFoundException.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlAttribute.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlAttributeCollection.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlCmdLine.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlCommentNode.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlConsoleListener.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlDocument.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlDocument.Xpath.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlElementFlag.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlEntity.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlNameTable.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlNode.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlNode.Xpath.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlNodeCollection.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlNodeNavigator.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlNodeType.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlParseError.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlParseErrorCode.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlTextNode.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlWeb.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlWeb.Xpath.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlWebException.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\IOLibrary.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\MixedCodeDocument.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\MixedCodeDocumentCodeFragment.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\MixedCodeDocumentFragment.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\MixedCodeDocumentFragmentList.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\MixedCodeDocumentFragmentType.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\MixedCodeDocumentTextFragment.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\NameValuePair.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\NameValuePairList.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\Trace.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\Trace.FullFramework.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\Utilities.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Asynchronous\Client\IMAPAsyncClient.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Asynchronous\Client\IMAPConnection.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Asynchronous\Client\IMAPConnectionPool.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Asynchronous\Client\IMAPConnectionWorker.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Asynchronous\Client\IMAPMailboxManager.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Asynchronous\Client\IMAPRequestManager.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Asynchronous\Helpers\LoggerAggregator.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Asynchronous\Helpers\WorkerLogger.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Asynchronous\Objects\Contact.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Asynchronous\Objects\Folder.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Asynchronous\Objects\Message.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Asynchronous\Objects\MessageContent.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Attributes\ConnectingTable.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Attributes\HeaderName.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Attributes\LinkToTable.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\BatchRequests\BaseBatchRequest.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Commands\AppendCommand.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Commands\BaseCommand.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Commands\CapabilityCommand.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Commands\ChangeFlagCommand.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Commands\CommandResult.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Commands\CopyMessageCommand.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Commands\CreateFolderCommand.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Commands\CustomCommand.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Commands\ExamineFolderCommand.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Commands\ExpungeCommand.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Commands\FolderListCommand.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Commands\HeartBeatCommand.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Commands\LoginCommand.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Commands\MessageFlagCommand.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Commands\MessageHeaderCommand.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Commands\MessageListCommand.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Commands\MessagePartCommand.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Commands\MessageStructureCommand.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Commands\SearchCommand.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Commands\SearchCriteria.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Commands\SelectFolderCommand.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Data\DataManager.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Data\Mailbox.cs">
+      <DependentUpon>Mailbox.xsd</DependentUpon>
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Data\Mailbox.Designer.cs">
+      <DependentUpon>Mailbox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Data\ZipStorer.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Enums\IMAPError.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Enums\IMAPResponse.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Enums\LogType.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Enums\MailboxType.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Enums\MessageFlag.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Enums\MessageListDirection.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\IMAPConfig.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\IMAPException.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\IMAPLogger.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Interfaces\IBaseObject.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Interfaces\IBatchRequest.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Interfaces\ICommand.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Interfaces\IContact.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Interfaces\IFolder.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Interfaces\IMessage.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Interfaces\IMessageContent.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Interfaces\IProcessor.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Interfaces\IRequest.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Processors\AppendProcessor.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Processors\BaseProcessor.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Processors\ChangeFlagProcessor.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Processors\CopyMessageProcessor.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Processors\CreateFolderProcessor.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Processors\FolderDataProcessor.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Processors\FolderListProcessor.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Processors\LoginProcessor.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Processors\MessageFlagProcessor.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Processors\MessageHeaderProcessor.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Processors\MessageListProcessor.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Processors\MessagePartProcessor.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Processors\MessageStructureProcessor.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Processors\SearchProcessor.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Requests\AppendRequest.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Requests\AsyncBatchRequest.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Requests\BaseRequest.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Requests\ChangeFlagRequest.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Requests\CopyMessageRequest.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Requests\CreateFolderRequest.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Requests\DeleteFolderRequest.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Requests\DeleteMessageRequest.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Requests\FolderDataRequest.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Requests\FolderTreeRequest.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Requests\FullMessageRequest.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Requests\MessageFlagRequest.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Requests\MessageHeaderRequest.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Requests\MessageListRequest.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Requests\MessagePartRequest.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Requests\MessageStructureRequest.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Requests\MoveFolderRequest.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Requests\MoveMessageRequest.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Requests\NewMessagesRequest.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Requests\RenameFolderRequest.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Requests\SearchRequest.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Requests\SimpleBatchRequest.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Properties\Resources.Designer.cs" />
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Synchronous\Client\IMAP.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Synchronous\Client\IMAPBase.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Synchronous\Client\IMAPClient.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Synchronous\Objects\IMAPFileAttachment.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Synchronous\Objects\IMAPFolder.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Synchronous\Objects\IMAPFolderCollection.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Synchronous\Objects\IMAPFolderQuota.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Synchronous\Objects\IMAPMailAddress.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Synchronous\Objects\IMAPMessage.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Synchronous\Objects\IMAPMessageCollection.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Synchronous\Objects\IMAPMessageContent.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Synchronous\Objects\IMAPMessageFlags.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Synchronous\Objects\IMAPSearchQuery.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="InterIMAP\InterIMAP-Async\InterIMAP\Synchronous\Objects\IMAPSearchResult.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MailMessageExt.cs" />
+    <Compile Include="Enums\NoteAction.cs" />
+    <Compile Include="Note.cs" />
+    <Compile Include="ENScriptWrapper.cs" />
+    <Compile Include="MainFrm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MainFrm.Designer.cs">
+      <DependentUpon>MainFrm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Settings.cs" />
+    <Compile Include="SimpleAES.cs" />
+    <Compile Include="SyncPairSettings.cs" />
+    <Compile Include="XmlSanitizer.cs" />
+    <EmbeddedResource Include="ConfigFrm.resx">
+      <DependentUpon>ConfigFrm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InterIMAP\InterIMAP-Async\InterIMAP\Properties\Resources.resx" />
+    <EmbeddedResource Include="MainFrm.resx">
+      <DependentUpon>MainFrm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <None Include="app.config" />
+    <None Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Data\Mailbox.xsc">
+      <DependentUpon>Mailbox.xsd</DependentUpon>
+    </None>
+    <None Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Data\Mailbox.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>Mailbox1.Designer.cs</LastGenOutput>
+    </None>
+    <None Include="InterIMAP\InterIMAP-Async\InterIMAP\Common\Data\Mailbox.xss">
+      <DependentUpon>Mailbox.xsd</DependentUpon>
+    </None>
+    <None Include="InterIMAP\InterIMAP-Async\InterIMAP\Diagram\LibraryDagram.cd" />
+    <None Include="Properties\AssemblyInfo.tmpl" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="evimsync.ico" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>SubWCRev $(SolutionDir) $(SolutionDir)src\Properties\AssemblyInfo.tmpl $(SolutionDir)src\Properties\AssemblyInfo.cs</PreBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -978,5 +978,10 @@ namespace EveImSync
 
             return requestedFolder;
         }
+
+        private void homeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            System.Diagnostics.Process.Start("http://tools.tortoisesvn.net/EvImSync.html"); 
+        }
     }
 }

@@ -93,6 +93,33 @@ namespace InterIMAP.Asynchronous.Objects
             }
         }
 
+        public string FullEncodedPath
+        {
+            get
+            {
+                string[] paths = FullPath.Split('/');
+                string encodedPath = string.Empty;
+                foreach (string p in paths)
+                {
+                    string foldername = p;
+                    System.Text.StringBuilder b = new System.Text.StringBuilder(foldername);
+                    for (int i = 0; i < b.Length; ++i)
+                    {
+                        if (b[i] == '+')
+                            b[i] = '&';
+                        else if (b[i] == '&')
+                            b[i] = '+';
+                    }
+                    foldername = b.ToString();
+                    byte[] utf7String = System.Text.Encoding.UTF7.GetBytes(foldername);
+                    foldername = System.Text.Encoding.ASCII.GetString(utf7String);
+                    foldername = foldername.Replace('/', ',').Replace('+', '&');
+                    encodedPath = encodedPath + foldername + '/';
+                }
+                return encodedPath.TrimEnd('/');
+            }
+        }
+
         public IFolder[] SubFolders
         {
             get { return _client.MailboxManager.GetSubFolders(this); }

@@ -49,6 +49,8 @@ namespace EveImSync
         {
             InitializeComponent();
             this.synchronizationContext = SynchronizationContext.Current;
+            string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            versionLabel.Text = string.Format("Version: {0}", version);
         }
 
         private void ExitToolStripMenuItem_Click(object sender, EventArgs e)

@@ -57,6 +57,7 @@ namespace EveImSync
             this.infoText0 = new System.Windows.Forms.Label();
             this.forceDownload = new System.Windows.Forms.CheckBox();
             this.homeLink = new System.Windows.Forms.LinkLabel();
+            this.versionLabel = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -159,7 +160,7 @@ namespace EveImSync
             // homeLink
             // 
             this.homeLink.AutoSize = true;
-            this.homeLink.Location = new System.Drawing.Point(392, 28);
+            this.homeLink.Location = new System.Drawing.Point(339, 28);
             this.homeLink.Name = "homeLink";
             this.homeLink.Size = new System.Drawing.Size(59, 13);
             this.homeLink.TabIndex = 8;
@@ -167,11 +168,21 @@ namespace EveImSync
             this.homeLink.Text = "Homepage";
             this.homeLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.homeLink_LinkClicked);
             // 
+            // versionLabel
+            // 
+            this.versionLabel.AutoSize = true;
+            this.versionLabel.Location = new System.Drawing.Point(404, 28);
+            this.versionLabel.Name = "versionLabel";
+            this.versionLabel.Size = new System.Drawing.Size(45, 13);
+            this.versionLabel.TabIndex = 9;
+            this.versionLabel.Text = "Version:";
+            // 
             // MainFrm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(521, 142);
+            this.Controls.Add(this.versionLabel);
             this.Controls.Add(this.homeLink);
             this.Controls.Add(this.forceDownload);
             this.Controls.Add(this.infoText0);
@@ -207,6 +218,7 @@ namespace EveImSync
         private System.Windows.Forms.Label infoText0;
         private System.Windows.Forms.CheckBox forceDownload;
         private System.Windows.Forms.LinkLabel homeLink;
+        private System.Windows.Forms.Label versionLabel;
     }
 }
 

@@ -327,7 +327,7 @@ namespace EveImSync
             this.Controls.Add(this.groupBox1);
             this.MinimumSize = new System.Drawing.Size(473, 404);
             this.Name = "ConfigFrm";
-            this.Text = "ConfigFrm";
+            this.Text = "EvImSync Configuration";
             this.Load += new System.EventHandler(this.ConfigFrm_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();

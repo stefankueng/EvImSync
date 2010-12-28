@@ -195,9 +195,10 @@ namespace EveImSync
             synchronizationContext.Send(new SendOrPostCallback(delegate(object state)
             {
                 startsync.Text = "Start Sync";
+                this.infoText1.Text = "Finished";
                 this.progressIndicator.Minimum = 0;
                 this.progressIndicator.Maximum = 100000;
-                this.progressIndicator.Value = 100000;
+                this.progressIndicator.Value = 0;
             }), null);
         }
 

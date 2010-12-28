@@ -337,7 +337,7 @@ namespace EveImSync
                 return;
             }
 
-            if (folder == "/evernote trash")
+            if (folder.EndsWith("evernote trash"))
                 return;
 
             client.RequestManager.SubmitAndWait(new FolderTreeRequest(folder, null), false);

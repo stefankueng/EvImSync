@@ -25,7 +25,7 @@
 
 namespace InterIMAP.Common.Interfaces
 {
-    
+
     /// <summary>
     /// Public properties of the Folder object
     /// </summary>
@@ -50,6 +50,11 @@ namespace InterIMAP.Common.Interfaces
         /// The full path of this folder
         /// </summary>
         string FullPath { get; set; }
+
+        /// <summary>
+        /// The UTF7 encoded path
+        /// </summary>
+        string FullEncodedPath { get; }
 
         /// <summary>
         /// The list of this folders children
@@ -79,6 +84,6 @@ namespace InterIMAP.Common.Interfaces
         /// <summary>
         /// A reference to this folders parent folder
         /// </summary>
-        IFolder Parent { get;  }
+        IFolder Parent { get; }
     }
 }

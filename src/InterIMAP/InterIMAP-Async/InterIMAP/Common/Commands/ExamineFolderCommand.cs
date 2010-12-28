@@ -47,7 +47,7 @@ namespace InterIMAP.Common.Commands
         public ExamineFolderCommand(IFolder folder, CommandDataReceivedCallback callback)
             :base(callback)
         {
-            _parameters.Add(folder.FullPath);
+            _parameters.Add(folder.FullEncodedPath);
             _parameterObjs.Add(folder);
             CommandString = String.Format("EXAMINE \"{0}\"", Parameters);
         }

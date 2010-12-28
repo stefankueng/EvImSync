@@ -22,7 +22,7 @@ namespace InterIMAP.Common.Commands
         public AppendCommand(string eml, string flags, IFolder parentFolder, CommandDataReceivedCallback callback)
             : base(callback)
         {
-            string fullFolder = parentFolder.FullPath;
+            string fullFolder = parentFolder.FullEncodedPath;
             fullFolder = fullFolder.Replace("\"", "");
 
             _parameters.Add(fullFolder);

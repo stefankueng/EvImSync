@@ -56,6 +56,7 @@ namespace EveImSync
             this.progressIndicator = new System.Windows.Forms.ProgressBar();
             this.infoText0 = new System.Windows.Forms.Label();
             this.forceDownload = new System.Windows.Forms.CheckBox();
+            this.homeLink = new System.Windows.Forms.LinkLabel();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -81,14 +82,14 @@ namespace EveImSync
             // optionsToolStripMenuItem
             // 
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
-            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
             this.optionsToolStripMenuItem.Text = "Configuration";
             this.optionsToolStripMenuItem.Click += new System.EventHandler(this.OptionsToolStripMenuItem_Click);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.ExitToolStripMenuItem_Click);
             // 
@@ -155,11 +156,23 @@ namespace EveImSync
             this.forceDownload.UseVisualStyleBackColor = true;
             this.forceDownload.Visible = false;
             // 
+            // homeLink
+            // 
+            this.homeLink.AutoSize = true;
+            this.homeLink.Location = new System.Drawing.Point(392, 28);
+            this.homeLink.Name = "homeLink";
+            this.homeLink.Size = new System.Drawing.Size(59, 13);
+            this.homeLink.TabIndex = 8;
+            this.homeLink.TabStop = true;
+            this.homeLink.Text = "Homepage";
+            this.homeLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.homeLink_LinkClicked);
+            // 
             // MainFrm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(521, 142);
+            this.Controls.Add(this.homeLink);
             this.Controls.Add(this.forceDownload);
             this.Controls.Add(this.infoText0);
             this.Controls.Add(this.progressIndicator);
@@ -193,6 +206,7 @@ namespace EveImSync
         private System.Windows.Forms.ProgressBar progressIndicator;
         private System.Windows.Forms.Label infoText0;
         private System.Windows.Forms.CheckBox forceDownload;
+        private System.Windows.Forms.LinkLabel homeLink;
     }
 }
 

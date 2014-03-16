@@ -1,5 +1,5 @@
-﻿// EvImSync - A tool to sync Evernote notes to IMAP mails and vice versa
-// Copyright (C) 2010 - Stefan Kueng
+﻿// Evernote2Onenote - imports Evernote notes to Onenote
+// Copyright (C) 2014 - Stefan Kueng
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace EveImSync
+namespace Evernote2Onenote
 {
     partial class MainFrm
     {
@@ -88,7 +88,7 @@ namespace EveImSync
             // 
             // startsync
             // 
-            this.startsync.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.startsync.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.startsync.Location = new System.Drawing.Point(147, 51);
             this.startsync.Name = "startsync";
@@ -100,7 +100,7 @@ namespace EveImSync
             // 
             // infoText1
             // 
-            this.infoText1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.infoText1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.infoText1.AutoSize = true;
             this.infoText1.Location = new System.Drawing.Point(12, 69);
@@ -111,7 +111,7 @@ namespace EveImSync
             // 
             // infoText2
             // 
-            this.infoText2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.infoText2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.infoText2.AutoSize = true;
             this.infoText2.Location = new System.Drawing.Point(12, 82);
@@ -122,7 +122,7 @@ namespace EveImSync
             // 
             // progressIndicator
             // 
-            this.progressIndicator.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.progressIndicator.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.progressIndicator.Location = new System.Drawing.Point(12, 98);
             this.progressIndicator.Name = "progressIndicator";

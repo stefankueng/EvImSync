@@ -20,10 +20,10 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Xml;
-using EveImSync.Enums;
+using Evernote2Onenote.Enums;
 using HtmlAgilityPack;
 
-namespace EveImSync
+namespace Evernote2Onenote
 {
     class Note
     {

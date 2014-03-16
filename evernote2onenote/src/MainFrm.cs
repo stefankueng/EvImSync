@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using EveImSync.Enums;
+using Evernote2Onenote.Enums;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -26,7 +26,7 @@ using System.Windows.Forms;
 using System.Xml;
 using OneNote = Microsoft.Office.Interop.OneNote;
 
-namespace EveImSync
+namespace Evernote2Onenote
 {
     /// <summary>
     /// main dialog

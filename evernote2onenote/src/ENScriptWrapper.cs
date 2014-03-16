@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
-namespace EveImSync
+namespace Evernote2Onenote
 {
     /// <summary>
     /// Wrapper for the ENScript.exe tool

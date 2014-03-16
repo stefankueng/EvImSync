@@ -17,7 +17,7 @@
 using System;
 using System.Windows.Forms;
 
-namespace EveImSync
+namespace Evernote2Onenote
 {
     static class Program
     {

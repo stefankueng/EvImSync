@@ -17,7 +17,7 @@
 using System;
 using System.Text;
 
-namespace EveImSync
+namespace Evernote2Onenote
 {
     public class XmlSanitizer
     {

@@ -292,51 +292,6 @@ namespace Evernote2Onenote
 
                         Note note = new Note();
                         note.Title = node.InnerText;
-                        node = node.NextSibling;
-                        note.Content = node.InnerXml;
-                        XmlNodeList tagslist = xmlDocItem.GetElementsByTagName("tag");
-                        foreach (XmlNode n in tagslist)
-                        {
-                            note.Tags.Add(n.InnerText);
-                        }
-
-                        XmlNodeList datelist = xmlDocItem.GetElementsByTagName("created");
-                        foreach (XmlNode n in datelist)
-                        {
-                            try
-                            {
-                                note.Date = DateTime.ParseExact(n.InnerText, "yyyyMMddTHHmmssZ", null);
-                            }
-                            catch (System.FormatException)
-                            {
-                            }
-                        }
-
-                        XmlNodeList datelist2 = xmlDocItem.GetElementsByTagName("updated");
-                        foreach (XmlNode n in datelist2)
-                        {
-                            try
-                            {
-                                note.Date = DateTime.ParseExact(n.InnerText, "yyyyMMddTHHmmssZ", null);
-                            }
-                            catch (System.FormatException)
-                            {
-                            }
-                        }
-                        XmlNodeList sourceurl = xmlDocItem.GetElementsByTagName("source-url");
-                        note.SourceUrl = "";
-                        foreach (XmlNode n in sourceurl)
-                        {
-                            try
-                            {
-                                note.SourceUrl = n.InnerText;
-                                if (n.InnerText.StartsWith("file://"))
-                                    note.SourceUrl = "";
-                            }
-                            catch (System.FormatException)
-                            {
-                            }
-                        }
 
                         noteList.Add(note);
                     }
@@ -367,175 +322,223 @@ namespace Evernote2Onenote
 
             syncStep = SyncStep.ImportNotes;
             int counter = 0;
-            foreach (Note n in notesEvernote)
+
+
             {
-                if (cancelled)
-                {
-                    break;
-                }
-
-                SetInfo(null, string.Format("importing note ({0} of {1}) : \"{2}\"", counter + 1, uploadcount, n.Title), counter++, uploadcount);
-
                 XmlTextReader xtrInput;
                 XmlDocument xmlDocItem;
 
                 xtrInput = new XmlTextReader(exportFile);
-                while (xtrInput.Read())
-                {
-                    while ((xtrInput.NodeType == XmlNodeType.Element) && (xtrInput.Name.ToLower() == "note"))
-                    {
-                        if (cancelled)
-                        {
-                            break;
-                        }
-
-                        xmlDocItem = new XmlDocument();
-                        xmlDocItem.LoadXml(xtrInput.ReadOuterXml());
-                        XmlNode node = xmlDocItem.FirstChild;
-
-                        // node is <note> element
-                        // node.FirstChild.InnerText is <title>
-                        node = node.FirstChild;
-
-                        if (node.InnerText == n.Title)
-                        {
-                            node = node.NextSibling;
-                            if (n.Content == node.InnerXml.Replace("\r", string.Empty))
-                            {
-                                XmlNodeList atts = xmlDocItem.GetElementsByTagName("resource");
-                                foreach (XmlNode xmln in atts)
-                                {
-                                    Attachment attachment = new Attachment();
-                                    attachment.Base64Data = xmln.FirstChild.InnerText;
-                                    byte[] data = Convert.FromBase64String(xmln.FirstChild.InnerText);
-                                    byte[] hash = new System.Security.Cryptography.MD5CryptoServiceProvider().ComputeHash(data);
-                                    string hashHex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
-
-                                    attachment.Hash = hashHex;
-
-                                    XmlNodeList fns = xmlDocItem.GetElementsByTagName("file-name");
-                                    if (fns.Count > n.Attachments.Count)
-                                    {
-                                        attachment.FileName = fns.Item(n.Attachments.Count).InnerText;
-                                    }
-
-                                    XmlNodeList mimes = xmlDocItem.GetElementsByTagName("mime");
-                                    if (mimes.Count > n.Attachments.Count)
-                                    {
-                                        attachment.ContentType = mimes.Item(n.Attachments.Count).InnerText;
-                                    }
-
-                                    n.Attachments.Add(attachment);
-                                }
-                            }
-                        }
-                    }
-                }
-
-                xtrInput.Close();
-
-                string htmlBody = n.Content;
-
-                List<string> tempfiles = new List<string>();
-                string xmlAttachments = "";
-                foreach (Attachment attachment in n.Attachments)
-                {
-                    // save the attached file
-                    string tempfilepath = temppath + "\\";
-                    byte[] data = Convert.FromBase64String(attachment.Base64Data);
-                    if ((attachment.FileName != null) && (attachment.FileName.Length > 0))
-                    {
-                        string name = attachment.FileName;
-                        string invalid = new string(Path.GetInvalidFileNameChars());
-                        foreach (char c in invalid)
-                        {
-                            name = name.Replace(c.ToString(), "");
-                        }
-                        if (name.Length >= (240 - tempfilepath.Length))
-                            name = name.Substring(name.Length - (240 - tempfilepath.Length));
-                        tempfilepath += name;
-                    }
-                    else
-                        tempfilepath += attachment.Hash;
-                    Stream fs = new FileStream(tempfilepath, FileMode.Create);
-                    fs.Write(data, 0, data.Length);
-                    fs.Close();
-                    tempfiles.Add(tempfilepath);
-
-                    Regex rx = new Regex(@"<en-media\b[^>]*?hash=""" + attachment.Hash + @"""[^>]*/>", RegexOptions.IgnoreCase);
-                    if ((attachment.ContentType != null) && (attachment.ContentType.Contains("image") && rx.Match(htmlBody).Success))
-                    {
-                        // replace the <en-media /> tag with an <img /> tag
-                        htmlBody = rx.Replace(htmlBody, @"<img src=""file:///" + tempfilepath + @"""/>");
-                    }
-                    else
-                    {
-                        if ((attachment.FileName != null) && (attachment.FileName.Length > 0))
-                            xmlAttachments += string.Format("<one:InsertedFile pathSource=\"{0}\" preferredName=\"{1}\" />", tempfilepath, attachment.FileName);
-                        else
-                            xmlAttachments += string.Format("<one:InsertedFile pathSource=\"{0}\" preferredName=\"{1}\" />", tempfilepath, attachment.Hash);
-                    }
-                }
-                n.Attachments.Clear();
-
-                htmlBody = htmlBody.Replace(@"<![CDATA[<?xml version=""1.0"" encoding=""UTF-8""?>", string.Empty);
-                htmlBody = htmlBody.Replace(@"<!DOCTYPE en-note SYSTEM ""http://xml.evernote.com/pub/enml2.dtd"">", string.Empty);
-                htmlBody = htmlBody.Replace("<en-note>", "<body>");
-                htmlBody = htmlBody.Replace("</en-note>]]>", "</body>");
-                htmlBody = htmlBody.Replace("</en-note>\n]]>", "</body>");
-                htmlBody = htmlBody.Trim();
-                htmlBody = @"<!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 4.01 Transitional//EN""><head></head>" + htmlBody;
-
-                string emailBody = htmlBody;
-                Regex rex = new Regex(@"^date:(.*)$", RegexOptions.IgnoreCase | RegexOptions.Multiline);
-                emailBody = rex.Replace(emailBody, "Date: " + n.Date.ToString("ddd, dd MMM yyyy HH:mm:ss K"));
 
                 try
                 {
-                    // Get the hierarchy for all the notebooks
-                    if (n.Tags.Count > 0)
+                    while (xtrInput.Read())
                     {
-                        foreach (string tag in n.Tags)
+                        while ((xtrInput.NodeType == XmlNodeType.Element) && (xtrInput.Name.ToLower() == "note"))
                         {
-                            string sectionId = GetSection(tag);
-                            onApp.CreateNewPage(sectionId, out m_PageID, Microsoft.Office.Interop.OneNote.NewPageStyle.npsBlankPageWithTitle);
-                            string textToSave;
-                            onApp.GetPageContent(m_PageID, out textToSave, Microsoft.Office.Interop.OneNote.PageInfo.piBasic);
-                            //OneNote uses HTML for the xml string to pass to the UpdatePageContent, so use the
-                            //Outlook HTMLBody property.  It coerces rtf and plain text to HTML.
-                            int outlineID = new System.Random().Next();
-                            //string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, m_outlineIDMetaName);
-                            string xmlSource = string.Format(m_xmlSourceUrl, n.SourceUrl);
-                            string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, System.Security.SecurityElement.Escape(n.Title), n.SourceUrl.Length > 0 ? xmlSource : "");
-                            string xml = string.Format(m_xmlNewOutline, outlineContent, m_PageID, m_xmlns, System.Security.SecurityElement.Escape(n.Title), xmlAttachments, n.Date.ToString("yyyy'-'MM'-'ddTHH':'mm':'ss'Z'"));
-                            onApp.UpdatePageContent(xml, DateTime.MinValue, OneNote.XMLSchema.xs2010, true);
+                            if (cancelled)
+                            {
+                                break;
+                            }
+
+                            xmlDocItem = new XmlDocument();
+                            xmlDocItem.LoadXml(xtrInput.ReadOuterXml());
+                            XmlNode node = xmlDocItem.FirstChild;
+
+                            // node is <note> element
+                            // node.FirstChild.InnerText is <title>
+                            node = node.FirstChild;
+
+                            Note note = new Note();
+                            note.Title = node.InnerText;
+                            node = node.NextSibling;
+                            note.Content = node.InnerXml;
+
+                            XmlNodeList atts = xmlDocItem.GetElementsByTagName("resource");
+                            foreach (XmlNode xmln in atts)
+                            {
+                                Attachment attachment = new Attachment();
+                                attachment.Base64Data = xmln.FirstChild.InnerText;
+                                byte[] data = Convert.FromBase64String(xmln.FirstChild.InnerText);
+                                byte[] hash = new System.Security.Cryptography.MD5CryptoServiceProvider().ComputeHash(data);
+                                string hashHex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
+
+                                attachment.Hash = hashHex;
+
+                                XmlNodeList fns = xmlDocItem.GetElementsByTagName("file-name");
+                                if (fns.Count > note.Attachments.Count)
+                                {
+                                    attachment.FileName = fns.Item(note.Attachments.Count).InnerText;
+                                }
+
+                                XmlNodeList mimes = xmlDocItem.GetElementsByTagName("mime");
+                                if (mimes.Count > note.Attachments.Count)
+                                {
+                                    attachment.ContentType = mimes.Item(note.Attachments.Count).InnerText;
+                                }
+
+                                note.Attachments.Add(attachment);
+                            }
+
+                            XmlNodeList tagslist = xmlDocItem.GetElementsByTagName("tag");
+                            foreach (XmlNode n in tagslist)
+                            {
+                                note.Tags.Add(n.InnerText);
+                            }
+
+                            XmlNodeList datelist = xmlDocItem.GetElementsByTagName("created");
+                            foreach (XmlNode n in datelist)
+                            {
+                                try
+                                {
+                                    note.Date = DateTime.ParseExact(n.InnerText, "yyyyMMddTHHmmssZ", null);
+                                }
+                                catch (System.FormatException)
+                                {
+                                }
+                            }
+
+                            XmlNodeList datelist2 = xmlDocItem.GetElementsByTagName("updated");
+                            foreach (XmlNode n in datelist2)
+                            {
+                                try
+                                {
+                                    note.Date = DateTime.ParseExact(n.InnerText, "yyyyMMddTHHmmssZ", null);
+                                }
+                                catch (System.FormatException)
+                                {
+                                }
+                            }
+                            XmlNodeList sourceurl = xmlDocItem.GetElementsByTagName("source-url");
+                            note.SourceUrl = "";
+                            foreach (XmlNode n in sourceurl)
+                            {
+                                try
+                                {
+                                    note.SourceUrl = n.InnerText;
+                                    if (n.InnerText.StartsWith("file://"))
+                                        note.SourceUrl = "";
+                                }
+                                catch (System.FormatException)
+                                {
+                                }
+                            }
+
+                            SetInfo(null, string.Format("importing note ({0} of {1}) : \"{2}\"", counter + 1, uploadcount, note.Title), counter++, uploadcount);
+
+                            string htmlBody = note.Content;
+
+                            List<string> tempfiles = new List<string>();
+                            string xmlAttachments = "";
+                            foreach (Attachment attachment in note.Attachments)
+                            {
+                                // save the attached file
+                                string tempfilepath = temppath + "\\";
+                                byte[] data = Convert.FromBase64String(attachment.Base64Data);
+                                if ((attachment.FileName != null) && (attachment.FileName.Length > 0))
+                                {
+                                    string name = attachment.FileName;
+                                    string invalid = new string(Path.GetInvalidFileNameChars());
+                                    foreach (char c in invalid)
+                                    {
+                                        name = name.Replace(c.ToString(), "");
+                                    }
+                                    if (name.Length >= (240 - tempfilepath.Length))
+                                        name = name.Substring(name.Length - (240 - tempfilepath.Length));
+                                    tempfilepath += name;
+                                }
+                                else
+                                    tempfilepath += attachment.Hash;
+                                Stream fs = new FileStream(tempfilepath, FileMode.Create);
+                                fs.Write(data, 0, data.Length);
+                                fs.Close();
+                                tempfiles.Add(tempfilepath);
+
+                                Regex rx = new Regex(@"<en-media\b[^>]*?hash=""" + attachment.Hash + @"""[^>]*/>", RegexOptions.IgnoreCase);
+                                if ((attachment.ContentType != null) && (attachment.ContentType.Contains("image") && rx.Match(htmlBody).Success))
+                                {
+                                    // replace the <en-media /> tag with an <img /> tag
+                                    htmlBody = rx.Replace(htmlBody, @"<img src=""file:///" + tempfilepath + @"""/>");
+                                }
+                                else
+                                {
+                                    if ((attachment.FileName != null) && (attachment.FileName.Length > 0))
+                                        xmlAttachments += string.Format("<one:InsertedFile pathSource=\"{0}\" preferredName=\"{1}\" />", tempfilepath, attachment.FileName);
+                                    else
+                                        xmlAttachments += string.Format("<one:InsertedFile pathSource=\"{0}\" preferredName=\"{1}\" />", tempfilepath, attachment.Hash);
+                                }
+                            }
+                            note.Attachments.Clear();
+
+                            htmlBody = htmlBody.Replace(@"<![CDATA[<?xml version=""1.0"" encoding=""UTF-8""?>", string.Empty);
+                            htmlBody = htmlBody.Replace(@"<!DOCTYPE en-note SYSTEM ""http://xml.evernote.com/pub/enml2.dtd"">", string.Empty);
+                            htmlBody = htmlBody.Replace("<en-note>", "<body>");
+                            htmlBody = htmlBody.Replace("</en-note>]]>", "</body>");
+                            htmlBody = htmlBody.Replace("</en-note>\n]]>", "</body>");
+                            htmlBody = htmlBody.Trim();
+                            htmlBody = @"<!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 4.01 Transitional//EN""><head></head>" + htmlBody;
+
+                            string emailBody = htmlBody;
+                            Regex rex = new Regex(@"^date:(.*)$", RegexOptions.IgnoreCase | RegexOptions.Multiline);
+                            emailBody = rex.Replace(emailBody, "Date: " + note.Date.ToString("ddd, dd MMM yyyy HH:mm:ss K"));
+
+                            try
+                            {
+                                // Get the hierarchy for all the notebooks
+                                if (note.Tags.Count > 0)
+                                {
+                                    foreach (string tag in note.Tags)
+                                    {
+                                        string sectionId = GetSection(tag);
+                                        onApp.CreateNewPage(sectionId, out m_PageID, Microsoft.Office.Interop.OneNote.NewPageStyle.npsBlankPageWithTitle);
+                                        string textToSave;
+                                        onApp.GetPageContent(m_PageID, out textToSave, Microsoft.Office.Interop.OneNote.PageInfo.piBasic);
+                                        //OneNote uses HTML for the xml string to pass to the UpdatePageContent, so use the
+                                        //Outlook HTMLBody property.  It coerces rtf and plain text to HTML.
+                                        int outlineID = new System.Random().Next();
+                                        //string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, m_outlineIDMetaName);
+                                        string xmlSource = string.Format(m_xmlSourceUrl, note.SourceUrl);
+                                        string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, System.Security.SecurityElement.Escape(note.Title), note.SourceUrl.Length > 0 ? xmlSource : "");
+                                        string xml = string.Format(m_xmlNewOutline, outlineContent, m_PageID, m_xmlns, System.Security.SecurityElement.Escape(note.Title), xmlAttachments, note.Date.ToString("yyyy'-'MM'-'ddTHH':'mm':'ss'Z'"));
+                                        onApp.UpdatePageContent(xml, DateTime.MinValue, OneNote.XMLSchema.xs2010, true);
+                                    }
+                                }
+                                else
+                                {
+                                    string sectionId = GetSection("unspecified");
+                                    onApp.CreateNewPage(sectionId, out m_PageID, Microsoft.Office.Interop.OneNote.NewPageStyle.npsBlankPageWithTitle);
+                                    string textToSave;
+                                    onApp.GetPageContent(m_PageID, out textToSave, Microsoft.Office.Interop.OneNote.PageInfo.piBasic);
+                                    //OneNote uses HTML for the xml string to pass to the UpdatePageContent, so use the
+                                    //Outlook HTMLBody property.  It coerces rtf and plain text to HTML.
+                                    int outlineID = new System.Random().Next();
+                                    //string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, m_outlineIDMetaName);
+                                    string xmlSource = string.Format(m_xmlSourceUrl, note.SourceUrl);
+                                    string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, System.Security.SecurityElement.Escape(note.Title), note.SourceUrl.Length > 0 ? xmlSource : "");
+                                    string xml = string.Format(m_xmlNewOutline, outlineContent, m_PageID, m_xmlns, System.Security.SecurityElement.Escape(note.Title), xmlAttachments, note.Date.ToString("yyyy'-'MM'-'ddTHH':'mm':'ss'Z'"));
+                                    onApp.UpdatePageContent(xml, DateTime.MinValue, OneNote.XMLSchema.xs2010, true);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show(string.Format("Note:{0}\n{1}", note.Title, ex.ToString()));
+                            }
+
+                            foreach (string p in tempfiles)
+                            {
+                                File.Delete(p);
+                            }
                         }
                     }
-                    else
-                    {
-                        string sectionId = GetSection("unspecified");
-                        onApp.CreateNewPage(sectionId, out m_PageID, Microsoft.Office.Interop.OneNote.NewPageStyle.npsBlankPageWithTitle);
-                        string textToSave;
-                        onApp.GetPageContent(m_PageID, out textToSave, Microsoft.Office.Interop.OneNote.PageInfo.piBasic);
-                        //OneNote uses HTML for the xml string to pass to the UpdatePageContent, so use the
-                        //Outlook HTMLBody property.  It coerces rtf and plain text to HTML.
-                        int outlineID = new System.Random().Next();
-                        //string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, m_outlineIDMetaName);
-                        string xmlSource = string.Format(m_xmlSourceUrl, n.SourceUrl);
-                        string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, System.Security.SecurityElement.Escape(n.Title), n.SourceUrl.Length > 0 ? xmlSource : "");
-                        string xml = string.Format(m_xmlNewOutline, outlineContent, m_PageID, m_xmlns, System.Security.SecurityElement.Escape(n.Title), xmlAttachments, n.Date.ToString("yyyy'-'MM'-'ddTHH':'mm':'ss'Z'"));
-                        onApp.UpdatePageContent(xml, DateTime.MinValue, OneNote.XMLSchema.xs2010, true);
-                    }
+
+                    xtrInput.Close();
                 }
-                catch (Exception ex)
+                catch (System.Xml.XmlException)
                 {
-                    MessageBox.Show(string.Format("Note:{0}\n{1}", n.Title, ex.ToString()));
+                    // happens if the notebook was empty or does not exist.
+                    MessageBox.Show(string.Format("The notebook \"{0}\" either does not exist or empty!", ENNotebookName));
                 }
 
-                foreach (string p in tempfiles)
-                {
-                    File.Delete(p);
-                }
             }
         }
         private void AppendHierarchy(XmlNode xml, StringBuilder str, int level)

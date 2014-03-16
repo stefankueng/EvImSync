@@ -90,7 +90,7 @@ namespace Evernote2Onenote
                     fullpos = max != 0 ? (int)(pos * 100000.0 / max * 0.05) + 30000 : 30000;
                     break;
                 case SyncStep.ImportNotes:       // 35-100%
-                    fullpos = max != 0 ? (int)(pos * 100000.0 / max * 0.25) + 35000 : 35000;
+                    fullpos = max != 0 ? (int)(pos * 100000.0 / max * 0.65) + 35000 : 35000;
                     break;
             }
 
@@ -234,6 +234,7 @@ namespace Evernote2Onenote
             {
                 return null;
             }
+            syncStep = SyncStep.ExtractNotes;
 
             ENScriptWrapper enscript = new ENScriptWrapper();
             enscript.ENScriptPath = enscriptpath;
@@ -258,6 +259,7 @@ namespace Evernote2Onenote
 
         private List<Note> ParseNotes(string exportFile)
         {
+            syncStep = SyncStep.ParseNotes;
             List<Note> noteList = new List<Note>();
             if (cancelled)
             {
@@ -353,6 +355,7 @@ namespace Evernote2Onenote
 
         private void ImportNotesToOnenote(string folder, List<Note> notesEvernote, string exportFile)
         {
+            syncStep = SyncStep.CalculateWhatToDo;
             int uploadcount = 0;
             foreach (Note n in notesEvernote)
             {
@@ -362,6 +365,7 @@ namespace Evernote2Onenote
             string temppath = Path.GetTempPath() + "\\ev2on";
             Directory.CreateDirectory(temppath);
 
+            syncStep = SyncStep.ImportNotes;
             int counter = 0;
             foreach (Note n in notesEvernote)
             {
@@ -376,7 +380,6 @@ namespace Evernote2Onenote
                 XmlDocument xmlDocItem;
 
                 xtrInput = new XmlTextReader(exportFile);
-
                 while (xtrInput.Read())
                 {
                     while ((xtrInput.NodeType == XmlNodeType.Element) && (xtrInput.Name.ToLower() == "note"))
@@ -438,30 +441,42 @@ namespace Evernote2Onenote
                 foreach (Attachment attachment in n.Attachments)
                 {
                     // save the attached file
+                    string tempfilepath = temppath + "\\";
                     byte[] data = Convert.FromBase64String(attachment.Base64Data);
                     if ((attachment.FileName != null) && (attachment.FileName.Length > 0))
-                        temppath += attachment.FileName;
+                    {
+                        string name = attachment.FileName;
+                        string invalid = new string(Path.GetInvalidFileNameChars());
+                        foreach (char c in invalid)
+                        {
+                            name = name.Replace(c.ToString(), "");
+                        }
+                        if (name.Length >= (240 - tempfilepath.Length))
+                            name = name.Substring(name.Length - (240 - tempfilepath.Length));
+                        tempfilepath += name;
+                    }
                     else
-                        temppath += attachment.Hash;
-                    Stream fs = new FileStream(temppath, FileMode.Create);
+                        tempfilepath += attachment.Hash;
+                    Stream fs = new FileStream(tempfilepath, FileMode.Create);
                     fs.Write(data, 0, data.Length);
                     fs.Close();
-                    tempfiles.Add(temppath);
+                    tempfiles.Add(tempfilepath);
 
                     Regex rx = new Regex(@"<en-media\b[^>]*?hash=""" + attachment.Hash + @"""[^>]*/>", RegexOptions.IgnoreCase);
                     if ((attachment.ContentType != null) && (attachment.ContentType.Contains("image") && rx.Match(htmlBody).Success))
                     {
                         // replace the <en-media /> tag with an <img /> tag
-                        htmlBody = rx.Replace(htmlBody, @"<img src=""file:///" + temppath + @"""/>");
+                        htmlBody = rx.Replace(htmlBody, @"<img src=""file:///" + tempfilepath + @"""/>");
                     }
                     else
                     {
                         if ((attachment.FileName != null) && (attachment.FileName.Length > 0))
-                            xmlAttachments += string.Format("<one:InsertedFile pathSource=\"{0}\" preferredName=\"{1}\" />", temppath, attachment.FileName);
+                            xmlAttachments += string.Format("<one:InsertedFile pathSource=\"{0}\" preferredName=\"{1}\" />", tempfilepath, attachment.FileName);
                         else
-                            xmlAttachments += string.Format("<one:InsertedFile pathSource=\"{0}\" preferredName=\"{1}\" />", temppath, attachment.Hash);
+                            xmlAttachments += string.Format("<one:InsertedFile pathSource=\"{0}\" preferredName=\"{1}\" />", tempfilepath, attachment.Hash);
                     }
                 }
+                n.Attachments.Clear();
 
                 htmlBody = htmlBody.Replace(@"<![CDATA[<?xml version=""1.0"" encoding=""UTF-8""?>", string.Empty);
                 htmlBody = htmlBody.Replace(@"<!DOCTYPE en-note SYSTEM ""http://xml.evernote.com/pub/enml2.dtd"">", string.Empty);
@@ -490,8 +505,8 @@ namespace Evernote2Onenote
                             int outlineID = new System.Random().Next();
                             //string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, m_outlineIDMetaName);
                             string xmlSource = string.Format(m_xmlSourceUrl, n.SourceUrl);
-                            string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, n.Title, n.SourceUrl.Length > 0 ? xmlSource : "");
-                            string xml = string.Format(m_xmlNewOutline, outlineContent, m_PageID, m_xmlns, n.Title, xmlAttachments, n.Date.ToString("yyyy'-'MM'-'ddTHH':'mm':'ss'Z'"));
+                            string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, System.Security.SecurityElement.Escape(n.Title), n.SourceUrl.Length > 0 ? xmlSource : "");
+                            string xml = string.Format(m_xmlNewOutline, outlineContent, m_PageID, m_xmlns, System.Security.SecurityElement.Escape(n.Title), xmlAttachments, n.Date.ToString("yyyy'-'MM'-'ddTHH':'mm':'ss'Z'"));
                             onApp.UpdatePageContent(xml, DateTime.MinValue, OneNote.XMLSchema.xs2010, true);
                         }
                     }
@@ -506,14 +521,14 @@ namespace Evernote2Onenote
                         int outlineID = new System.Random().Next();
                         //string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, m_outlineIDMetaName);
                         string xmlSource = string.Format(m_xmlSourceUrl, n.SourceUrl);
-                        string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, n.Title, n.SourceUrl.Length > 0 ? xmlSource : "");
-                        string xml = string.Format(m_xmlNewOutline, outlineContent, m_PageID, m_xmlns, n.Title, xmlAttachments, n.Date.ToString("yyyy'-'MM'-'ddTHH':'mm':'ss'Z'"));
+                        string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, System.Security.SecurityElement.Escape(n.Title), n.SourceUrl.Length > 0 ? xmlSource : "");
+                        string xml = string.Format(m_xmlNewOutline, outlineContent, m_PageID, m_xmlns, System.Security.SecurityElement.Escape(n.Title), xmlAttachments, n.Date.ToString("yyyy'-'MM'-'ddTHH':'mm':'ss'Z'"));
                         onApp.UpdatePageContent(xml, DateTime.MinValue, OneNote.XMLSchema.xs2010, true);
                     }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.ToString());
+                    MessageBox.Show(string.Format("Note:{0}\n{1}", n.Title, ex.ToString()));
                 }
 
                 foreach (string p in tempfiles)

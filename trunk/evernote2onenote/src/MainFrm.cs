@@ -482,6 +482,7 @@ namespace Evernote2Onenote
                 htmlBody = htmlBody.Replace(@"<!DOCTYPE en-note SYSTEM ""http://xml.evernote.com/pub/enml2.dtd"">", string.Empty);
                 htmlBody = htmlBody.Replace("<en-note>", "<body>");
                 htmlBody = htmlBody.Replace("</en-note>]]>", "</body>");
+                htmlBody = htmlBody.Replace("</en-note>\n]]>", "</body>");
                 htmlBody = htmlBody.Trim();
                 htmlBody = @"<!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 4.01 Transitional//EN""><head></head>" + htmlBody;
 

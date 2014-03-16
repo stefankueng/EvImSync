@@ -1,0 +1,203 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{1DA51BEB-7870-485F-80F4-A716279AA32F}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Evernote2Onenote</RootNamespace>
+    <AssemblyName>Evernote2Onenote</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <FileAlignment>512</FileAlignment>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>evernote2onenote.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>EveImSync.Program</StartupObject>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Attachment.cs" />
+    <Compile Include="Enums\SyncStep.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\crc32.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\EncodingFoundException.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlAttribute.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlAttributeCollection.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlCmdLine.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlCommentNode.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlConsoleListener.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlDocument.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlDocument.Xpath.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlElementFlag.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlEntity.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlNameTable.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlNode.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlNode.Xpath.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlNodeCollection.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlNodeNavigator.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlNodeType.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlParseError.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlParseErrorCode.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlTextNode.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlWeb.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlWeb.Xpath.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\HtmlWebException.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\IOLibrary.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\MixedCodeDocument.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\MixedCodeDocumentCodeFragment.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\MixedCodeDocumentFragment.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\MixedCodeDocumentFragmentList.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\MixedCodeDocumentFragmentType.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\MixedCodeDocumentTextFragment.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\NameValuePair.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\NameValuePairList.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\Trace.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\Trace.FullFramework.cs" />
+    <Compile Include="HTMLAgilityPack\HtmlAgilityPack\Utilities.cs" />
+    <Compile Include="Enums\NoteAction.cs" />
+    <Compile Include="Note.cs" />
+    <Compile Include="ENScriptWrapper.cs" />
+    <Compile Include="MainFrm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MainFrm.Designer.cs">
+      <DependentUpon>MainFrm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Settings.cs" />
+    <Compile Include="XmlSanitizer.cs" />
+    <EmbeddedResource Include="MainFrm.resx">
+      <DependentUpon>MainFrm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <None Include="app.config" />
+    <None Include="Properties\AssemblyInfo.tmpl" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="Microsoft.Office.Interop.OneNote">
+      <Guid>{0EA692EE-BB50-4E3C-AEF0-356D91732725}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>1</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+    <COMReference Include="OneNoteEx">
+      <Guid>{3120BA9F-4FC8-4A4F-AE1E-02114F421D0A}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.5">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.5 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="evernote2onenote.ico" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

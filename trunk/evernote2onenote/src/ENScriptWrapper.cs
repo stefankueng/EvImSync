@@ -93,7 +93,7 @@ namespace Evernote2Onenote
             if (!File.Exists(exePath))
                 return ret;
 
-            ProcessStartInfo processStartInfo = new ProcessStartInfo(this.exePath, "exportNotes /q \"notebook:" + notebook + "\" /f " + exportFile);
+            ProcessStartInfo processStartInfo = new ProcessStartInfo(this.exePath, "exportNotes /q notebook:\"\\\"" + notebook + "\\\"\" /f \"" + exportFile + "\"");
             processStartInfo.UseShellExecute = false;
             processStartInfo.ErrorDialog = false;
             processStartInfo.RedirectStandardError = true;
@@ -127,7 +127,7 @@ namespace Evernote2Onenote
         {
             bool ret = false;
 
-            ProcessStartInfo processStartInfo = new ProcessStartInfo(this.exePath, "importNotes /n " + notebook + " /s " + notesPath);
+            ProcessStartInfo processStartInfo = new ProcessStartInfo(this.exePath, "importNotes /n \"" + notebook + "\" /s \"" + notesPath + "\"");
             processStartInfo.UseShellExecute = false;
             processStartInfo.ErrorDialog = false;
             processStartInfo.RedirectStandardError = true;

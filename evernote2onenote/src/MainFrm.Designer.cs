@@ -88,7 +88,7 @@ namespace Evernote2Onenote
             // 
             // startsync
             // 
-            this.startsync.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.startsync.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.startsync.Location = new System.Drawing.Point(147, 51);
             this.startsync.Name = "startsync";
@@ -100,10 +100,10 @@ namespace Evernote2Onenote
             // 
             // infoText1
             // 
-            this.infoText1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.infoText1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.infoText1.AutoSize = true;
-            this.infoText1.Location = new System.Drawing.Point(12, 69);
+            this.infoText1.Location = new System.Drawing.Point(9, 82);
             this.infoText1.Name = "infoText1";
             this.infoText1.Size = new System.Drawing.Size(10, 13);
             this.infoText1.TabIndex = 3;
@@ -111,7 +111,7 @@ namespace Evernote2Onenote
             // 
             // infoText2
             // 
-            this.infoText2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.infoText2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.infoText2.AutoSize = true;
             this.infoText2.Location = new System.Drawing.Point(12, 82);
@@ -122,9 +122,9 @@ namespace Evernote2Onenote
             // 
             // progressIndicator
             // 
-            this.progressIndicator.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.progressIndicator.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressIndicator.Location = new System.Drawing.Point(12, 98);
+            this.progressIndicator.Location = new System.Drawing.Point(12, 106);
             this.progressIndicator.Name = "progressIndicator";
             this.progressIndicator.Size = new System.Drawing.Size(497, 23);
             this.progressIndicator.TabIndex = 5;

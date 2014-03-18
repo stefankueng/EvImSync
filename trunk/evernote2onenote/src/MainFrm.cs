@@ -51,7 +51,7 @@ namespace Evernote2Onenote
             "<?xml version=\"1.0\"?>" +
             "<one:Page xmlns:one=\"{2}\" ID=\"{1}\" dateTime=\"{5}\">" +
             "<one:Title selected=\"partial\" lang=\"en-US\">" +
-                        "<one:OE creationTime=\"{5}\" lastModifiedTime=\"{5}\" style=\"font-family:Calibri;font-size:17.0pt\">" +
+                        "<one:OE creationTime=\"{5}\" lastModifiedTime=\"{5}\">" +
                             "<one:T><![CDATA[{3}]]></one:T> " +
                         "</one:OE>" +
                         "</one:Title>{4}" +

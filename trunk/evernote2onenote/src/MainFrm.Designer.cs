@@ -57,7 +57,7 @@ namespace Evernote2Onenote
             this.homeLink = new System.Windows.Forms.LinkLabel();
             this.versionLabel = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.textBoxENNotebookName = new System.Windows.Forms.TextBox();
+            this.notebookCombo = new System.Windows.Forms.ComboBox();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -90,9 +90,9 @@ namespace Evernote2Onenote
             // 
             this.startsync.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.startsync.Location = new System.Drawing.Point(147, 51);
+            this.startsync.Location = new System.Drawing.Point(118, 56);
             this.startsync.Name = "startsync";
-            this.startsync.Size = new System.Drawing.Size(146, 23);
+            this.startsync.Size = new System.Drawing.Size(215, 23);
             this.startsync.TabIndex = 1;
             this.startsync.Text = "Start Import";
             this.startsync.UseVisualStyleBackColor = true;
@@ -163,23 +163,26 @@ namespace Evernote2Onenote
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(9, 32);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(132, 13);
+            this.label1.Size = new System.Drawing.Size(103, 13);
             this.label1.TabIndex = 10;
-            this.label1.Text = "Evernote Notebook name:";
+            this.label1.Text = "Evernote Notebook:";
             // 
-            // textBoxENNotebookName
+            // notebookCombo
             // 
-            this.textBoxENNotebookName.Location = new System.Drawing.Point(147, 29);
-            this.textBoxENNotebookName.Name = "textBoxENNotebookName";
-            this.textBoxENNotebookName.Size = new System.Drawing.Size(146, 20);
-            this.textBoxENNotebookName.TabIndex = 11;
+            this.notebookCombo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.notebookCombo.FormattingEnabled = true;
+            this.notebookCombo.Location = new System.Drawing.Point(118, 29);
+            this.notebookCombo.Name = "notebookCombo";
+            this.notebookCombo.Size = new System.Drawing.Size(215, 21);
+            this.notebookCombo.Sorted = true;
+            this.notebookCombo.TabIndex = 12;
             // 
             // MainFrm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(521, 141);
-            this.Controls.Add(this.textBoxENNotebookName);
+            this.Controls.Add(this.notebookCombo);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.versionLabel);
             this.Controls.Add(this.homeLink);
@@ -216,7 +219,7 @@ namespace Evernote2Onenote
         private System.Windows.Forms.LinkLabel homeLink;
         private System.Windows.Forms.Label versionLabel;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox textBoxENNotebookName;
+        private System.Windows.Forms.ComboBox notebookCombo;
     }
 }
 

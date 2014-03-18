@@ -65,6 +65,30 @@ namespace Evernote2Onenote
             this.synchronizationContext = SynchronizationContext.Current;
             string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
             versionLabel.Text = string.Format("Version: {0}", version);
+
+            enscriptpath = ProgramFilesx86() + "\\Evernote\\Evernote\\ENScript.exe";
+            if (!File.Exists(enscriptpath))
+            {
+                MessageBox.Show("Could not find the ENScript.exe file from Evernote!\nPlease select this file in the next dialog.", "Evernote2Onenote");
+                OpenFileDialog openFileDialog1 = new OpenFileDialog();
+                openFileDialog1.Filter = "Applications|*.exe";
+                openFileDialog1.Title = "Select the ENScript.exe file";
+                openFileDialog1.CheckPathExists = true;
+
+                // Show the Dialog.
+                if (openFileDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    enscriptpath = openFileDialog1.FileName;
+                }
+                if (!File.Exists(enscriptpath))
+                    this.Close();
+            }
+            ENScriptWrapper enscript = new ENScriptWrapper();
+            enscript.ENScriptPath = enscriptpath;
+            var notebooklist = enscript.GetNotebooks();
+            foreach (string s in notebooklist)
+                this.notebookCombo.Items.Add(s);
+            this.notebookCombo.SelectedIndex = 0;
         }
 
         private void ExitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -122,7 +146,7 @@ namespace Evernote2Onenote
 
         private void Startsync_Click(object sender, EventArgs e)
         {
-            ENNotebookName = this.textBoxENNotebookName.Text;
+            ENNotebookName = this.notebookCombo.SelectedItem as string;
             if (ENNotebookName.Length == 0)
             {
                 MessageBox.Show("Please enter a notebook in EverNote to import the notes from", "Evernote2Onenote");

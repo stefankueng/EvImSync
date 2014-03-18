@@ -1,5 +1,5 @@
-﻿// EvImSync - A tool to sync Evernote notes to IMAP mails and vice versa
-// Copyright (C) 2010 - Stefan Kueng
+﻿// Evernote2Onenote - imports Evernote notes to Onenote
+// Copyright (C) 2014 - Stefan Kueng
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
-namespace EveImSync
+namespace Evernote2Onenote
 {
     /// <summary>
     /// Wrapper for the ENScript.exe tool
@@ -30,7 +30,7 @@ namespace EveImSync
         /// path to the ENScript.exe
         /// </summary>
         private string exePath;
-        
+
         /// <summary>
         /// the full path to ENScript.exe
         /// </summary>
@@ -93,7 +93,7 @@ namespace EveImSync
             if (!File.Exists(exePath))
                 return ret;
 
-            ProcessStartInfo processStartInfo = new ProcessStartInfo(this.exePath, "exportNotes /q \"notebook:" + notebook + "\" /f " + exportFile);
+            ProcessStartInfo processStartInfo = new ProcessStartInfo(this.exePath, "exportNotes /q notebook:\"\\\"" + notebook + "\\\"\" /f \"" + exportFile + "\"");
             processStartInfo.UseShellExecute = false;
             processStartInfo.ErrorDialog = false;
             processStartInfo.RedirectStandardError = true;
@@ -127,7 +127,7 @@ namespace EveImSync
         {
             bool ret = false;
 
-            ProcessStartInfo processStartInfo = new ProcessStartInfo(this.exePath, "importNotes /n " + notebook + " /s " + notesPath);
+            ProcessStartInfo processStartInfo = new ProcessStartInfo(this.exePath, "importNotes /n \"" + notebook + "\" /s \"" + notesPath + "\"");
             processStartInfo.UseShellExecute = false;
             processStartInfo.ErrorDialog = false;
             processStartInfo.RedirectStandardError = true;

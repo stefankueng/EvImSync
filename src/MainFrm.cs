@@ -1,5 +1,5 @@
-﻿// EvImSync - A tool to sync Evernote notes to IMAP mails and vice versa
-// Copyright (C) 2010 - Stefan Kueng
+﻿// Evernote2Onenote - imports Evernote notes to Onenote
+// Copyright (C) 2014 - Stefan Kueng
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,36 +14,50 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using Evernote2Onenote.Enums;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Net.Mail;
-using System.Net.Mime;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Web;
 using System.Windows.Forms;
 using System.Xml;
-using EveImSync.Enums;
-using InterIMAP;
-using InterIMAP.Asynchronous.Client;
-using InterIMAP.Common.Interfaces;
-using InterIMAP.Common.Requests;
+using OneNote = Microsoft.Office.Interop.OneNote;
 
-namespace EveImSync
+namespace Evernote2Onenote
 {
     /// <summary>
     /// main dialog
     /// </summary>
     public partial class MainFrm : Form
     {
-        private IMAPAsyncClient client;
         private delegate void StringDelegate(string foo);
         private string enscriptpath;
+        private string m_EvernoteNotebookPath;
         private SynchronizationContext synchronizationContext;
         private bool cancelled = false;
         private SyncStep syncStep = SyncStep.Start;
+        private Microsoft.Office.Interop.OneNote.Application onApp = null;
+        private string m_PageID;
+        private string m_xmlNewOutlineContent =
+            "<one:Meta name=\"{2}\" content=\"{1}\"/>" +
+            "<one:OEChildren><one:HTMLBlock><one:Data><![CDATA[{0}]]></one:Data></one:HTMLBlock>{3}</one:OEChildren>";
+
+        private string m_xmlSourceUrl = "<one:OE alignment=\"left\" quickStyleIndex=\"2\"><one:T><![CDATA[From &lt;<a href=\"{0}\">{0}</a>&gt; ]]></one:T></one:OE>";
+
+        private string m_xmlNewOutline =
+            "<?xml version=\"1.0\"?>" +
+            "<one:Page xmlns:one=\"{2}\" ID=\"{1}\" dateTime=\"{5}\">" +
+            "<one:Title selected=\"partial\" lang=\"en-US\">" +
+                        "<one:OE creationTime=\"{5}\" lastModifiedTime=\"{5}\">" +
+                            "<one:T><![CDATA[{3}]]></one:T> " +
+                        "</one:OE>" +
+                        "</one:Title>{4}" +
+            "<one:Outline>{0}</one:Outline></one:Page>";
+        private string m_xmlns = "http://schemas.microsoft.com/office/onenote/2010/onenote";
+        private string ENNotebookName = "";
 
         public MainFrm()
         {
@@ -51,6 +65,30 @@ namespace EveImSync
             this.synchronizationContext = SynchronizationContext.Current;
             string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
             versionLabel.Text = string.Format("Version: {0}", version);
+
+            enscriptpath = ProgramFilesx86() + "\\Evernote\\Evernote\\ENScript.exe";
+            if (!File.Exists(enscriptpath))
+            {
+                MessageBox.Show("Could not find the ENScript.exe file from Evernote!\nPlease select this file in the next dialog.", "Evernote2Onenote");
+                OpenFileDialog openFileDialog1 = new OpenFileDialog();
+                openFileDialog1.Filter = "Applications|*.exe";
+                openFileDialog1.Title = "Select the ENScript.exe file";
+                openFileDialog1.CheckPathExists = true;
+
+                // Show the Dialog.
+                if (openFileDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    enscriptpath = openFileDialog1.FileName;
+                }
+                if (!File.Exists(enscriptpath))
+                    this.Close();
+            }
+            ENScriptWrapper enscript = new ENScriptWrapper();
+            enscript.ENScriptPath = enscriptpath;
+            var notebooklist = enscript.GetNotebooks();
+            foreach (string s in notebooklist)
+                this.notebookCombo.Items.Add(s);
+            this.notebookCombo.SelectedIndex = 0;
         }
 
         private void ExitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -58,11 +96,6 @@ namespace EveImSync
             this.Close();
         }
 
-        private void OptionsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            ConfigFrm cf = new ConfigFrm();
-            cf.ShowDialog();
-        }
 
         private void SetInfo(string line1, string line2, int pos, int max)
         {
@@ -77,23 +110,11 @@ namespace EveImSync
                 case SyncStep.ParseNotes:        // 10-20%
                     fullpos = max != 0 ? (int)(pos * 100000.0 / max * 0.1) + 10000 : 10000;
                     break;
-                case SyncStep.GettingImapList:   // 20-30%
-                    fullpos = max != 0 ? (int)(pos * 100000.0 / max * 0.1) + 20000 : 20000;
-                    break;
                 case SyncStep.CalculateWhatToDo: // 30-35%
                     fullpos = max != 0 ? (int)(pos * 100000.0 / max * 0.05) + 30000 : 30000;
                     break;
-                case SyncStep.AdjustTags:        // 35-40%
-                    fullpos = max != 0 ? (int)(pos * 100000.0 / max * 0.05) + 35000 : 35000;
-                    break;
-                case SyncStep.DownloadNotes:     // 40-70%
-                    fullpos = max != 0 ? (int)(pos * 100000.0 / max * 0.3) + 40000 : 40000;
-                    break;
-                case SyncStep.CalculateWhatToDo2: // 70-75%
-                    fullpos = max != 0 ? (int)(pos * 100000.0 / max * 0.05) + 70000 : 70000;
-                    break;
-                case SyncStep.UploadNotes:       // 70-100%
-                    fullpos = max != 0 ? (int)(pos * 100000.0 / max * 0.25) + 75000 : 75000;
+                case SyncStep.ImportNotes:       // 35-100%
+                    fullpos = max != 0 ? (int)(pos * 100000.0 / max * 0.65) + 35000 : 35000;
                     break;
             }
 
@@ -112,20 +133,79 @@ namespace EveImSync
                 syncStep++;
         }
 
+        static string ProgramFilesx86()
+        {
+            if (8 == IntPtr.Size
+                || (!String.IsNullOrEmpty(Environment.GetEnvironmentVariable("PROCESSOR_ARCHITEW6432"))))
+            {
+                return Environment.GetEnvironmentVariable("ProgramFiles(x86)");
+            }
+
+            return Environment.GetEnvironmentVariable("ProgramFiles");
+        }
+
         private void Startsync_Click(object sender, EventArgs e)
         {
-            if (startsync.Text == "Start Sync")
+            ENNotebookName = this.notebookCombo.SelectedItem as string;
+            if (ENNotebookName.Length == 0)
             {
-                Configuration config = Configuration.Create();
-                if (config.SyncPairs.Count == 0)
-                {
-                    ConfigFrm cf = new ConfigFrm();
-                    cf.ShowDialog();
-                    return;
-                }
+                MessageBox.Show("Please enter a notebook in EverNote to import the notes from", "Evernote2Onenote");
+                return;
+            }
+            enscriptpath = ProgramFilesx86() + "\\Evernote\\Evernote\\ENScript.exe";
+            if (!File.Exists(enscriptpath))
+            {
+                MessageBox.Show("Could not find the ENScript.exe file from Evernote!\nPlease select this file in the next dialog.", "Evernote2Onenote");
+                OpenFileDialog openFileDialog1 = new OpenFileDialog();
+                openFileDialog1.Filter = "Applications|*.exe";
+                openFileDialog1.Title = "Select the ENScript.exe file";
+                openFileDialog1.CheckPathExists = true;
 
+                // Show the Dialog.
+                if (openFileDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    enscriptpath = openFileDialog1.FileName;
+                }
+                if (!File.Exists(enscriptpath))
+                    return;
+            }
+
+            onApp = new OneNote.Application();
+            if (onApp == null)
+            {
+                MessageBox.Show("Could not start Onenote!", "Evernote2Onenote");
+                return;
+            }
+            // create a new notebook named "EverNote"
+            try
+            {
+                string xmlHierarchy;
+                onApp.GetHierarchy("", OneNote.HierarchyScope.hsNotebooks, out xmlHierarchy);
+
+                // Get the hierarchy for the default notebook folder
+                onApp.GetSpecialLocation(OneNote.SpecialLocation.slDefaultNotebookFolder, out m_EvernoteNotebookPath);
+                m_EvernoteNotebookPath += "\\" + ENNotebookName;
+                string newnbID;
+                onApp.OpenHierarchy(m_EvernoteNotebookPath, "", out newnbID, OneNote.CreateFileType.cftNotebook);
+                string xmlUnfiledNotes;
+                onApp.GetHierarchy(newnbID, OneNote.HierarchyScope.hsPages, out xmlUnfiledNotes);
+
+                // Load and process the hierarchy
+                XmlDocument docHierarchy = new XmlDocument();
+                docHierarchy.LoadXml(xmlHierarchy);
+                StringBuilder Hierarchy = new StringBuilder();
+                AppendHierarchy(docHierarchy.DocumentElement, Hierarchy, 0);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Could not create the target notebook in Onenote!", "Evernote2Onenote");
+                return;
+            }
+
+            if (startsync.Text == "Start Import")
+            {
                 startsync.Text = "Cancel";
-                MethodInvoker syncDelegate = new MethodInvoker(SyncEvernoteWithIMAP);
+                MethodInvoker syncDelegate = new MethodInvoker(ImportNotesToOnenote);
                 syncDelegate.BeginInvoke(null, null);
             }
             else
@@ -134,69 +214,37 @@ namespace EveImSync
             }
         }
 
-        private void SyncEvernoteWithIMAP()
+        private void ImportNotesToOnenote()
         {
-            Configuration config = Configuration.Create();
-            enscriptpath = config.ENScriptPath;
-            foreach (SyncPairSettings syncPair in config.SyncPairs)
+            syncStep = SyncStep.Start;
+            SetInfo("Extracting notes from Evernote", "", 0, 0);
+            string exportFile = ExtractNotes(ENNotebookName);
+            if (exportFile != null)
             {
-                if (cancelled)
+                List<Note> notesEvernote = new List<Note>();
+                if (exportFile != string.Empty)
                 {
-                    break;
+                    SetInfo("Parsing notes from Evernote", "", 0, 0);
+                    notesEvernote = ParseNotes(exportFile);
                 }
-                synchronizationContext.Send(new SendOrPostCallback(delegate(object state)
+                if (exportFile != string.Empty)
                 {
-                    this.infoText0.Text = string.Format("Syncing notebook {0}", syncPair.EvernoteNotebook);
-                }), null);
-
-                syncStep = SyncStep.Start;
-                SetInfo("Extracting notes from Evernote", "", 0, 0);
-                string exportFile = ExtractNotes(syncPair.EvernoteNotebook);
-                if (exportFile != null)
-                {
-                    List<Note> notesEvernote = new List<Note>();
-                    if (exportFile != string.Empty)
-                    {
-                        SetInfo("Parsing notes from Evernote", "", 0, 0);
-                        notesEvernote = ParseNotes(exportFile);
-                    }
-                    SetInfo("Fetching list of emails", "", 0, 0);
-                    List<Note> notesIMAP = GetMailList(syncPair.IMAPServer, syncPair.IMAPUsername, syncPair.IMAPPassword, syncPair.IMAPNotesFolder);
-                    SetInfo("Figuring out what needs to be synced", "", 0, 0);
-                    DiffNotesAndMails(ref notesEvernote, ref notesIMAP, syncPair.LastSyncTime);
-                    SetInfo("Adjusting tags in the GMail account", "", 0, 0);
-                    AdjustIMAPTags(syncPair.IMAPNotesFolder, notesIMAP);
-                    SetInfo("Downloading emails", "", 0, 0);
-                    List<Note> imapnotes = new List<Note>(notesIMAP);
-                    DownloadAndImportMailsToEvernote(imapnotes, notesEvernote, syncPair.EvernoteNotebook);
-                    if (exportFile != string.Empty)
-                    {
-                        SetInfo("Figuring out what needs to be synced", "", 0, 0);
-                        DiffNotesAndMails(ref notesEvernote, ref notesIMAP, syncPair.LastSyncTime);
-                        SetInfo("Uploading emails", "", 0, 0);
-                        UploadNotesAsMails(syncPair.IMAPNotesFolder, notesEvernote, exportFile);
-                    }
-                    syncPair.LastSyncTime = DateTime.Now;
-                    if (client != null)
-                        client.Stop();
+                    SetInfo("importing notes to Onenote", "", 0, 0);
+                    ImportNotesToOnenote(ENNotebookName, notesEvernote, exportFile);
                 }
-                else
-                {
-                    MessageBox.Show(string.Format("The notebook \"{0}\" either does not exist or isn't accessible!", syncPair.EvernoteNotebook));
-                }
-            }
-
-            if (!cancelled)
-            {
-                config.Save();
             }
             else
+            {
+                MessageBox.Show(string.Format("The notebook \"{0}\" either does not exist or isn't accessible!", ENNotebookName));
+            }
+
+            if (cancelled)
             {
                 SetInfo(null, "Operation cancelled", 0, 0);
             }
             synchronizationContext.Send(new SendOrPostCallback(delegate(object state)
             {
-                startsync.Text = "Start Sync";
+                startsync.Text = "Start Import";
                 this.infoText1.Text = "Finished";
                 this.progressIndicator.Minimum = 0;
                 this.progressIndicator.Maximum = 100000;
@@ -210,6 +258,7 @@ namespace EveImSync
             {
                 return null;
             }
+            syncStep = SyncStep.ExtractNotes;
 
             ENScriptWrapper enscript = new ENScriptWrapper();
             enscript.ENScriptPath = enscriptpath;
@@ -234,6 +283,7 @@ namespace EveImSync
 
         private List<Note> ParseNotes(string exportFile)
         {
+            syncStep = SyncStep.ParseNotes;
             List<Note> noteList = new List<Note>();
             if (cancelled)
             {
@@ -266,37 +316,6 @@ namespace EveImSync
 
                         Note note = new Note();
                         note.Title = node.InnerText;
-                        node = node.NextSibling;
-                        note.Content = node.InnerXml;
-                        XmlNodeList tagslist = xmlDocItem.GetElementsByTagName("tag");
-                        foreach (XmlNode n in tagslist)
-                        {
-                            note.Tags.Add(n.InnerText);
-                        }
-
-                        XmlNodeList datelist = xmlDocItem.GetElementsByTagName("created");
-                        foreach (XmlNode n in datelist)
-                        {
-                            try
-                            {
-                                note.Date = DateTime.ParseExact(n.InnerText, "yyyyMMddTHHmmssZ", null);
-                            }
-                            catch (System.FormatException)
-                            {
-                            }
-                        }
-
-                        XmlNodeList datelist2 = xmlDocItem.GetElementsByTagName("updated");
-                        foreach (XmlNode n in datelist2)
-                        {
-                            try
-                            {
-                                note.Date = DateTime.ParseExact(n.InnerText, "yyyyMMddTHHmmssZ", null);
-                            }
-                            catch (System.FormatException)
-                            {
-                            }
-                        }
 
                         noteList.Add(note);
                     }
@@ -307,482 +326,36 @@ namespace EveImSync
             catch (System.Xml.XmlException)
             {
                 // happens if the notebook was empty or does not exist.
+                MessageBox.Show(string.Format("The notebook \"{0}\" either does not exist or empty!", ENNotebookName));
             }
 
             return noteList;
         }
 
-        private List<Note> GetMailList(string server, string username, string password, string notefolder)
+        private void ImportNotesToOnenote(string folder, List<Note> notesEvernote, string exportFile)
         {
-            List<Note> noteList = new List<Note>();
-            if (cancelled)
-            {
-                return noteList;
-            }
-
-            IMAPConfig config = new IMAPConfig(server, username, password, true, true, "/");
-            client = new IMAPAsyncClient(config, 2);
-            if (client.Start(false) == false)
-            {
-                cancelled = true;
-                return noteList;
-            }
-
-            GetMailsListRecursive(notefolder, ref noteList);
-
-            return noteList;
-        }
-
-        private void GetMailsListRecursive(string folder, ref List<Note> noteList)
-        {
-            if (cancelled)
-            {
-                return;
-            }
-
-            if (folder.EndsWith("evernote trash"))
-                return;
-
-            client.RequestManager.SubmitAndWait(new FolderTreeRequest(folder, null), false);
-            IFolder currentFolder = client.MailboxManager.GetFolderByPath(folder);
-            if (currentFolder == null)
-            {
-                // folder does not exist
-                cancelled = true;
-                return;
-            }
-            client.RequestManager.SubmitAndWait(new MessageListRequest(currentFolder, null), false);
-
-            client.RequestManager.SubmitAndWait(new MessageHeaderRequest(currentFolder, null), false);
-
-            foreach (IMessage msg in currentFolder.Messages)
-            {
-                if (cancelled)
-                {
-                    break;
-                }
-
-                Note note = new Note();
-                note.Title = msg.Subject;
-                note.Date = msg.DateReceived;
-
-                if (folder.IndexOf('/') >= 0)
-                {
-                    note.Tags.Add(folder.Substring(folder.LastIndexOf('/') + 1));
-                }
-                else
-                {
-                    note.Tags.Add(string.Empty);
-                }
-
-                note.IMAPMessages.Add(msg);
-
-                string hash = null;
-                List<string> flags = msg.GetCustomFlags();
-                int eveImFlagCount = 0;
-                foreach (string flag in flags)
-                {
-                    if (flag.ToLower().StartsWith("xeveim"))
-                    {
-                        eveImFlagCount++;
-                        hash = flag.Substring(6);
-                    }
-                }
-
-                if (eveImFlagCount > 1)
-                {
-                    // remove all XEveIm tags
-                    foreach (string flag in flags)
-                    {
-                        if (flag.ToLower().StartsWith("xeveim"))
-                        {
-                            client.MailboxManager.SetMessageFlag(msg, flag, false);
-                        }
-                    }
-                    hash = null;
-                }
-                bool toAdd = true;
-                if ((hash != null) && (hash != string.Empty))
-                {
-                    // does this note already exist?
-                    note.ContentHash = hash;
-                    Note n = noteList.Find(delegate(Note findNote) { return findNote.ContentHash == note.ContentHash; });
-                    if ((n != null) && (n.Title.Equals(note.Title)))
-                    {
-                        if (folder.IndexOf('/') >= 0)
-                        {
-                            n.Tags.Add(folder.Substring(folder.LastIndexOf('/') + 1));
-                        }
-                        else
-                        {
-                            n.Tags.Add(string.Empty);
-                        }
-
-                        n.IMAPMessages.Add(note.IMAPMessages[0]);
-                        toAdd = false;
-                    }
-                }
-
-                if (toAdd)
-                {
-                    noteList.Add(note);
-                }
-            }
-
-            IFolder[] subFolders = client.MailboxManager.GetSubFolders(currentFolder);
-            int subfolderCounter = 0;
-            foreach (IFolder f in subFolders)
-            {
-                if (cancelled)
-                {
-                    break;
-                }
-                subfolderCounter++;
-
-                SetInfo(null, string.Format("scanning folder \"{0}\" ({1} of {2})", f.FullPath, subfolderCounter, subFolders.Length), subfolderCounter, subFolders.Length);
-                GetMailsListRecursive(f.FullPath, ref noteList);
-            }
-        }
-
-        private void DiffNotesAndMails(ref List<Note> notesEvernote, ref List<Note> notesIMAP, DateTime lastSync)
-        {
-            int counter = 0;
-            foreach (Note n in notesIMAP)
-            {
-                SetInfo(null, "", counter++, notesIMAP.Count);
-                if (cancelled)
-                {
-                    break;
-                }
-                n.Action = NoteAction.Nothing;
-
-                if ((n.ContentHash == string.Empty) || (n.ContentHash == null))
-                {
-                    // Notes with no hashs haven't been downloaded and processed yet, so they're new
-                    // and must be imported into Evernote
-                    n.Action = NoteAction.ImportToEvernote;
-                }
-                else
-                {
-                    // Notes with a hash that doesn't exist in Evernote have been removed from
-                    // Evernote and should be removed on IMAP
-                    Note noteInEvernote = notesEvernote.Find(delegate(Note findNote) { return findNote.ContentHash == n.ContentHash; });
-                    bool existsInEvernote = noteInEvernote != null;
-                    if (!existsInEvernote)
-                    {
-                        n.Action = NoteAction.DeleteOnIMAP;
-                        bool force = false;
-                        synchronizationContext.Send(new SendOrPostCallback(delegate(object state)
-                        {
-                            force = this.forceDownload.Checked;
-                        }), null);
-                        if (force)
-                            n.Action = NoteAction.ImportToEvernote;
-
-                        if (n.Date > lastSync)
-                            n.Action = NoteAction.ImportToEvernote;
-                    }
-                    else
-                    {
-                        // if the note already exists in Evernote, we have to check whether tags have changed
-                        foreach (string tag in noteInEvernote.Tags)
-                        {
-                            if (n.Tags.Find(findTag => { return findTag == tag; }) == null)
-                            {
-                                // tag does not exist in the email note
-                                n.NewTags.Add(tag);
-                                n.Action = NoteAction.AdjustTagsOnIMAP;
-                            }
-                        }
-
-                        foreach (string tag in n.Tags)
-                        {
-                            if (noteInEvernote.Tags.Find(findTag => { return findTag == tag; }) == null)
-                            {
-                                // tag does not exist in the evernote note
-                                n.ObsoleteTags.Add(tag);
-                                n.Action = NoteAction.AdjustTagsOnIMAP;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (notesIMAP.Count > 0)
-                SetInfo(null, "", notesIMAP.Count, notesIMAP.Count);
-            foreach (Note no in notesEvernote)
-            {
-                if (no.Action == NoteAction.Nothing)
-                {
-                    bool existsInIMAP = notesIMAP.Find(delegate(Note findNote) { return findNote.ContentHash == no.ContentHash; }) != null;
-                    if (!existsInIMAP)
-                    {
-                        no.Action = NoteAction.UploadToIMAP;
-                    }
-                }
-            }
-        }
-
-        private void AdjustIMAPTags(string folder, List<Note> notesIMAP)
-        {
-            int counter = 0;
-            int totalcount = 0;
-            foreach (Note note in notesIMAP)
-            {
-                if (note.Action == NoteAction.AdjustTagsOnIMAP)
-                    totalcount++;
-            }
-            foreach (Note note in notesIMAP)
-            {
-                if (note.Action == NoteAction.AdjustTagsOnIMAP)
-                {
-                    if (cancelled)
-                    {
-                        break;
-                    }
-
-                    counter++;
-                    SetInfo(null, string.Format("adjusting tags for email\"{0}\" ({1} of {2})", note.Title, counter, totalcount), counter, totalcount);
-
-                    foreach (string tag in note.NewTags)
-                    {
-                        if (cancelled)
-                        {
-                            break;
-                        }
-
-                        string tagfolder = folder + "/" + tag;
-                        IFolder tagFolder = GetOrCreateFolderByPath(tagfolder);
-
-                        if (tagFolder != null)
-                        {
-                            client.RequestManager.SubmitAndWait(new CopyMessageRequest(note.IMAPMessages[0], tagFolder, null), true);
-                            client.RequestManager.SubmitAndWait(new MessageListRequest(tagFolder, null), true);
-                        }
-                    }
-
-                    foreach (IMessage msg in note.IMAPMessages)
-                    {
-                        if (cancelled)
-                        {
-                            break;
-                        }
-
-                        string tag = msg.Folder.FullPath;
-                        if (tag.IndexOf('/') >= 0)
-                        {
-                            tag = tag.Substring(tag.LastIndexOf('/') + 1);
-                        }
-                        else
-                        {
-                            tag = string.Empty;
-                        }
-
-                        if (note.ObsoleteTags.Find(findTag => { return findTag == tag; }) != null)
-                        {
-                            if ((note.IMAPMessages.Count - note.ObsoleteTags.Count + note.NewTags.Count) == 0)
-                            {
-                                IFolder tagFolder = GetOrCreateFolderByPath(folder + "/evernote trash");
-
-                                if (tagFolder != null)
-                                {
-                                    client.RequestManager.SubmitAndWait(new CopyMessageRequest(note.IMAPMessages[0], tagFolder, null), true);
-                                }
-                            }
-                            client.RequestManager.SubmitAndWait(new DeleteMessageRequest(msg, null), true);
-                        }
-                    }
-                }
-            }
-        }
-
-        private void DownloadAndImportMailsToEvernote(List<Note> notesIMAP, List<Note> notesEvernote, string notebook)
-        {
-            int counter = 0;
-            int numNotesToUpload = 0;
-            foreach (Note ntu in notesIMAP)
-            {
-                if (ntu.Action == NoteAction.ImportToEvernote)
-                    numNotesToUpload++;
-            }
-
-            while (notesIMAP.Count > 0)
-            {
-                if (cancelled)
-                {
-                    break;
-                }
-
-                Note n = notesIMAP[0];
-                if (n.Action == NoteAction.ImportToEvernote)
-                {
-                    IMessage msg = n.IMAPMessages[0];
-                    SetInfo(null, string.Format("getting email ({0} of {1}) : \"{2}\"", counter + 1, numNotesToUpload, msg.Subject), counter++, numNotesToUpload);
-
-                    FullMessageRequest fmr = new FullMessageRequest(client, msg);
-
-                    // fmr.MessageProgress += new FullMessageProgressCallback(fmr_MessageProgress);
-                    fmr.SubmitAndWait();
-                    if (msg.ContentLoaded)
-                    {
-                        IMessageContent[] content = msg.MessageContent;
-                        foreach (IMessageContent msgcontent in content)
-                        {
-                            if (!msgcontent.IsAttachment)
-                            {
-                                if ((msgcontent.TextData != null) && (msgcontent.TextData.Length > 0) && ((n.ContentHash == string.Empty) || (n.Content == null)))
-                                {
-                                    n.SetTextContent(msgcontent.TextData);
-                                }
-                                else if ((msgcontent.HTMLData != null) && ((msgcontent.HTMLData.Length > 0) || (n.Content == null)))
-                                {
-                                    n.SetHtmlContent(msgcontent.HTMLData);
-                                }
-                                else if ((msgcontent.ContentFilename != null) && (msgcontent.ContentFilename.Length > 0))
-                                {
-                                    n.AddAttachment(System.Text.Encoding.ASCII.GetBytes(msgcontent.TextData), msgcontent.ContentId, msgcontent.ContentType, msgcontent.ContentFilename);
-                                }
-
-                                Debug.Assert(n.ContentHash != string.Empty, "Hash is empty!");
-                            }
-                            else
-                            {
-                                n.AddAttachment(msgcontent.BinaryData, msgcontent.ContentId, msgcontent.ContentType, msgcontent.ContentFilename);
-                            }
-                        }
-
-                        n.Content = "<![CDATA[<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE en-note SYSTEM \"http://xml.evernote.com/pub/enml2.dtd\">" +
-                                        "<en-note>" + n.Content + "</en-note>]]>";
-
-                        // remove existing XEveIm flags
-                        List<string> fls = new List<string>(msg.GetCustomFlags());
-                        foreach (string flag in fls)
-                        {
-                            if (flag.ToLower().StartsWith("xeveim"))
-                            {
-                                if (flag.ToLower().Substring(6) != n.ContentHash.ToLower())
-                                    client.MailboxManager.SetMessageFlag(msg, flag, false);
-                            }
-                        }
-
-                        // add the date
-                        n.Date = msg.DateReceived;
-
-                        // update the XEveImHash tag for this email
-                        string customFlag = "xeveim" + n.ContentHash;
-                        msg.SetCustomFlag(customFlag, false);
-                        if (client.MailboxManager.SetMessageFlag(msg, customFlag, true))
-                        {
-                            // sometimes it happens that the flag wasn't set, so now that we have
-                            // the hash of the email, we check whether that note/email
-                            // already exists in Evernote.
-                            bool existsInEvernote = notesEvernote.Find(delegate(Note findNote) { return findNote.ContentHash == n.ContentHash; }) != null;
-                            if (!existsInEvernote)
-                            {
-                                // now, since GMail uses IMAP folders for tags and a message can have multiple tags,
-                                // we have to see if the changed flag affected not just this IMAP message but
-                                // others in other IMAP folders as well. If it has, those are the same message
-                                // and we have to add those folder names to the tag list of this note.
-                                List<Note> sameTitleNotes = notesIMAP.FindAll(delegate(Note findNote) { return findNote.Title == n.Title; });
-                                foreach (Note same in sameTitleNotes)
-                                {
-                                    IMessage m = same.IMAPMessages[0];
-                                    client.RequestManager.SubmitAndWait(new MessageFlagRequest(m, null), false);
-                                    string hash = null;
-                                    List<string> flags = m.GetCustomFlags();
-                                    foreach (string flag in flags)
-                                    {
-                                        if (flag.ToLower().StartsWith("xeveim"))
-                                        {
-                                            hash = flag.Substring(6);
-                                            break;
-                                        }
-                                    }
-
-                                    if ((hash != null) && (hash == n.ContentHash))
-                                    {
-                                        // yes, this is the same message!
-                                        // remove it from the list and add its folder name as a tag
-                                        // to this note
-                                        if (n != same)
-                                        {
-                                            string tag = m.Folder.FullPath;
-                                            if (tag.IndexOf('/') >= 0)
-                                            {
-                                                tag = tag.Substring(tag.IndexOf('/') + 1);
-                                            }
-                                            else
-                                            {
-                                                tag = string.Empty;
-                                            }
-                                            n.Tags.Add(tag);
-                                            n.IMAPMessages.Add(m);
-                                            notesIMAP.Remove(same);
-                                        }
-                                    }
-                                }
-
-                                // generate the Evernote export file
-                                string path = Path.GetTempFileName();
-#if DEBUG
-                                path = @"D:\Development\evimsync\email.xml";
-#endif
-                                n.SaveEvernoteExportData(path);
-
-                                // import the export file into Evernote
-                                ENScriptWrapper enscript = new ENScriptWrapper();
-                                enscript.ENScriptPath = enscriptpath;
-                                if (enscript.ImportNotes(path, notebook))
-                                {
-                                    notesEvernote.Add(n);
-                                }
-                                else
-                                {
-                                    // failed to import note
-                                }
-
-                                File.Delete(path);
-                            }
-                            else
-                            {
-                                //Debug.Assert(false);
-                            }
-                        }
-                    }
-                }
-
-                notesIMAP.Remove(n);
-            }
-        }
-
-        private void UploadNotesAsMails(string folder, List<Note> notesEvernote, string exportFile)
-        {
+            syncStep = SyncStep.CalculateWhatToDo;
             int uploadcount = 0;
             foreach (Note n in notesEvernote)
             {
-                if (n.Action == NoteAction.UploadToIMAP)
-                {
-                    uploadcount++;
-                }
+                uploadcount++;
             }
 
+            string temppath = Path.GetTempPath() + "\\ev2on";
+            Directory.CreateDirectory(temppath);
+
+            syncStep = SyncStep.ImportNotes;
             int counter = 0;
-            foreach (Note n in notesEvernote)
+
+
             {
-                if (cancelled)
+                XmlTextReader xtrInput;
+                XmlDocument xmlDocItem;
+
+                xtrInput = new XmlTextReader(exportFile);
+
+                try
                 {
-                    break;
-                }
-
-                if (n.Action == NoteAction.UploadToIMAP)
-                {
-                    SetInfo(null, string.Format("uploading note ({0} of {1}) : \"{2}\"", counter + 1, uploadcount, n.Title), counter++, uploadcount);
-
-                    XmlTextReader xtrInput;
-                    XmlDocument xmlDocItem;
-
-                    xtrInput = new XmlTextReader(exportFile);
-
                     while (xtrInput.Read())
                     {
                         while ((xtrInput.NodeType == XmlNodeType.Element) && (xtrInput.Name.ToLower() == "note"))
@@ -800,190 +373,259 @@ namespace EveImSync
                             // node.FirstChild.InnerText is <title>
                             node = node.FirstChild;
 
-                            if (node.InnerText == n.Title)
+                            Note note = new Note();
+                            note.Title = node.InnerText;
+                            node = node.NextSibling;
+                            note.Content = node.InnerXml;
+
+                            XmlNodeList atts = xmlDocItem.GetElementsByTagName("resource");
+                            foreach (XmlNode xmln in atts)
                             {
-                                node = node.NextSibling;
-                                if (n.Content == node.InnerXml.Replace("\r", string.Empty))
+                                Attachment attachment = new Attachment();
+                                attachment.Base64Data = xmln.FirstChild.InnerText;
+                                byte[] data = Convert.FromBase64String(xmln.FirstChild.InnerText);
+                                byte[] hash = new System.Security.Cryptography.MD5CryptoServiceProvider().ComputeHash(data);
+                                string hashHex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
+
+                                attachment.Hash = hashHex;
+
+                                XmlNodeList fns = xmlDocItem.GetElementsByTagName("file-name");
+                                if (fns.Count > note.Attachments.Count)
                                 {
-                                    XmlNodeList atts = xmlDocItem.GetElementsByTagName("resource");
-                                    foreach (XmlNode xmln in atts)
+                                    attachment.FileName = fns.Item(note.Attachments.Count).InnerText;
+                                }
+
+                                XmlNodeList mimes = xmlDocItem.GetElementsByTagName("mime");
+                                if (mimes.Count > note.Attachments.Count)
+                                {
+                                    attachment.ContentType = mimes.Item(note.Attachments.Count).InnerText;
+                                }
+
+                                note.Attachments.Add(attachment);
+                            }
+
+                            XmlNodeList tagslist = xmlDocItem.GetElementsByTagName("tag");
+                            foreach (XmlNode n in tagslist)
+                            {
+                                note.Tags.Add(n.InnerText);
+                            }
+
+                            XmlNodeList datelist = xmlDocItem.GetElementsByTagName("created");
+                            foreach (XmlNode n in datelist)
+                            {
+                                try
+                                {
+                                    note.Date = DateTime.ParseExact(n.InnerText, "yyyyMMddTHHmmssZ", null);
+                                }
+                                catch (System.FormatException)
+                                {
+                                }
+                            }
+
+                            XmlNodeList datelist2 = xmlDocItem.GetElementsByTagName("updated");
+                            foreach (XmlNode n in datelist2)
+                            {
+                                try
+                                {
+                                    note.Date = DateTime.ParseExact(n.InnerText, "yyyyMMddTHHmmssZ", null);
+                                }
+                                catch (System.FormatException)
+                                {
+                                }
+                            }
+                            XmlNodeList sourceurl = xmlDocItem.GetElementsByTagName("source-url");
+                            note.SourceUrl = "";
+                            foreach (XmlNode n in sourceurl)
+                            {
+                                try
+                                {
+                                    note.SourceUrl = n.InnerText;
+                                    if (n.InnerText.StartsWith("file://"))
+                                        note.SourceUrl = "";
+                                }
+                                catch (System.FormatException)
+                                {
+                                }
+                            }
+
+                            SetInfo(null, string.Format("importing note ({0} of {1}) : \"{2}\"", counter + 1, uploadcount, note.Title), counter++, uploadcount);
+
+                            string htmlBody = note.Content;
+
+                            List<string> tempfiles = new List<string>();
+                            string xmlAttachments = "";
+                            foreach (Attachment attachment in note.Attachments)
+                            {
+                                // save the attached file
+                                string tempfilepath = temppath + "\\";
+                                byte[] data = Convert.FromBase64String(attachment.Base64Data);
+                                if ((attachment.FileName != null) && (attachment.FileName.Length > 0))
+                                {
+                                    string name = attachment.FileName;
+                                    string invalid = new string(Path.GetInvalidFileNameChars());
+                                    foreach (char c in invalid)
                                     {
-                                        Attachment attachment = new Attachment();
-                                        attachment.Base64Data = xmln.FirstChild.InnerText;
-                                        byte[] data = Convert.FromBase64String(xmln.FirstChild.InnerText);
-                                        byte[] hash = new System.Security.Cryptography.MD5CryptoServiceProvider().ComputeHash(data);
-                                        string hashHex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
+                                        name = name.Replace(c.ToString(), "");
+                                    }
+                                    if (name.Length >= (240 - tempfilepath.Length))
+                                        name = name.Substring(name.Length - (240 - tempfilepath.Length));
+                                    tempfilepath += name;
+                                }
+                                else
+                                    tempfilepath += attachment.Hash;
+                                Stream fs = new FileStream(tempfilepath, FileMode.Create);
+                                fs.Write(data, 0, data.Length);
+                                fs.Close();
+                                tempfiles.Add(tempfilepath);
 
-                                        attachment.Hash = hashHex;
+                                Regex rx = new Regex(@"<en-media\b[^>]*?hash=""" + attachment.Hash + @"""[^>]*/>", RegexOptions.IgnoreCase);
+                                if ((attachment.ContentType != null) && (attachment.ContentType.Contains("image") && rx.Match(htmlBody).Success))
+                                {
+                                    // replace the <en-media /> tag with an <img /> tag
+                                    htmlBody = rx.Replace(htmlBody, @"<img src=""file:///" + tempfilepath + @"""/>");
+                                }
+                                else
+                                {
+                                    if ((attachment.FileName != null) && (attachment.FileName.Length > 0))
+                                        xmlAttachments += string.Format("<one:InsertedFile pathSource=\"{0}\" preferredName=\"{1}\" />", tempfilepath, attachment.FileName);
+                                    else
+                                        xmlAttachments += string.Format("<one:InsertedFile pathSource=\"{0}\" preferredName=\"{1}\" />", tempfilepath, attachment.Hash);
+                                }
+                            }
+                            note.Attachments.Clear();
 
-                                        XmlNodeList fns = xmlDocItem.GetElementsByTagName("file-name");
-                                        if (fns.Count > n.Attachments.Count)
-                                        {
-                                            attachment.FileName = fns.Item(n.Attachments.Count).InnerText;
-                                        }
+                            htmlBody = htmlBody.Replace(@"<![CDATA[<?xml version=""1.0"" encoding=""UTF-8""?>", string.Empty);
+                            htmlBody = htmlBody.Replace(@"<![CDATA[<?xml version=""1.0"" encoding=""UTF-8"" standalone=""no""?>", string.Empty);
+                            htmlBody = htmlBody.Replace(@"<![CDATA[<?xml version=""1.0"" encoding=""UTF-8"" standalone=""yes""?>", string.Empty);
+                            htmlBody = htmlBody.Replace(@"<!DOCTYPE en-note SYSTEM ""http://xml.evernote.com/pub/enml2.dtd"">", string.Empty);
+                            htmlBody = htmlBody.Replace("<en-note>", "<body>");
+                            htmlBody = htmlBody.Replace("</en-note>]]>", "</body>");
+                            htmlBody = htmlBody.Replace("</en-note>\n]]>", "</body>");
+                            htmlBody = htmlBody.Trim();
+                            htmlBody = @"<!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 4.01 Transitional//EN""><head></head>" + htmlBody;
 
-                                        XmlNodeList mimes = xmlDocItem.GetElementsByTagName("mime");
-                                        if (mimes.Count > n.Attachments.Count)
-                                        {
-                                            attachment.ContentType = mimes.Item(n.Attachments.Count).InnerText;
-                                        }
+                            string emailBody = htmlBody;
+                            Regex rex = new Regex(@"^date:(.*)$", RegexOptions.IgnoreCase | RegexOptions.Multiline);
+                            emailBody = rex.Replace(emailBody, "Date: " + note.Date.ToString("ddd, dd MMM yyyy HH:mm:ss K"));
 
-                                        n.Attachments.Add(attachment);
+                            try
+                            {
+                                // Get the hierarchy for all the notebooks
+                                if (note.Tags.Count > 0)
+                                {
+                                    foreach (string tag in note.Tags)
+                                    {
+                                        string sectionId = GetSection(tag);
+                                        onApp.CreateNewPage(sectionId, out m_PageID, Microsoft.Office.Interop.OneNote.NewPageStyle.npsBlankPageWithTitle);
+                                        string textToSave;
+                                        onApp.GetPageContent(m_PageID, out textToSave, Microsoft.Office.Interop.OneNote.PageInfo.piBasic);
+                                        //OneNote uses HTML for the xml string to pass to the UpdatePageContent, so use the
+                                        //Outlook HTMLBody property.  It coerces rtf and plain text to HTML.
+                                        int outlineID = new System.Random().Next();
+                                        //string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, m_outlineIDMetaName);
+                                        string xmlSource = string.Format(m_xmlSourceUrl, note.SourceUrl);
+                                        string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, System.Security.SecurityElement.Escape(note.Title), note.SourceUrl.Length > 0 ? xmlSource : "");
+                                        string xml = string.Format(m_xmlNewOutline, outlineContent, m_PageID, m_xmlns, System.Security.SecurityElement.Escape(note.Title), xmlAttachments, note.Date.ToString("yyyy'-'MM'-'ddTHH':'mm':'ss'Z'"));
+                                        onApp.UpdatePageContent(xml, DateTime.MinValue, OneNote.XMLSchema.xs2010, true);
                                     }
                                 }
+                                else
+                                {
+                                    string sectionId = GetSection("unspecified");
+                                    onApp.CreateNewPage(sectionId, out m_PageID, Microsoft.Office.Interop.OneNote.NewPageStyle.npsBlankPageWithTitle);
+                                    string textToSave;
+                                    onApp.GetPageContent(m_PageID, out textToSave, Microsoft.Office.Interop.OneNote.PageInfo.piBasic);
+                                    //OneNote uses HTML for the xml string to pass to the UpdatePageContent, so use the
+                                    //Outlook HTMLBody property.  It coerces rtf and plain text to HTML.
+                                    int outlineID = new System.Random().Next();
+                                    //string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, m_outlineIDMetaName);
+                                    string xmlSource = string.Format(m_xmlSourceUrl, note.SourceUrl);
+                                    string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, System.Security.SecurityElement.Escape(note.Title), note.SourceUrl.Length > 0 ? xmlSource : "");
+                                    string xml = string.Format(m_xmlNewOutline, outlineContent, m_PageID, m_xmlns, System.Security.SecurityElement.Escape(note.Title), xmlAttachments, note.Date.ToString("yyyy'-'MM'-'ddTHH':'mm':'ss'Z'"));
+                                    onApp.UpdatePageContent(xml, DateTime.MinValue, OneNote.XMLSchema.xs2010, true);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show(string.Format("Note:{0}\n{1}", note.Title, ex.ToString()));
+                            }
+
+                            foreach (string p in tempfiles)
+                            {
+                                File.Delete(p);
                             }
                         }
                     }
 
                     xtrInput.Close();
+                }
+                catch (System.Xml.XmlException)
+                {
+                    // happens if the notebook was empty or does not exist.
+                    MessageBox.Show(string.Format("The notebook \"{0}\" either does not exist or empty!", ENNotebookName));
+                }
 
-                    string htmlBody = n.Content;
-
-                    List<LinkedResource> linkedResources = new List<LinkedResource>();
-                    List<System.Net.Mail.Attachment> attachedResources = new List<System.Net.Mail.Attachment>();
-                    foreach (Attachment attachment in n.Attachments)
-                    {
-                        Regex rx = new Regex(@"<en-media\b[^>]*?hash=""" + attachment.Hash + @"""[^>]*/>", RegexOptions.IgnoreCase);
-                        if ((attachment.ContentType != null) && (attachment.ContentType.Contains("image") && rx.Match(htmlBody).Success))
-                        {
-                            // replace the <en-media /> tag with an <img /> tag
-                            htmlBody = rx.Replace(htmlBody, @"<img src=""cid:" + attachment.Hash + @"""/>");
-                            byte[] data = Convert.FromBase64String(attachment.Base64Data);
-                            Stream s = new MemoryStream(data);
-                            ContentType ct = new ContentType();
-                            ct.Name = attachment.FileName;
-                            ct.MediaType = attachment.ContentType;
-                            LinkedResource lr = new LinkedResource(s, ct);
-                            lr.ContentId = attachment.Hash;
-                            linkedResources.Add(lr);
-                        }
-                        else
-                        {
-                            byte[] data = Convert.FromBase64String(attachment.Base64Data);
-                            Stream s = new MemoryStream(data);
-                            ContentType ct = new ContentType();
-                            ct.Name = attachment.FileName != null ? attachment.FileName : string.Empty;
-                            ct.MediaType = attachment.ContentType != null ? attachment.ContentType : string.Empty;
-                            System.Net.Mail.Attachment a = new System.Net.Mail.Attachment(s, ct);
-                            attachedResources.Add(a);
-                        }
-                    }
-
-                    htmlBody = htmlBody.Replace(@"<![CDATA[<?xml version=""1.0"" encoding=""UTF-8""?>", string.Empty);
-                    htmlBody = htmlBody.Replace(@"<!DOCTYPE en-note SYSTEM ""http://xml.evernote.com/pub/enml2.dtd"">", string.Empty);
-                    htmlBody = htmlBody.Replace("<en-note>", "<body>");
-                    htmlBody = htmlBody.Replace("</en-note>]]>", "</body>");
-                    htmlBody = htmlBody.Trim();
-                    htmlBody = @"<!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 4.01 Transitional//EN""><head></head>" + htmlBody;
-                    MailMessage mailMsg = new MailMessage();
-
-                    AlternateView altViewHtml = AlternateView.CreateAlternateViewFromString(htmlBody, Encoding.UTF8, MediaTypeNames.Text.Html);
-                    foreach (LinkedResource lr in linkedResources)
-                    {
-                        altViewHtml.LinkedResources.Add(lr);
-                    }
-
-                    // Add the alternate views instead of using MailMessage.Body
-                    mailMsg.AlternateViews.Add(altViewHtml);
-                    foreach (System.Net.Mail.Attachment a in attachedResources)
-                    {
-                        mailMsg.Attachments.Add(a);
-                    }
-
-                    mailMsg.From = new MailAddress("EveImSync <eveimsync@tortoisesvn.net>");
-                    mailMsg.To.Add(new MailAddress("EveImSync <eveimsync@tortoisesvn.net>"));
-                    mailMsg.Subject = n.Title;
-                    string eml = mailMsg.GetEmailAsString();
-
-                    Regex rex = new Regex(@"^date:(.*)$", RegexOptions.IgnoreCase | RegexOptions.Multiline);
-                    eml = rex.Replace(eml, "Date: " + n.Date.ToString("ddd, dd MMM yyyy HH:mm:ss K"));
-
-                    // find the folder to upload to
-                    string tagfolder = folder;
-                    if (n.Tags.Count > 0)
-                    {
-                        tagfolder = tagfolder + "/" + n.Tags[0];
-                    }
-
-                    IFolder currentFolder = GetOrCreateFolderByPath(tagfolder);
-                    string customFlag = "xeveim" + n.ContentHash;
-
-                    // now upload the new note
-                    int numMsg = currentFolder.Messages.Length;
-                    client.RequestManager.SubmitAndWait(new AppendRequest(eml, customFlag, currentFolder, null), false);
-
-                    if (n.Tags.Count > 1)
-                    {
-                        IMessage[] oldMsgs = client.MailboxManager.GetMessagesByFolder(currentFolder);
-                        client.RequestManager.SubmitAndWait(new MessageListRequest(currentFolder, null), false);
-                        IMessage[] newMsgs = client.MailboxManager.GetMessagesByFolder(currentFolder);
-                        IMessage newMsg = null;
-                        foreach (IMessage imsg in newMsgs)
-                        {
-                            bool found = false;
-                            foreach (IMessage omsg in oldMsgs)
-                            {
-                                if (imsg.UID == omsg.UID)
-                                {
-                                    found = true;
-                                    break;
-                                }
-                            }
-
-                            if (!found)
-                            {
-                                newMsg = client.MailboxManager.GetMessageByUID(imsg.UID, currentFolder.ID);
-                                break;
-                            }
-                        }
-
-                        // copy the email to all tag folders
-                        for (int i = 1; i < n.Tags.Count; ++i)
-                        {
-                            if (cancelled)
-                            {
-                                break;
-                            }
-
-                            tagfolder = folder + "/" + n.Tags[i];
-                            IFolder tagFolder = GetOrCreateFolderByPath(tagfolder);
-
-                            client.RequestManager.SubmitAndWait(new CopyMessageRequest(newMsg, tagFolder, null), true);
-                            client.RequestManager.SubmitAndWait(new MessageListRequest(tagFolder, null), true);
-                        }
-                    }
+            }
+        }
+        private void AppendHierarchy(XmlNode xml, StringBuilder str, int level)
+        {
+            // The set of elements that are themselves meaningful to export:
+            if (xml.Name == "one:Notebook" || xml.Name == "one:SectionGroup" || xml.Name == "one:Section" || xml.Name == "one:Page")
+            {
+                string ID;
+                if (xml.LocalName == "Section" && xml.Attributes["path"].Value == m_EvernoteNotebookPath)
+                    ID = "UnfiledNotes";
+                else
+                    ID = xml.Attributes["ID"].Value;
+                string name = HttpUtility.HtmlEncode(xml.Attributes["name"].Value);
+                if (str.Length > 0)
+                    str.Append("\n");
+                str.Append(string.Format("{0} {1} {2} {3}",
+                    new string[] { level.ToString(), xml.LocalName, ID, name }));
+            }
+            // The set of elements that contain children that are meaningful to export:
+            if (xml.Name == "one:Notebooks" || xml.Name == "one:Notebook" || xml.Name == "one:SectionGroup" || xml.Name == "one:Section")
+            {
+                foreach (XmlNode child in xml.ChildNodes)
+                {
+                    int nextLevel;
+                    if (xml.Name == "one:Notebooks")
+                        nextLevel = level;
+                    else
+                        nextLevel = level + 1;
+                    AppendHierarchy(child, str, nextLevel);
                 }
             }
         }
 
-        private IFolder GetOrCreateFolderByPath(string folderpath)
-        {
-            IFolder requestedFolder = client.MailboxManager.GetFolderByPath(folderpath);
-            if (requestedFolder == null)
-            {
-                string f = folderpath;
-                if (f.LastIndexOf('/') >= 0)
-                    f = f.Substring(f.LastIndexOf('/') + 1);
-                requestedFolder = client.MailboxManager.GetFolderByName(f);
-            }
-            if (requestedFolder == null)
-            {
-                // create the missing folder
-                string parent = folderpath.Substring(0, folderpath.IndexOf('/'));
-                IFolder parentFolder = GetOrCreateFolderByPath(parent);
-                string name = folderpath.Substring(folderpath.LastIndexOf('/') + 1);
-                client.RequestManager.SubmitAndWait(new CreateFolderRequest(name, parentFolder, null), true);
-                client.RequestManager.SubmitAndWait(new FolderTreeRequest(parent, null), false);
-
-                requestedFolder = client.MailboxManager.GetFolderByPath(folderpath);
-            }
-
-            return requestedFolder;
-        }
 
         private void homeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            System.Diagnostics.Process.Start("http://stefanstools.sourceforge.net/EvImSync.html"); 
+            System.Diagnostics.Process.Start("http://stefanstools.sourceforge.net/Evernote2Onenote.html");
+        }
+        private string GetSection(string sectionName)
+        {
+            string newnbID = "";
+            try
+            {
+                string xmlHierarchy;
+                onApp.GetHierarchy("", OneNote.HierarchyScope.hsNotebooks, out xmlHierarchy);
+
+                onApp.OpenHierarchy(m_EvernoteNotebookPath + "\\" + sectionName + ".one", "", out newnbID, OneNote.CreateFileType.cftSection);
+                string xmlSections;
+                onApp.GetHierarchy(newnbID, OneNote.HierarchyScope.hsSections, out xmlSections);
+
+                // Load and process the hierarchy
+                XmlDocument docHierarchy = new XmlDocument();
+                docHierarchy.LoadXml(xmlHierarchy);
+                StringBuilder Hierarchy = new StringBuilder(sectionName);
+                AppendHierarchy(docHierarchy.DocumentElement, Hierarchy, 0);
+            }
+            catch (Exception)
+            {
+                return "";
+            }
+            return newnbID;
         }
     }
 }

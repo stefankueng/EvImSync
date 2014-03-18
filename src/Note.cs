@@ -1,5 +1,5 @@
-﻿// EvImSync - A tool to sync Evernote notes to IMAP mails and vice versa
-// Copyright (C) 2010 - Stefan Kueng
+﻿// Evernote2Onenote - imports Evernote notes to Onenote
+// Copyright (C) 2014 - Stefan Kueng
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,11 +20,10 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Xml;
-using EveImSync.Enums;
+using Evernote2Onenote.Enums;
 using HtmlAgilityPack;
-using InterIMAP.Common.Interfaces;
 
-namespace EveImSync
+namespace Evernote2Onenote
 {
     class Note
     {
@@ -34,7 +33,6 @@ namespace EveImSync
             ContentHash = string.Empty;
             Tags = new List<string>();
             Attachments = new List<Attachment>();
-            IMAPMessages = new List<IMessage>();
             NewTags = new List<string>();
             ObsoleteTags = new List<string>();
             Action = NoteAction.Nothing;
@@ -170,7 +168,7 @@ namespace EveImSync
                 int bracketIndex = content.LastIndexOf('<', idIndex);
                 int endBracket = content.IndexOf('>', bracketIndex);
                 string refTag = content.Substring(bracketIndex, endBracket - bracketIndex + 1);
-                int srcStart = refTag.ToLower().IndexOf("src=\"")+4;
+                int srcStart = refTag.ToLower().IndexOf("src=\"") + 4;
                 int srcEnd = refTag.IndexOf('"', srcStart + 1);
                 string srcString = refTag.Substring(srcStart, srcEnd - srcStart + 1);
                 string mediaTag = refTag.Replace("src=", "hash=");
@@ -275,8 +273,8 @@ namespace EveImSync
         public List<string> Tags { get; set; }
         public List<Attachment> Attachments { get; set; }
         public NoteAction Action { get; set; }
-        public List<IMessage> IMAPMessages { get; set; }
         public DateTime Date { get; set; }
+        public string SourceUrl { get; set; }
         public List<string> NewTags { get; set; }
         public List<string> ObsoleteTags { get; set; }
 

@@ -1,5 +1,5 @@
-﻿// EvImSync - A tool to sync Evernote notes to IMAP mails and vice versa
-// Copyright (C) 2010 - Stefan Kueng
+﻿// Evernote2Onenote - imports Evernote notes to Onenote
+// Copyright (C) 2014 - Stefan Kueng
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace EveImSync
+namespace Evernote2Onenote
 {
     /// <summary>
     /// Represents an attachment
@@ -35,12 +35,12 @@ namespace EveImSync
         /// the content type, e.g. "image/jpeg"
         /// </summary>
         public string ContentType { get; set; }
-        
+
         /// <summary>
         /// the file name of the attachment
         /// </summary>
         public string FileName { get; set; }
-        
+
         /// <summary>
         /// the hash of the attachment 
         /// </summary>

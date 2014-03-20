@@ -494,9 +494,10 @@ namespace Evernote2Onenote
                             }
                             note.Attachments.Clear();
 
-                            htmlBody = htmlBody.Replace(@"<![CDATA[<?xml version=""1.0"" encoding=""UTF-8""?>", string.Empty);
-                            htmlBody = htmlBody.Replace(@"<![CDATA[<?xml version=""1.0"" encoding=""UTF-8"" standalone=""no""?>", string.Empty);
-                            htmlBody = htmlBody.Replace(@"<![CDATA[<?xml version=""1.0"" encoding=""UTF-8"" standalone=""yes""?>", string.Empty);
+                            Regex rx2 = new Regex("style=\\\"[^\\\"]*\\\"", RegexOptions.IgnoreCase);
+                            htmlBody = rx2.Replace(htmlBody, string.Empty);
+                            rx2 = new Regex(@"<!\[CDATA\[<\?xml version=""1.0""[^?]*\?>", RegexOptions.IgnoreCase);
+                            htmlBody = rx2.Replace(htmlBody, string.Empty);
                             htmlBody = htmlBody.Replace(@"<!DOCTYPE en-note SYSTEM ""http://xml.evernote.com/pub/enml2.dtd"">", string.Empty);
                             htmlBody = htmlBody.Replace("<en-note>", "<body>");
                             htmlBody = htmlBody.Replace("</en-note>]]>", "</body>");

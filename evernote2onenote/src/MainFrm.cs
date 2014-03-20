@@ -196,9 +196,9 @@ namespace Evernote2Onenote
                 StringBuilder Hierarchy = new StringBuilder();
                 AppendHierarchy(docHierarchy.DocumentElement, Hierarchy, 0);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                MessageBox.Show("Could not create the target notebook in Onenote!", "Evernote2Onenote");
+                MessageBox.Show(string.Format("Could not create the target notebook in Onenote!\n{0}", ex.ToString()));
                 return;
             }
 

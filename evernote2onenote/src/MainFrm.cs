@@ -58,6 +58,8 @@ namespace Evernote2Onenote
             "<one:Outline>{0}</one:Outline></one:Page>";
         private string m_xmlns = "http://schemas.microsoft.com/office/onenote/2010/onenote";
         private string ENNotebookName = "";
+        private bool m_bUseUnfiledSection = false;
+        string newnbID = "";
 
         public MainFrm()
         {
@@ -196,10 +198,25 @@ namespace Evernote2Onenote
                 StringBuilder Hierarchy = new StringBuilder();
                 AppendHierarchy(docHierarchy.DocumentElement, Hierarchy, 0);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                MessageBox.Show(string.Format("Could not create the target notebook in Onenote!\n{0}", ex.ToString()));
-                return;
+                try
+                {
+                    string xmlHierarchy;
+                    onApp.GetHierarchy("", OneNote.HierarchyScope.hsPages, out xmlHierarchy);
+
+                    // Get the hierarchy for the default notebook folder
+                    onApp.GetSpecialLocation(OneNote.SpecialLocation.slUnfiledNotesSection, out m_EvernoteNotebookPath);
+                    onApp.OpenHierarchy(m_EvernoteNotebookPath, "", out newnbID, OneNote.CreateFileType.cftNone);
+                    string xmlUnfiledNotes;
+                    onApp.GetHierarchy(newnbID, OneNote.HierarchyScope.hsPages, out xmlUnfiledNotes);
+                    m_bUseUnfiledSection = true;
+                }
+                catch (Exception ex2)
+                {
+                    MessageBox.Show(string.Format("Could not create the target notebook in Onenote!\n{0}", ex2.ToString()));
+                    return;
+                }
             }
 
             if (startsync.Text == "Start Import")
@@ -512,7 +529,7 @@ namespace Evernote2Onenote
                             try
                             {
                                 // Get the hierarchy for all the notebooks
-                                if (note.Tags.Count > 0)
+                                if ((note.Tags.Count > 0) && (!m_bUseUnfiledSection))
                                 {
                                     foreach (string tag in note.Tags)
                                     {
@@ -532,7 +549,7 @@ namespace Evernote2Onenote
                                 }
                                 else
                                 {
-                                    string sectionId = GetSection("unspecified");
+                                    string sectionId = m_bUseUnfiledSection ? newnbID : GetSection("unspecified");
                                     onApp.CreateNewPage(sectionId, out m_PageID, Microsoft.Office.Interop.OneNote.NewPageStyle.npsBlankPageWithTitle);
                                     string textToSave;
                                     onApp.GetPageContent(m_PageID, out textToSave, Microsoft.Office.Interop.OneNote.PageInfo.piBasic);

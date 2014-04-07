@@ -503,10 +503,19 @@ namespace Evernote2Onenote
                                 }
                                 else
                                 {
-                                    if ((attachment.FileName != null) && (attachment.FileName.Length > 0))
-                                        xmlAttachments += string.Format("<one:InsertedFile pathSource=\"{0}\" preferredName=\"{1}\" />", tempfilepath, attachment.FileName);
+                                    rx = new Regex(@"<en-media\b[^>]*?hash=""" + attachment.Hash + @"""[^>]*></en-media>", RegexOptions.IgnoreCase);
+                                    if ((attachment.ContentType != null) && (attachment.ContentType.Contains("image") && rx.Match(htmlBody).Success))
+                                    {
+                                        // replace the <en-media /> tag with an <img /> tag
+                                        htmlBody = rx.Replace(htmlBody, @"<img src=""file:///" + tempfilepath + @"""/>");
+                                    }
                                     else
-                                        xmlAttachments += string.Format("<one:InsertedFile pathSource=\"{0}\" preferredName=\"{1}\" />", tempfilepath, attachment.Hash);
+                                    {
+                                        if ((attachment.FileName != null) && (attachment.FileName.Length > 0))
+                                            xmlAttachments += string.Format("<one:InsertedFile pathSource=\"{0}\" preferredName=\"{1}\" />", tempfilepath, attachment.FileName);
+                                        else
+                                            xmlAttachments += string.Format("<one:InsertedFile pathSource=\"{0}\" preferredName=\"{1}\" />", tempfilepath, attachment.Hash);
+                                    }
                                 }
                             }
                             note.Attachments.Clear();

@@ -535,6 +535,7 @@ namespace Evernote2Onenote
                             string emailBody = htmlBody;
                             Regex rex = new Regex(@"^date:(.*)$", RegexOptions.IgnoreCase | RegexOptions.Multiline);
                             emailBody = rex.Replace(emailBody, "Date: " + note.Date.ToString("ddd, dd MMM yyyy HH:mm:ss K"));
+                            emailBody = emailBody.Replace("&apos;", "'");
 
                             try
                             {
@@ -552,8 +553,8 @@ namespace Evernote2Onenote
                                         int outlineID = new System.Random().Next();
                                         //string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, m_outlineIDMetaName);
                                         string xmlSource = string.Format(m_xmlSourceUrl, note.SourceUrl);
-                                        string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, System.Security.SecurityElement.Escape(note.Title), note.SourceUrl.Length > 0 ? xmlSource : "");
-                                        string xml = string.Format(m_xmlNewOutline, outlineContent, m_PageID, m_xmlns, System.Security.SecurityElement.Escape(note.Title), xmlAttachments, note.Date.ToString("yyyy'-'MM'-'ddTHH':'mm':'ss'Z'"));
+                                        string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, System.Security.SecurityElement.Escape(note.Title).Replace("&apos;", "'"), note.SourceUrl.Length > 0 ? xmlSource : "");
+                                        string xml = string.Format(m_xmlNewOutline, outlineContent, m_PageID, m_xmlns, System.Security.SecurityElement.Escape(note.Title).Replace("&apos;", "'"), xmlAttachments, note.Date.ToString("yyyy'-'MM'-'ddTHH':'mm':'ss'Z'"));
                                         onApp.UpdatePageContent(xml, DateTime.MinValue, OneNote.XMLSchema.xs2010, true);
                                     }
                                 }
@@ -568,8 +569,8 @@ namespace Evernote2Onenote
                                     int outlineID = new System.Random().Next();
                                     //string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, m_outlineIDMetaName);
                                     string xmlSource = string.Format(m_xmlSourceUrl, note.SourceUrl);
-                                    string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, System.Security.SecurityElement.Escape(note.Title), note.SourceUrl.Length > 0 ? xmlSource : "");
-                                    string xml = string.Format(m_xmlNewOutline, outlineContent, m_PageID, m_xmlns, System.Security.SecurityElement.Escape(note.Title), xmlAttachments, note.Date.ToString("yyyy'-'MM'-'ddTHH':'mm':'ss'Z'"));
+                                    string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, System.Security.SecurityElement.Escape(note.Title).Replace("&apos;", "'"), note.SourceUrl.Length > 0 ? xmlSource : "");
+                                    string xml = string.Format(m_xmlNewOutline, outlineContent, m_PageID, m_xmlns, System.Security.SecurityElement.Escape(note.Title).Replace("&apos;", "'"), xmlAttachments, note.Date.ToString("yyyy'-'MM'-'ddTHH':'mm':'ss'Z'"));
                                     onApp.UpdatePageContent(xml, DateTime.MinValue, OneNote.XMLSchema.xs2010, true);
                                 }
                             }

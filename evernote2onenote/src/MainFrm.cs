@@ -369,10 +369,9 @@ namespace Evernote2Onenote
                 XmlTextReader xtrInput;
                 XmlDocument xmlDocItem;
 
-                xtrInput = new XmlTextReader(exportFile);
-
                 try
                 {
+                    xtrInput = new XmlTextReader(exportFile);
                     while (xtrInput.Read())
                     {
                         while ((xtrInput.NodeType == XmlNodeType.Element) && (xtrInput.Name.ToLower() == "note"))
@@ -588,12 +587,15 @@ namespace Evernote2Onenote
 
                     xtrInput.Close();
                 }
-                catch (System.Xml.XmlException)
+                catch (System.Xml.XmlException ex)
                 {
                     // happens if the notebook was empty or does not exist.
-                    MessageBox.Show(string.Format("The notebook \"{0}\" either does not exist or empty!", ENNotebookName));
+                    MessageBox.Show(string.Format("The notebook \"{0}\" either does not exist or empty!\n{1}", ENNotebookName, ex.ToString()));
                 }
-
+                catch (Exception ex)
+                {
+                    MessageBox.Show(string.Format("Exception importing notes:\n{0}", ex.ToString()));
+                }
             }
         }
         private void AppendHierarchy(XmlNode xml, StringBuilder str, int level)

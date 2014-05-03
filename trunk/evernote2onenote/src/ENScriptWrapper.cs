@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 
 namespace Evernote2Onenote
 {
@@ -61,6 +62,7 @@ namespace Evernote2Onenote
             processStartInfo.RedirectStandardError = true;
             processStartInfo.RedirectStandardInput = true;
             processStartInfo.RedirectStandardOutput = true;
+            processStartInfo.StandardOutputEncoding = Encoding.UTF8;
             processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             processStartInfo.CreateNoWindow = true;
             Process process = new Process();
@@ -99,6 +101,7 @@ namespace Evernote2Onenote
             processStartInfo.RedirectStandardError = true;
             processStartInfo.RedirectStandardInput = true;
             processStartInfo.RedirectStandardOutput = true;
+            processStartInfo.StandardOutputEncoding = Encoding.UTF8;
             processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             processStartInfo.CreateNoWindow = true;
             Process process = new Process();
@@ -133,6 +136,7 @@ namespace Evernote2Onenote
             processStartInfo.RedirectStandardError = true;
             processStartInfo.RedirectStandardInput = true;
             processStartInfo.RedirectStandardOutput = true;
+            processStartInfo.StandardOutputEncoding = Encoding.UTF8;
             processStartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             processStartInfo.CreateNoWindow = true;
             Process process = new Process();

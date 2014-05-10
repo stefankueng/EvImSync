@@ -352,11 +352,7 @@ namespace Evernote2Onenote
         private void ImportNotesToOnenote(string folder, List<Note> notesEvernote, string exportFile)
         {
             syncStep = SyncStep.CalculateWhatToDo;
-            int uploadcount = 0;
-            foreach (Note n in notesEvernote)
-            {
-                uploadcount++;
-            }
+            int uploadcount = notesEvernote.Count;
 
             string temppath = Path.GetTempPath() + "\\ev2on";
             Directory.CreateDirectory(temppath);

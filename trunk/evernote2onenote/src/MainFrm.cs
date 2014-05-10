@@ -235,7 +235,7 @@ namespace Evernote2Onenote
         {
             syncStep = SyncStep.Start;
             SetInfo("Extracting notes from Evernote", "", 0, 0);
-            string exportFile = ExtractNotes(ENNotebookName);
+            string exportFile = @"D:\Development\evimsync\ExportProblem.enex";//ExtractNotes(ENNotebookName);
             if (exportFile != null)
             {
                 List<Note> notesEvernote = new List<Note>();
@@ -408,7 +408,7 @@ namespace Evernote2Onenote
                                 XmlNodeList fns = xmlDocItem.GetElementsByTagName("file-name");
                                 if (fns.Count > note.Attachments.Count)
                                 {
-                                    attachment.FileName = fns.Item(note.Attachments.Count).InnerText;
+                                    attachment.FileName = System.Security.SecurityElement.Escape(fns.Item(note.Attachments.Count).InnerText);
                                 }
 
                                 XmlNodeList mimes = xmlDocItem.GetElementsByTagName("mime");

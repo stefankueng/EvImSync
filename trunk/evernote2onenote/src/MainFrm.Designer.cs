@@ -58,6 +58,7 @@ namespace Evernote2Onenote
             this.versionLabel = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.notebookCombo = new System.Windows.Forms.ComboBox();
+            this.btnENEXImport = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -177,11 +178,22 @@ namespace Evernote2Onenote
             this.notebookCombo.Sorted = true;
             this.notebookCombo.TabIndex = 12;
             // 
+            // btnENEXImport
+            // 
+            this.btnENEXImport.Location = new System.Drawing.Point(351, 56);
+            this.btnENEXImport.Name = "btnENEXImport";
+            this.btnENEXImport.Size = new System.Drawing.Size(158, 23);
+            this.btnENEXImport.TabIndex = 13;
+            this.btnENEXImport.Text = "Import ENEX File";
+            this.btnENEXImport.UseVisualStyleBackColor = true;
+            this.btnENEXImport.Click += new System.EventHandler(this.btnENEXImport_Click);
+            // 
             // MainFrm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(521, 141);
+            this.Controls.Add(this.btnENEXImport);
             this.Controls.Add(this.notebookCombo);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.versionLabel);
@@ -220,6 +232,7 @@ namespace Evernote2Onenote
         private System.Windows.Forms.Label versionLabel;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ComboBox notebookCombo;
+        private System.Windows.Forms.Button btnENEXImport;
     }
 }
 

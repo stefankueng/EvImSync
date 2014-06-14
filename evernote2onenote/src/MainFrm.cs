@@ -364,7 +364,7 @@ namespace Evernote2Onenote
                         }
 
                         xmlDocItem = new XmlDocument();
-                        xmlDocItem.LoadXml(xtrInput.ReadOuterXml());
+                        xmlDocItem.LoadXml(HttpUtility.HtmlDecode(xtrInput.ReadOuterXml()));
                         XmlNode node = xmlDocItem.FirstChild;
 
                         // node is <note> element
@@ -418,7 +418,7 @@ namespace Evernote2Onenote
                             }
 
                             xmlDocItem = new XmlDocument();
-                            xmlDocItem.LoadXml(xtrInput.ReadOuterXml());
+                            xmlDocItem.LoadXml(HttpUtility.HtmlDecode(xtrInput.ReadOuterXml()));
                             XmlNode node = xmlDocItem.FirstChild;
 
                             // node is <note> element

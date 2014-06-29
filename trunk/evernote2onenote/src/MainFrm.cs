@@ -364,7 +364,8 @@ namespace Evernote2Onenote
                         }
 
                         xmlDocItem = new XmlDocument();
-                        xmlDocItem.LoadXml(HttpUtility.HtmlDecode(xtrInput.ReadOuterXml()));
+                        string text = SanitizeXml(xtrInput.ReadOuterXml());
+                        xmlDocItem.LoadXml(text);
                         XmlNode node = xmlDocItem.FirstChild;
 
                         // node is <note> element
@@ -418,7 +419,8 @@ namespace Evernote2Onenote
                             }
 
                             xmlDocItem = new XmlDocument();
-                            xmlDocItem.LoadXml(HttpUtility.HtmlDecode(xtrInput.ReadOuterXml()));
+                            string text = SanitizeXml(xtrInput.ReadOuterXml());
+                            xmlDocItem.LoadXml(text);
                             XmlNode node = xmlDocItem.FirstChild;
 
                             // node is <note> element
@@ -693,6 +695,24 @@ namespace Evernote2Onenote
                 return "";
             }
             return newnbID;
+        }
+
+        private string SanitizeXml(string text)
+        {
+            text = HttpUtility.HtmlDecode(text);
+            Regex rxtitle = new Regex("<note><title>(.+)</title>", RegexOptions.IgnoreCase);
+            var match = rxtitle.Match(text);
+            if (match.Groups.Count == 2)
+            {
+                string title = match.Groups[1].ToString();
+                title = title.Replace("&", "&amp;");
+                title = title.Replace("\"", "&quot;");
+                title = title.Replace("'", "&apos;");
+                title = title.Replace("<", "&lt;");
+                title = title.Replace(">", "&gt;");
+                text = rxtitle.Replace(text, "<note><title>" + title + "</title>");
+            }
+            return text;
         }
 
     }

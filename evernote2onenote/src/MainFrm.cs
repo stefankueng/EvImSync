@@ -299,6 +299,9 @@ namespace Evernote2Onenote
             {
                 SetInfo(null, "Operation cancelled", 0, 0);
             }
+            else
+                SetInfo("", "", 0, 0);
+
             synchronizationContext.Send(new SendOrPostCallback(delegate(object state)
             {
                 startsync.Text = "Start Import";
@@ -710,8 +713,24 @@ namespace Evernote2Onenote
                 title = title.Replace("'", "&apos;");
                 title = title.Replace("<", "&lt;");
                 title = title.Replace(">", "&gt;");
+                title = title.Replace("@", "&#64;");
                 text = rxtitle.Replace(text, "<note><title>" + title + "</title>");
             }
+
+            Regex rxauthor = new Regex("<author>(.+)</author>", RegexOptions.IgnoreCase);
+            var authormatch = rxauthor.Match(text);
+            if (match.Groups.Count == 2)
+            {
+                string author = authormatch.Groups[1].ToString();
+                author = author.Replace("&", "&amp;");
+                author = author.Replace("\"", "&quot;");
+                author = author.Replace("'", "&apos;");
+                author = author.Replace("<", "&lt;");
+                author = author.Replace(">", "&gt;");
+                author = author.Replace("@", "&#64;");
+                text = rxauthor.Replace(text, "<author>" + author + "</author>");
+            }
+
             return text;
         }
 

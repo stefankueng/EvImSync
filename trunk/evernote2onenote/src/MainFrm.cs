@@ -384,10 +384,11 @@ namespace Evernote2Onenote
 
                 xtrInput.Close();
             }
-            catch (System.Xml.XmlException)
+            catch (System.Xml.XmlException ex)
             {
                 // happens if the notebook was empty or does not exist.
-                MessageBox.Show(string.Format("The notebook \"{0}\" either does not exist or empty!", ENNotebookName));
+                // Or due to a parsing error if a note isn't properly xml encoded
+                MessageBox.Show(string.Format("Error parsing the notebook \"{0}\"\n{1}", ENNotebookName, ex.ToString()));
             }
 
             return noteList;
@@ -631,7 +632,8 @@ namespace Evernote2Onenote
                 catch (System.Xml.XmlException ex)
                 {
                     // happens if the notebook was empty or does not exist.
-                    MessageBox.Show(string.Format("The notebook \"{0}\" either does not exist or empty!\n{1}", ENNotebookName, ex.ToString()));
+                    // Or due to a parsing error if a note isn't properly xml encoded
+                    MessageBox.Show(string.Format("Error parsing the notebook \"{0}\"\n{1}", ENNotebookName, ex.ToString()));
                 }
                 catch (Exception ex)
                 {

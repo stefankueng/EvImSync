@@ -376,7 +376,7 @@ namespace Evernote2Onenote
                         node = node.FirstChild;
 
                         Note note = new Note();
-                        note.Title = node.InnerText;
+                        note.Title = HttpUtility.HtmlDecode(node.InnerText);
 
                         noteList.Add(note);
                     }
@@ -432,7 +432,7 @@ namespace Evernote2Onenote
                             node = node.FirstChild;
 
                             Note note = new Note();
-                            note.Title = node.InnerText;
+                            note.Title = HttpUtility.HtmlDecode(node.InnerText);
                             node = node.NextSibling;
                             note.Content = node.InnerXml;
 
@@ -450,13 +450,19 @@ namespace Evernote2Onenote
                                 XmlNodeList fns = xmlDocItem.GetElementsByTagName("file-name");
                                 if (fns.Count > note.Attachments.Count)
                                 {
-                                    attachment.FileName = System.Security.SecurityElement.Escape(fns.Item(note.Attachments.Count).InnerText);
+                                    attachment.FileName = HttpUtility.HtmlDecode(fns.Item(note.Attachments.Count).InnerText);
+                                    string invalid = new string(Path.GetInvalidFileNameChars());
+                                    foreach (char c in invalid)
+                                    {
+                                        attachment.FileName = attachment.FileName.Replace(c.ToString(), "");
+                                    }
+                                    attachment.FileName = System.Security.SecurityElement.Escape(attachment.FileName);
                                 }
 
                                 XmlNodeList mimes = xmlDocItem.GetElementsByTagName("mime");
                                 if (mimes.Count > note.Attachments.Count)
                                 {
-                                    attachment.ContentType = mimes.Item(note.Attachments.Count).InnerText;
+                                    attachment.ContentType = HttpUtility.HtmlDecode(mimes.Item(note.Attachments.Count).InnerText);
                                 }
 
                                 note.Attachments.Add(attachment);
@@ -465,7 +471,7 @@ namespace Evernote2Onenote
                             XmlNodeList tagslist = xmlDocItem.GetElementsByTagName("tag");
                             foreach (XmlNode n in tagslist)
                             {
-                                note.Tags.Add(n.InnerText);
+                                note.Tags.Add(HttpUtility.HtmlDecode(n.InnerText));
                             }
 
                             XmlNodeList datelist = xmlDocItem.GetElementsByTagName("created");
@@ -517,20 +523,7 @@ namespace Evernote2Onenote
                                 // save the attached file
                                 string tempfilepath = temppath + "\\";
                                 byte[] data = Convert.FromBase64String(attachment.Base64Data);
-                                if ((attachment.FileName != null) && (attachment.FileName.Length > 0))
-                                {
-                                    string name = attachment.FileName;
-                                    string invalid = new string(Path.GetInvalidFileNameChars());
-                                    foreach (char c in invalid)
-                                    {
-                                        name = name.Replace(c.ToString(), "");
-                                    }
-                                    if (name.Length >= (240 - tempfilepath.Length))
-                                        name = name.Substring(name.Length - (240 - tempfilepath.Length));
-                                    tempfilepath += name;
-                                }
-                                else
-                                    tempfilepath += attachment.Hash;
+                                tempfilepath += attachment.Hash;
                                 Stream fs = new FileStream(tempfilepath, FileMode.Create);
                                 fs.Write(data, 0, data.Length);
                                 fs.Close();
@@ -576,7 +569,6 @@ namespace Evernote2Onenote
                             string emailBody = htmlBody;
                             Regex rex = new Regex(@"^date:(.*)$", RegexOptions.IgnoreCase | RegexOptions.Multiline);
                             emailBody = rex.Replace(emailBody, "Date: " + note.Date.ToString("ddd, dd MMM yyyy HH:mm:ss K"));
-                            emailBody = emailBody.Replace("&apos;", "'");
 
                             try
                             {
@@ -704,7 +696,7 @@ namespace Evernote2Onenote
 
         private string SanitizeXml(string text)
         {
-            text = HttpUtility.HtmlDecode(text);
+            //text = HttpUtility.HtmlDecode(text);
             Regex rxtitle = new Regex("<note><title>(.+)</title>", RegexOptions.IgnoreCase);
             var match = rxtitle.Match(text);
             if (match.Groups.Count == 2)

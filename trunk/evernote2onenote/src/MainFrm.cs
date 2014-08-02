@@ -569,7 +569,7 @@ namespace Evernote2Onenote
                             string emailBody = htmlBody;
                             Regex rex = new Regex(@"^date:(.*)$", RegexOptions.IgnoreCase | RegexOptions.Multiline);
                             emailBody = rex.Replace(emailBody, "Date: " + note.Date.ToString("ddd, dd MMM yyyy HH:mm:ss K"));
-
+                            emailBody = emailBody.Replace("&apos;", "'");
                             try
                             {
                                 // Get the hierarchy for all the notebooks

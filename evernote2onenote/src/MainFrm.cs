@@ -725,6 +725,15 @@ namespace Evernote2Onenote
                 text = rxauthor.Replace(text, "<author>" + author + "</author>");
             }
 
+            Regex rxfilename = new Regex("<file-name>(.+)</file-name>", RegexOptions.IgnoreCase);
+            var filenamematch = rxfilename.Match(text);
+            if (match.Groups.Count == 2)
+            {
+                string filename = filenamematch.Groups[1].ToString();
+                filename = filename.Replace("&nbsp;", " ");
+                text = rxfilename.Replace(text, "<file-name>" + filename + "</file-name>");
+            }
+
             return text;
         }
 

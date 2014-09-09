@@ -354,7 +354,7 @@ namespace Evernote2Onenote
             XmlDocument xmlDocItem;
 
             xtrInput = new XmlTextReader(exportFile);
-
+            string xmltext = "";
             try
             {
                 while (xtrInput.Read())
@@ -367,8 +367,8 @@ namespace Evernote2Onenote
                         }
 
                         xmlDocItem = new XmlDocument();
-                        string text = SanitizeXml(xtrInput.ReadOuterXml());
-                        xmlDocItem.LoadXml(text);
+                        xmltext = SanitizeXml(xtrInput.ReadOuterXml());
+                        xmlDocItem.LoadXml(xmltext);
                         XmlNode node = xmlDocItem.FirstChild;
 
                         // node is <note> element
@@ -388,7 +388,22 @@ namespace Evernote2Onenote
             {
                 // happens if the notebook was empty or does not exist.
                 // Or due to a parsing error if a note isn't properly xml encoded
-                MessageBox.Show(string.Format("Error parsing the notebook \"{0}\"\n{1}", ENNotebookName, ex.ToString()));
+                // 
+                // try to find the name of the note that's causing the problems
+                string notename = "";
+                if (xmltext.Length > 0)
+                {
+                    Regex rxnote = new Regex("<title>(.+)</title>", RegexOptions.IgnoreCase);
+                    var notematch = rxnote.Match(xmltext);
+                    if (notematch.Groups.Count == 2)
+                    {
+                        notename = notematch.Groups[1].ToString();
+                    }
+                }
+                if (notename.Length > 0)
+                    MessageBox.Show(string.Format("Error parsing the note \"{2}\" in notebook \"{0}\",\n{1}", ENNotebookName, ex.ToString(), notename));
+                else
+                    MessageBox.Show(string.Format("Error parsing the notebook \"{0}\"\n{1}", ENNotebookName, ex.ToString()));
             }
 
             return noteList;
@@ -409,7 +424,7 @@ namespace Evernote2Onenote
             {
                 XmlTextReader xtrInput;
                 XmlDocument xmlDocItem;
-
+                string xmltext = "";
                 try
                 {
                     xtrInput = new XmlTextReader(exportFile);
@@ -423,8 +438,8 @@ namespace Evernote2Onenote
                             }
 
                             xmlDocItem = new XmlDocument();
-                            string text = SanitizeXml(xtrInput.ReadOuterXml());
-                            xmlDocItem.LoadXml(text);
+                            xmltext = SanitizeXml(xtrInput.ReadOuterXml());
+                            xmlDocItem.LoadXml(xmltext);
                             XmlNode node = xmlDocItem.FirstChild;
 
                             // node is <note> element
@@ -625,7 +640,21 @@ namespace Evernote2Onenote
                 {
                     // happens if the notebook was empty or does not exist.
                     // Or due to a parsing error if a note isn't properly xml encoded
-                    MessageBox.Show(string.Format("Error parsing the notebook \"{0}\"\n{1}", ENNotebookName, ex.ToString()));
+                    // try to find the name of the note that's causing the problems
+                    string notename = "";
+                    if (xmltext.Length > 0)
+                    {
+                        Regex rxnote = new Regex("<title>(.+)</title>", RegexOptions.IgnoreCase);
+                        var notematch = rxnote.Match(xmltext);
+                        if (notematch.Groups.Count == 2)
+                        {
+                            notename = notematch.Groups[1].ToString();
+                        }
+                    }
+                    if (notename.Length > 0)
+                        MessageBox.Show(string.Format("Error parsing the note \"{2}\" in notebook \"{0}\",\n{1}", ENNotebookName, ex.ToString(), notename));
+                    else
+                        MessageBox.Show(string.Format("Error parsing the notebook \"{0}\"\n{1}", ENNotebookName, ex.ToString()));
                 }
                 catch (Exception ex)
                 {

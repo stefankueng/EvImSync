@@ -731,6 +731,14 @@ namespace Evernote2Onenote
             {
                 string filename = filenamematch.Groups[1].ToString();
                 filename = filename.Replace("&nbsp;", " ");
+                // remove illegal path chars
+                string invalid = new string(Path.GetInvalidFileNameChars());
+                foreach (char c in invalid)
+                {
+                    filename = filename.Replace(c.ToString(), "");
+                }
+                filename = System.Security.SecurityElement.Escape(filename);
+
                 text = rxfilename.Replace(text, "<file-name>" + filename + "</file-name>");
             }
 

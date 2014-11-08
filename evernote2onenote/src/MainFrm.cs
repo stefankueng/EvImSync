@@ -62,6 +62,14 @@ namespace Evernote2Onenote
         private string m_enexfile = "";
         string newnbID = "";
 
+        private Regex rxStyle = new Regex("style=\\\"[^\\\"]*\\\"", RegexOptions.IgnoreCase);
+        private Regex rxCDATA = new Regex(@"<!\[CDATA\[<\?xml version=""1.0""[^?]*\?>", RegexOptions.IgnoreCase);
+        private Regex rxBodyStart = new Regex(@"<en-note\s*>", RegexOptions.IgnoreCase);
+        private Regex rxBodyEnd = new Regex(@"</en-note\s*>\s*]]", RegexOptions.IgnoreCase);
+        private Regex rxBodyEmpty = new Regex(@"<en-note\s*/\s*>\s*]]", RegexOptions.IgnoreCase);
+        private Regex rxDate = new Regex(@"^date:(.*)$", RegexOptions.IgnoreCase | RegexOptions.Multiline);
+        private Regex rxNote = new Regex("<title>(.+)</title>", RegexOptions.IgnoreCase);
+
         public MainFrm()
         {
             InitializeComponent();
@@ -569,21 +577,17 @@ namespace Evernote2Onenote
                             }
                             note.Attachments.Clear();
 
-                            Regex rx2 = new Regex("style=\\\"[^\\\"]*\\\"", RegexOptions.IgnoreCase);
-                            htmlBody = rx2.Replace(htmlBody, string.Empty);
-                            rx2 = new Regex(@"<!\[CDATA\[<\?xml version=""1.0""[^?]*\?>", RegexOptions.IgnoreCase);
-                            htmlBody = rx2.Replace(htmlBody, string.Empty);
+                            htmlBody = rxStyle.Replace(htmlBody, string.Empty);
+                            htmlBody = rxCDATA.Replace(htmlBody, string.Empty);
                             htmlBody = htmlBody.Replace(@"<!DOCTYPE en-note SYSTEM ""http://xml.evernote.com/pub/enml2.dtd"">", string.Empty);
-                            htmlBody = htmlBody.Replace("<en-note>", "<body>");
-                            htmlBody = htmlBody.Replace("</en-note>]]>", "</body>");
-                            htmlBody = htmlBody.Replace("</en-note>\n]]>", "</body>");
-                            htmlBody = htmlBody.Replace("<en-note />]]", "<body></body>");
+                            htmlBody = rxBodyStart.Replace(htmlBody, "<body>");
+                            htmlBody = rxBodyEnd.Replace(htmlBody, "</body>");
+                            htmlBody = rxBodyEmpty.Replace(htmlBody, "<body></body>");
                             htmlBody = htmlBody.Trim();
                             htmlBody = @"<!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 4.01 Transitional//EN""><head></head>" + htmlBody;
 
                             string emailBody = htmlBody;
-                            Regex rex = new Regex(@"^date:(.*)$", RegexOptions.IgnoreCase | RegexOptions.Multiline);
-                            emailBody = rex.Replace(emailBody, "Date: " + note.Date.ToString("ddd, dd MMM yyyy HH:mm:ss K"));
+                            emailBody = rxDate.Replace(emailBody, "Date: " + note.Date.ToString("ddd, dd MMM yyyy HH:mm:ss K"));
                             emailBody = emailBody.Replace("&apos;", "'");
                             try
                             {
@@ -644,8 +648,7 @@ namespace Evernote2Onenote
                     string notename = "";
                     if (xmltext.Length > 0)
                     {
-                        Regex rxnote = new Regex("<title>(.+)</title>", RegexOptions.IgnoreCase);
-                        var notematch = rxnote.Match(xmltext);
+                        var notematch = rxNote.Match(xmltext);
                         if (notematch.Groups.Count == 2)
                         {
                             notename = notematch.Groups[1].ToString();

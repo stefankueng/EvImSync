@@ -104,7 +104,8 @@ namespace Evernote2Onenote
                 MessageBox.Show("No Notebooks found in Evernote!\nMake sure you have at least one locally synched notebook.", "Evernote2Onenote");
                 startsync.Enabled = false;
             }
-            this.notebookCombo.SelectedIndex = 0;
+            else
+                this.notebookCombo.SelectedIndex = 0;
         }
 
         private void ExitToolStripMenuItem_Click(object sender, EventArgs e)

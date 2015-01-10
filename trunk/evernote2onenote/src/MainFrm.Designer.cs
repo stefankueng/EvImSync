@@ -59,6 +59,8 @@ namespace Evernote2Onenote
             this.label1 = new System.Windows.Forms.Label();
             this.notebookCombo = new System.Windows.Forms.ComboBox();
             this.btnENEXImport = new System.Windows.Forms.Button();
+            this.importDatePicker = new System.Windows.Forms.DateTimePicker();
+            this.datelabel = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -68,7 +70,7 @@ namespace Evernote2Onenote
             this.fileToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(521, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(621, 24);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -91,7 +93,7 @@ namespace Evernote2Onenote
             // 
             this.startsync.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.startsync.Location = new System.Drawing.Point(118, 56);
+            this.startsync.Location = new System.Drawing.Point(162, 77);
             this.startsync.Name = "startsync";
             this.startsync.Size = new System.Drawing.Size(215, 23);
             this.startsync.TabIndex = 1;
@@ -127,7 +129,7 @@ namespace Evernote2Onenote
             | System.Windows.Forms.AnchorStyles.Right)));
             this.progressIndicator.Location = new System.Drawing.Point(12, 106);
             this.progressIndicator.Name = "progressIndicator";
-            this.progressIndicator.Size = new System.Drawing.Size(497, 23);
+            this.progressIndicator.Size = new System.Drawing.Size(597, 23);
             this.progressIndicator.TabIndex = 5;
             // 
             // infoText0
@@ -142,7 +144,7 @@ namespace Evernote2Onenote
             // homeLink
             // 
             this.homeLink.AutoSize = true;
-            this.homeLink.Location = new System.Drawing.Point(339, 28);
+            this.homeLink.Location = new System.Drawing.Point(383, 24);
             this.homeLink.Name = "homeLink";
             this.homeLink.Size = new System.Drawing.Size(59, 13);
             this.homeLink.TabIndex = 8;
@@ -153,7 +155,7 @@ namespace Evernote2Onenote
             // versionLabel
             // 
             this.versionLabel.AutoSize = true;
-            this.versionLabel.Location = new System.Drawing.Point(404, 28);
+            this.versionLabel.Location = new System.Drawing.Point(448, 24);
             this.versionLabel.Name = "versionLabel";
             this.versionLabel.Size = new System.Drawing.Size(45, 13);
             this.versionLabel.TabIndex = 9;
@@ -172,7 +174,7 @@ namespace Evernote2Onenote
             // 
             this.notebookCombo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.notebookCombo.FormattingEnabled = true;
-            this.notebookCombo.Location = new System.Drawing.Point(118, 29);
+            this.notebookCombo.Location = new System.Drawing.Point(162, 25);
             this.notebookCombo.Name = "notebookCombo";
             this.notebookCombo.Size = new System.Drawing.Size(215, 21);
             this.notebookCombo.Sorted = true;
@@ -180,7 +182,7 @@ namespace Evernote2Onenote
             // 
             // btnENEXImport
             // 
-            this.btnENEXImport.Location = new System.Drawing.Point(351, 56);
+            this.btnENEXImport.Location = new System.Drawing.Point(386, 77);
             this.btnENEXImport.Name = "btnENEXImport";
             this.btnENEXImport.Size = new System.Drawing.Size(158, 23);
             this.btnENEXImport.TabIndex = 13;
@@ -188,11 +190,30 @@ namespace Evernote2Onenote
             this.btnENEXImport.UseVisualStyleBackColor = true;
             this.btnENEXImport.Click += new System.EventHandler(this.btnENEXImport_Click);
             // 
+            // importDatePicker
+            // 
+            this.importDatePicker.Location = new System.Drawing.Point(162, 49);
+            this.importDatePicker.MinDate = new System.DateTime(1799, 1, 1, 0, 0, 0, 0);
+            this.importDatePicker.Name = "importDatePicker";
+            this.importDatePicker.Size = new System.Drawing.Size(215, 20);
+            this.importDatePicker.TabIndex = 14;
+            // 
+            // datelabel
+            // 
+            this.datelabel.AutoSize = true;
+            this.datelabel.Location = new System.Drawing.Point(9, 51);
+            this.datelabel.Name = "datelabel";
+            this.datelabel.Size = new System.Drawing.Size(145, 13);
+            this.datelabel.TabIndex = 15;
+            this.datelabel.Text = "only import notes newer than:";
+            // 
             // MainFrm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(521, 141);
+            this.ClientSize = new System.Drawing.Size(621, 141);
+            this.Controls.Add(this.datelabel);
+            this.Controls.Add(this.importDatePicker);
             this.Controls.Add(this.btnENEXImport);
             this.Controls.Add(this.notebookCombo);
             this.Controls.Add(this.label1);
@@ -206,8 +227,8 @@ namespace Evernote2Onenote
             this.Controls.Add(this.menuStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
-            this.MaximumSize = new System.Drawing.Size(537, 180);
-            this.MinimumSize = new System.Drawing.Size(537, 180);
+            this.MaximumSize = new System.Drawing.Size(637, 180);
+            this.MinimumSize = new System.Drawing.Size(637, 180);
             this.Name = "MainFrm";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "Evernote2Onenote";
@@ -233,6 +254,8 @@ namespace Evernote2Onenote
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ComboBox notebookCombo;
         private System.Windows.Forms.Button btnENEXImport;
+        private System.Windows.Forms.DateTimePicker importDatePicker;
+        private System.Windows.Forms.Label datelabel;
     }
 }
 

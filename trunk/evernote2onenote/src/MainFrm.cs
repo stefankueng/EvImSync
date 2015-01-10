@@ -93,6 +93,14 @@ namespace Evernote2Onenote
                     MessageBox.Show(string.Format("The Datestring\n{0}\nis not valid!", cmdDate));
                 }
             }
+            try
+            {
+                importDatePicker.Value = this.cmdDate;
+            }
+            catch (Exception)
+            {
+                importDatePicker.Value = importDatePicker.MinDate;
+            }
 
             enscriptpath = ProgramFilesx86() + "\\Evernote\\Evernote\\ENScript.exe";
             if (!File.Exists(enscriptpath))
@@ -278,6 +286,9 @@ namespace Evernote2Onenote
                     return;
                 }
             }
+
+            if (importDatePicker.Value > cmdDate)
+                cmdDate = importDatePicker.Value;
 
             if (startsync.Text == "Start Import")
             {

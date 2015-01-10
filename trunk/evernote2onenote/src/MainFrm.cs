@@ -99,6 +99,11 @@ namespace Evernote2Onenote
             var notebooklist = enscript.GetNotebooks();
             foreach (string s in notebooklist)
                 this.notebookCombo.Items.Add(s);
+            if (notebooklist.Count == 0)
+            {
+                MessageBox.Show("No Notebooks found in Evernote!\nMake sure you have at least one locally synched notebook.", "Evernote2Onenote");
+                startsync.Enabled = false;
+            }
             this.notebookCombo.SelectedIndex = 0;
         }
 

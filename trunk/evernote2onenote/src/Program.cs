@@ -25,11 +25,17 @@ namespace Evernote2Onenote
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        static void Main(string[] args)
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainFrm());
+            string cmdNotebook = String.Empty;
+            string cmdDate = String.Empty;
+            if (args.Length >= 1)
+                cmdNotebook = args[0];
+            if (args.Length >= 2)
+                cmdDate = args[1];
+            Application.Run(new MainFrm(cmdNotebook, cmdDate));
         }
     }
 }

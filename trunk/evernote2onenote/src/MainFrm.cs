@@ -767,21 +767,24 @@ namespace Evernote2Onenote
             var filenamematch = rxfilename.Match(text);
             if (match.Groups.Count == 2)
             {
-                string filename = filenamematch.Groups[1].ToString();
-                filename = filename.Replace("&nbsp;", " ");
-                // remove illegal path chars
-                string invalid = new string(Path.GetInvalidFileNameChars());
-                foreach (char c in invalid)
-                {
-                    filename = filename.Replace(c.ToString(), "");
-                }
-                filename = System.Security.SecurityElement.Escape(filename);
-
-                text = rxfilename.Replace(text, "<file-name>" + filename + "</file-name>");
+                MatchEvaluator myEvaluator = new MatchEvaluator(FilenameMatchEvaluator);
+                text = rxfilename.Replace(text, myEvaluator);
             }
 
             return text;
         }
-
+        public string FilenameMatchEvaluator(Match m)
+        {
+            string filename = m.Groups[1].ToString();
+            filename = filename.Replace("&nbsp;", " ");
+            // remove illegal path chars
+            string invalid = new string(Path.GetInvalidFileNameChars());
+            foreach (char c in invalid)
+            {
+                filename = filename.Replace(c.ToString(), "");
+            }
+            filename = System.Security.SecurityElement.Escape(filename);
+            return "<file-name>" + filename + "</file-name>";
+        }
     }
 }

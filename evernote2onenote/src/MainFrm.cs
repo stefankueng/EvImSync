@@ -62,6 +62,9 @@ namespace Evernote2Onenote
         private string m_enexfile = "";
         string newnbID = "";
 
+        private string cmdNoteBook = "";
+        private DateTime cmdDate = new DateTime(0);
+
         private Regex rxStyle = new Regex("style=\\\"[^\\\"]*\\\"", RegexOptions.IgnoreCase);
         private Regex rxCDATA = new Regex(@"<!\[CDATA\[<\?xml version=""1.0""[^?]*\?>", RegexOptions.IgnoreCase);
         private Regex rxBodyStart = new Regex(@"<en-note\s*>", RegexOptions.IgnoreCase);
@@ -70,12 +73,26 @@ namespace Evernote2Onenote
         private Regex rxDate = new Regex(@"^date:(.*)$", RegexOptions.IgnoreCase | RegexOptions.Multiline);
         private Regex rxNote = new Regex("<title>(.+)</title>", RegexOptions.IgnoreCase);
 
-        public MainFrm()
+        public MainFrm(string cmdNotebook, string cmdDate)
         {
             InitializeComponent();
             this.synchronizationContext = SynchronizationContext.Current;
             string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
             versionLabel.Text = string.Format("Version: {0}", version);
+
+            if (cmdNotebook.Length > 0)
+                cmdNoteBook = cmdNotebook;
+            if (cmdDate.Length > 0)
+            {
+                try
+                {
+                    this.cmdDate = DateTime.Parse(cmdDate);
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show(string.Format("The Datestring\n{0}\nis not valid!", cmdDate));
+                }
+            }
 
             enscriptpath = ProgramFilesx86() + "\\Evernote\\Evernote\\ENScript.exe";
             if (!File.Exists(enscriptpath))
@@ -106,6 +123,11 @@ namespace Evernote2Onenote
             }
             else
                 this.notebookCombo.SelectedIndex = 0;
+
+            if (cmdNotebook.Length > 0)
+            {
+                Startsync_Click(null, null);
+            }
         }
 
         private void ExitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -182,6 +204,8 @@ namespace Evernote2Onenote
             {
                 ENNotebookName = Path.GetFileNameWithoutExtension(m_enexfile);
             }
+            if (cmdNoteBook.Length > 0)
+                ENNotebookName = cmdNoteBook;
             if (ENNotebookName.Length == 0)
             {
                 MessageBox.Show("Please enter a notebook in EverNote to import the notes from", "Evernote2Onenote");
@@ -324,6 +348,13 @@ namespace Evernote2Onenote
                 this.progressIndicator.Maximum = 100000;
                 this.progressIndicator.Value = 0;
             }), null);
+            if (cmdNoteBook.Length > 0)
+            {
+                synchronizationContext.Send(new SendOrPostCallback(delegate(object state)
+                {
+                    this.Close();
+                }), null);
+            }
         }
 
         private string ExtractNotes(string notebook)
@@ -540,6 +571,9 @@ namespace Evernote2Onenote
                                 {
                                 }
                             }
+
+                            if (cmdDate > note.Date)
+                                continue;
 
                             SetInfo(null, string.Format("importing note ({0} of {1}) : \"{2}\"", counter + 1, uploadcount, note.Title), counter++, uploadcount);
 

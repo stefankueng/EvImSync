@@ -17,6 +17,7 @@
 using Evernote2Onenote.Enums;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -65,13 +66,13 @@ namespace Evernote2Onenote
         private string cmdNoteBook = "";
         private DateTime cmdDate = new DateTime(0);
 
-        private Regex rxStyle = new Regex("style=\\\"[^\\\"]*\\\"", RegexOptions.IgnoreCase);
         private Regex rxCDATA = new Regex(@"<!\[CDATA\[<\?xml version=""1.0""[^?]*\?>", RegexOptions.IgnoreCase);
-        private Regex rxBodyStart = new Regex(@"<en-note\s*>", RegexOptions.IgnoreCase);
-        private Regex rxBodyEnd = new Regex(@"</en-note\s*>\s*]]", RegexOptions.IgnoreCase);
-        private Regex rxBodyEmpty = new Regex(@"<en-note\s*/\s*>\s*]]", RegexOptions.IgnoreCase);
+        private Regex rxBodyStart = new Regex(@"<en-note[^>/]*>", RegexOptions.IgnoreCase);
+        private Regex rxBodyEnd = new Regex(@"</en-note\s*>\s*]]>", RegexOptions.IgnoreCase);
+        private Regex rxBodyEmpty = new Regex(@"<en-note[^>/]*/>\s*]]>", RegexOptions.IgnoreCase);
         private Regex rxDate = new Regex(@"^date:(.*)$", RegexOptions.IgnoreCase | RegexOptions.Multiline);
         private Regex rxNote = new Regex("<title>(.+)</title>", RegexOptions.IgnoreCase);
+        private static readonly Regex rxDtd = new Regex(@"<!DOCTYPE en-note SYSTEM \""http:\/\/xml\.evernote\.com\/pub\/enml\d*\.dtd\"">", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         public MainFrm(string cmdNotebook, string cmdDate)
         {
@@ -548,26 +549,24 @@ namespace Evernote2Onenote
                             XmlNodeList datelist = xmlDocItem.GetElementsByTagName("created");
                             foreach (XmlNode n in datelist)
                             {
-                                try
+                                DateTime dateCreated;
+
+                                if (DateTime.TryParseExact(n.InnerText, "yyyyMMddTHHmmssZ", CultureInfo.CurrentCulture, DateTimeStyles.AdjustToUniversal, out dateCreated))
                                 {
-                                    note.Date = DateTime.ParseExact(n.InnerText, "yyyyMMddTHHmmssZ", null);
-                                }
-                                catch (System.FormatException)
-                                {
+                                    note.Date = dateCreated;
                                 }
                             }
-
                             XmlNodeList datelist2 = xmlDocItem.GetElementsByTagName("updated");
                             foreach (XmlNode n in datelist2)
                             {
-                                try
+                                DateTime dateUpdated;
+
+                                if (DateTime.TryParseExact(n.InnerText, "yyyyMMddTHHmmssZ", CultureInfo.CurrentCulture, DateTimeStyles.AdjustToUniversal, out dateUpdated))
                                 {
-                                    note.Date = DateTime.ParseExact(n.InnerText, "yyyyMMddTHHmmssZ", null);
-                                }
-                                catch (System.FormatException)
-                                {
+                                    note.Date = dateUpdated;
                                 }
                             }
+
                             XmlNodeList sourceurl = xmlDocItem.GetElementsByTagName("source-url");
                             note.SourceUrl = "";
                             foreach (XmlNode n in sourceurl)
@@ -628,9 +627,8 @@ namespace Evernote2Onenote
                             }
                             note.Attachments.Clear();
 
-                            htmlBody = rxStyle.Replace(htmlBody, string.Empty);
                             htmlBody = rxCDATA.Replace(htmlBody, string.Empty);
-                            htmlBody = htmlBody.Replace(@"<!DOCTYPE en-note SYSTEM ""http://xml.evernote.com/pub/enml2.dtd"">", string.Empty);
+                            htmlBody = rxDtd.Replace(htmlBody, string.Empty);
                             htmlBody = rxBodyStart.Replace(htmlBody, "<body>");
                             htmlBody = rxBodyEnd.Replace(htmlBody, "</body>");
                             htmlBody = rxBodyEmpty.Replace(htmlBody, "<body></body>");

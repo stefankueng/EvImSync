@@ -103,10 +103,9 @@ namespace Evernote2Onenote
             // 
             // infoText1
             // 
-            this.infoText1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.infoText1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.infoText1.AutoSize = true;
-            this.infoText1.Location = new System.Drawing.Point(9, 82);
+            this.infoText1.Location = new System.Drawing.Point(12, 116);
             this.infoText1.Name = "infoText1";
             this.infoText1.Size = new System.Drawing.Size(10, 13);
             this.infoText1.TabIndex = 3;
@@ -117,7 +116,7 @@ namespace Evernote2Onenote
             this.infoText2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.infoText2.AutoSize = true;
-            this.infoText2.Location = new System.Drawing.Point(12, 82);
+            this.infoText2.Location = new System.Drawing.Point(12, 103);
             this.infoText2.Name = "infoText2";
             this.infoText2.Size = new System.Drawing.Size(10, 13);
             this.infoText2.TabIndex = 4;
@@ -127,7 +126,7 @@ namespace Evernote2Onenote
             // 
             this.progressIndicator.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.progressIndicator.Location = new System.Drawing.Point(12, 106);
+            this.progressIndicator.Location = new System.Drawing.Point(15, 132);
             this.progressIndicator.Name = "progressIndicator";
             this.progressIndicator.Size = new System.Drawing.Size(597, 23);
             this.progressIndicator.TabIndex = 5;
@@ -211,7 +210,7 @@ namespace Evernote2Onenote
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(621, 141);
+            this.ClientSize = new System.Drawing.Size(621, 161);
             this.Controls.Add(this.datelabel);
             this.Controls.Add(this.importDatePicker);
             this.Controls.Add(this.btnENEXImport);
@@ -227,8 +226,8 @@ namespace Evernote2Onenote
             this.Controls.Add(this.menuStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
-            this.MaximumSize = new System.Drawing.Size(637, 180);
-            this.MinimumSize = new System.Drawing.Size(637, 180);
+            this.MaximumSize = new System.Drawing.Size(637, 200);
+            this.MinimumSize = new System.Drawing.Size(637, 200);
             this.Name = "MainFrm";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "Evernote2Onenote";

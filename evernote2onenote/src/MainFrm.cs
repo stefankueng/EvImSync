@@ -506,7 +506,7 @@ namespace Evernote2Onenote
                             Note note = new Note();
                             note.Title = HttpUtility.HtmlDecode(node.InnerText);
                             node = node.NextSibling;
-                            note.Content = node.InnerXml;
+                            note.Content = HttpUtility.HtmlDecode(node.InnerXml);
 
                             XmlNodeList atts = xmlDocItem.GetElementsByTagName("resource");
                             foreach (XmlNode xmln in atts)

@@ -755,6 +755,20 @@ namespace Evernote2Onenote
             string newnbID = "";
             try
             {
+                // remove and/or replace characters that are not allowed in Onenote section names
+                sectionName = sectionName.Replace("?", "");
+                sectionName = sectionName.Replace("*", "");
+                sectionName = sectionName.Replace("/", "");
+                sectionName = sectionName.Replace("\\", "");
+                sectionName = sectionName.Replace(":", "");
+                sectionName = sectionName.Replace("<", "");
+                sectionName = sectionName.Replace(">", "");
+                sectionName = sectionName.Replace("|", "");
+                sectionName = sectionName.Replace("&", "");
+                sectionName = sectionName.Replace("#", "");
+                sectionName = sectionName.Replace("\"", "'");
+                sectionName = sectionName.Replace("%", "");
+
                 string xmlHierarchy;
                 onApp.GetHierarchy("", OneNote.HierarchyScope.hsNotebooks, out xmlHierarchy);
 

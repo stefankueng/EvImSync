@@ -241,10 +241,18 @@ namespace Evernote2Onenote
                 }
             }
 
-            onApp = new OneNote.Application();
+            try
+            {
+                onApp = new OneNote.Application();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(string.Format("Could connect to Onenote!\nReasons for this might be:\n* The desktop version of onenote is not installed\n* Onenote is not installed properly\n* Onenote is already running but with a different user account\n\n{0}", ex.ToString()));
+                return;
+            }
             if (onApp == null)
             {
-                MessageBox.Show("Could not start Onenote!", "Evernote2Onenote");
+                MessageBox.Show(string.Format("Could connect to Onenote!\nReasons for this might be:\n* The desktop version of onenote is not installed\n* Onenote is not installed properly\n* Onenote is already running but with a different user account\n\n{0}"));
                 return;
             }
             // create a new notebook named "EverNote"

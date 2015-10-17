@@ -646,6 +646,9 @@ namespace Evernote2Onenote
                             string emailBody = htmlBody;
                             emailBody = rxDate.Replace(emailBody, "Date: " + note.Date.ToString("ddd, dd MMM yyyy HH:mm:ss K"));
                             emailBody = emailBody.Replace("&apos;", "'");
+                            emailBody = emailBody.Replace("’", "&rsquo;");
+                            emailBody = emailBody.Replace("‘", "&lsquo;");
+
                             try
                             {
                                 // Get the hierarchy for all the notebooks
@@ -808,6 +811,7 @@ namespace Evernote2Onenote
                 title = title.Replace("&", "&amp;");
                 title = title.Replace("\"", "&quot;");
                 title = title.Replace("'", "&apos;");
+                title = title.Replace("’", "&rsquo;");
                 title = title.Replace("<", "&lt;");
                 title = title.Replace(">", "&gt;");
                 title = title.Replace("@", "&#64;");
@@ -822,6 +826,7 @@ namespace Evernote2Onenote
                 author = author.Replace("&", "&amp;");
                 author = author.Replace("\"", "&quot;");
                 author = author.Replace("'", "&apos;");
+                author = author.Replace("’", "&rsquo;");
                 author = author.Replace("<", "&lt;");
                 author = author.Replace(">", "&gt;");
                 author = author.Replace("@", "&#64;");

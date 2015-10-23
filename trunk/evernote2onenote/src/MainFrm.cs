@@ -57,7 +57,7 @@ namespace Evernote2Onenote
                         "</one:OE>" +
                         "</one:Title>{4}" +
             "<one:Outline>{0}</one:Outline></one:Page>";
-        private string m_xmlns = "http://schemas.microsoft.com/office/onenote/2010/onenote";
+        private string m_xmlns = "http://schemas.microsoft.com/office/onenote/2013/onenote";
         private string ENNotebookName = "";
         private bool m_bUseUnfiledSection = false;
         private string m_enexfile = "";
@@ -667,12 +667,12 @@ namespace Evernote2Onenote
                                         string xmlSource = string.Format(m_xmlSourceUrl, note.SourceUrl);
                                         string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, System.Security.SecurityElement.Escape(note.Title).Replace("&apos;", "'"), note.SourceUrl.Length > 0 ? xmlSource : "");
                                         string xml = string.Format(m_xmlNewOutline, outlineContent, m_PageID, m_xmlns, System.Security.SecurityElement.Escape(note.Title).Replace("&apos;", "'"), xmlAttachments, note.Date.ToString("yyyy'-'MM'-'ddTHH':'mm':'ss'Z'"));
-                                        onApp.UpdatePageContent(xml, DateTime.MinValue, OneNote.XMLSchema.xs2010, true);
+                                        onApp.UpdatePageContent(xml, DateTime.MinValue, OneNote.XMLSchema.xs2013, true);
                                     }
                                 }
                                 else
                                 {
-                                    string sectionId = m_bUseUnfiledSection ? newnbID : GetSection("unspecified");
+                                    string sectionId = m_bUseUnfiledSection ? newnbID : GetSection("not specified");
                                     onApp.CreateNewPage(sectionId, out m_PageID, Microsoft.Office.Interop.OneNote.NewPageStyle.npsBlankPageWithTitle);
                                     string textToSave;
                                     onApp.GetPageContent(m_PageID, out textToSave, Microsoft.Office.Interop.OneNote.PageInfo.piBasic);
@@ -683,7 +683,7 @@ namespace Evernote2Onenote
                                     string xmlSource = string.Format(m_xmlSourceUrl, note.SourceUrl);
                                     string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, System.Security.SecurityElement.Escape(note.Title).Replace("&apos;", "'"), note.SourceUrl.Length > 0 ? xmlSource : "");
                                     string xml = string.Format(m_xmlNewOutline, outlineContent, m_PageID, m_xmlns, System.Security.SecurityElement.Escape(note.Title).Replace("&apos;", "'"), xmlAttachments, note.Date.ToString("yyyy'-'MM'-'ddTHH':'mm':'ss'Z'"));
-                                    onApp.UpdatePageContent(xml, DateTime.MinValue, OneNote.XMLSchema.xs2010, true);
+                                    onApp.UpdatePageContent(xml, DateTime.MinValue, OneNote.XMLSchema.xs2013, true);
                                 }
                             }
                             catch (Exception ex)

@@ -793,9 +793,9 @@ namespace Evernote2Onenote
                 StringBuilder Hierarchy = new StringBuilder(sectionName);
                 AppendHierarchy(docHierarchy.DocumentElement, Hierarchy, 0);
             }
-            catch (Exception)
+            catch (Exception /*ex*/)
             {
-                return "";
+                //MessageBox.Show(string.Format("Exception creating section \"{0}\":\n{1}", sectionName, ex.ToString()));
             }
             return newnbID;
         }

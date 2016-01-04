@@ -567,14 +567,17 @@ namespace Evernote2Onenote
                                     note.Date = dateCreated;
                                 }
                             }
-                            XmlNodeList datelist2 = xmlDocItem.GetElementsByTagName("updated");
-                            foreach (XmlNode n in datelist2)
+                            if (modifiedDateCheckbox.Checked)
                             {
-                                DateTime dateUpdated;
-
-                                if (DateTime.TryParseExact(n.InnerText, "yyyyMMddTHHmmssZ", CultureInfo.CurrentCulture, DateTimeStyles.AdjustToUniversal, out dateUpdated))
+                                XmlNodeList datelist2 = xmlDocItem.GetElementsByTagName("updated");
+                                foreach (XmlNode n in datelist2)
                                 {
-                                    note.Date = dateUpdated;
+                                    DateTime dateUpdated;
+
+                                    if (DateTime.TryParseExact(n.InnerText, "yyyyMMddTHHmmssZ", CultureInfo.CurrentCulture, DateTimeStyles.AdjustToUniversal, out dateUpdated))
+                                    {
+                                        note.Date = dateUpdated;
+                                    }
                                 }
                             }
 

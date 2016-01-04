@@ -68,6 +68,7 @@ namespace Evernote2Onenote
 
         private Regex rxStyle = new Regex("style=\\\"[^\\\"]*\\\"", RegexOptions.IgnoreCase);
         private Regex rxCDATA = new Regex(@"<!\[CDATA\[<\?xml version=[""']1.0[""'][^?]*\?>", RegexOptions.IgnoreCase);
+        private Regex rxCDATAInner = new Regex(@"<!\[CDATA\[[^\]]*\]\]>", RegexOptions.IgnoreCase);
         private Regex rxBodyStart = new Regex(@"<en-note[^>/]*>", RegexOptions.IgnoreCase);
         private Regex rxBodyEnd = new Regex(@"</en-note\s*>\s*]]>", RegexOptions.IgnoreCase);
         private Regex rxBodyEmpty = new Regex(@"<en-note[^>/]*/>\s*]]>", RegexOptions.IgnoreCase);
@@ -651,6 +652,7 @@ namespace Evernote2Onenote
                             emailBody = rxDate.Replace(emailBody, "Date: " + note.Date.ToString("ddd, dd MMM yyyy HH:mm:ss K"));
                             emailBody = emailBody.Replace("&apos;", "'");
                             emailBody = emailBody.Replace("’", "'");
+                            emailBody = rxCDATAInner.Replace(emailBody, string.Empty);
                             emailBody = emailBody.Replace("‘", "'");
 
                             try

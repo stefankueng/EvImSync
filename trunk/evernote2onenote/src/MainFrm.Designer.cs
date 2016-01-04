@@ -61,6 +61,7 @@ namespace Evernote2Onenote
             this.btnENEXImport = new System.Windows.Forms.Button();
             this.importDatePicker = new System.Windows.Forms.DateTimePicker();
             this.datelabel = new System.Windows.Forms.Label();
+            this.modifiedDateCheckbox = new System.Windows.Forms.CheckBox();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -206,11 +207,24 @@ namespace Evernote2Onenote
             this.datelabel.TabIndex = 15;
             this.datelabel.Text = "only import notes newer than:";
             // 
+            // modifiedDateCheckbox
+            // 
+            this.modifiedDateCheckbox.AutoSize = true;
+            this.modifiedDateCheckbox.Checked = true;
+            this.modifiedDateCheckbox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.modifiedDateCheckbox.Location = new System.Drawing.Point(12, 72);
+            this.modifiedDateCheckbox.Name = "modifiedDateCheckbox";
+            this.modifiedDateCheckbox.Size = new System.Drawing.Size(147, 30);
+            this.modifiedDateCheckbox.TabIndex = 16;
+            this.modifiedDateCheckbox.Text = "Use Modified-Date of\r\nnotes as Date in Onenote";
+            this.modifiedDateCheckbox.UseVisualStyleBackColor = true;
+            // 
             // MainFrm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(621, 161);
+            this.Controls.Add(this.modifiedDateCheckbox);
             this.Controls.Add(this.datelabel);
             this.Controls.Add(this.importDatePicker);
             this.Controls.Add(this.btnENEXImport);
@@ -255,6 +269,7 @@ namespace Evernote2Onenote
         private System.Windows.Forms.Button btnENEXImport;
         private System.Windows.Forms.DateTimePicker importDatePicker;
         private System.Windows.Forms.Label datelabel;
+        private System.Windows.Forms.CheckBox modifiedDateCheckbox;
     }
 }
 

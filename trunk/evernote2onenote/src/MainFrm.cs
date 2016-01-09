@@ -66,7 +66,7 @@ namespace Evernote2Onenote
         private string cmdNoteBook = "";
         private DateTime cmdDate = new DateTime(0);
 
-        private Regex rxStyle = new Regex("style=\\\"[^\\\"]*\\\"", RegexOptions.IgnoreCase);
+        private Regex rxStyle = new Regex("(?<text>\\<div.)style=\\\"[^\\\"]*\\\"", RegexOptions.IgnoreCase);
         private Regex rxCDATA = new Regex(@"<!\[CDATA\[<\?xml version=[""']1.0[""'][^?]*\?>", RegexOptions.IgnoreCase);
         private Regex rxCDATAInner = new Regex(@"\<\!\[CDATA\[(?<text>.*)\]\]\>", RegexOptions.IgnoreCase|RegexOptions.Singleline);
         private Regex rxBodyStart = new Regex(@"<en-note[^>/]*>", RegexOptions.IgnoreCase);
@@ -641,7 +641,7 @@ namespace Evernote2Onenote
                             }
                             note.Attachments.Clear();
 
-                            htmlBody = rxStyle.Replace(htmlBody, string.Empty);
+                            htmlBody = rxStyle.Replace(htmlBody, "${text}");
                             htmlBody = rxComment.Replace(htmlBody, string.Empty);
                             htmlBody = rxCDATA.Replace(htmlBody, string.Empty);
                             htmlBody = rxDtd.Replace(htmlBody, string.Empty);

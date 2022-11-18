@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Evernote2Onenote</RootNamespace>
     <AssemblyName>Evernote2Onenote</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -193,7 +193,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>SubWCRev $(SolutionDir) $(SolutionDir)src\Properties\AssemblyInfo.tmpl $(SolutionDir)src\Properties\AssemblyInfo.cs</PreBuildEvent>
+    <PreBuildEvent>GitWCRev $(SolutionDir) $(SolutionDir)src\Properties\AssemblyInfo.tmpl $(SolutionDir)src\Properties\AssemblyInfo.cs</PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

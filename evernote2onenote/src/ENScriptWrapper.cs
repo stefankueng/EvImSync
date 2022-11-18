@@ -67,19 +67,24 @@ namespace Evernote2Onenote
             processStartInfo.CreateNoWindow = true;
             Process process = new Process();
             process.StartInfo = processStartInfo;
-            bool processStarted = process.Start();
-            if (processStarted)
+            try
             {
-                StreamWriter inputWriter = process.StandardInput;
-                StreamReader outputReader = process.StandardOutput;
-                StreamReader errorReader = process.StandardError;
-                process.WaitForExit();
-                while (outputReader.Peek() >= 0)
+                bool processStarted = process.Start();
+                if (processStarted)
                 {
-                    notebooks.Add(outputReader.ReadLine());
+                    StreamWriter inputWriter = process.StandardInput;
+                    StreamReader outputReader = process.StandardOutput;
+                    StreamReader errorReader = process.StandardError;
+                    process.WaitForExit();
+                    while (outputReader.Peek() >= 0)
+                    {
+                        notebooks.Add(outputReader.ReadLine());
+                    }
                 }
             }
-
+            catch (Exception)
+            {
+            }
             return notebooks;
         }
 

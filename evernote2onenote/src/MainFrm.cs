@@ -35,7 +35,6 @@ namespace Evernote2Onenote
     public partial class MainFrm : Form
     {
         private delegate void StringDelegate(string foo);
-        private string enscriptpath;
         private string m_EvernoteNotebookPath;
         private SynchronizationContext synchronizationContext;
         private bool cancelled = false;
@@ -82,7 +81,7 @@ namespace Evernote2Onenote
             InitializeComponent();
             this.synchronizationContext = SynchronizationContext.Current;
             string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            versionLabel.Text = string.Format("Version: {0}", version);
+            versionLabel.Text = $"Version: {version}";
 
             if (cmdNotebook.Length > 0)
                 cmdNoteBook = cmdNotebook;
@@ -94,7 +93,7 @@ namespace Evernote2Onenote
                 }
                 catch (Exception)
                 {
-                    MessageBox.Show(string.Format("The Datestring\n{0}\nis not valid!", cmdDate));
+                    MessageBox.Show($"The Datestring\n{cmdDate}\nis not valid!");
                 }
             }
             try
@@ -105,40 +104,10 @@ namespace Evernote2Onenote
             {
                 importDatePicker.Value = importDatePicker.MinDate;
             }
-
-            enscriptpath = ProgramFilesx86() + "\\Evernote\\Evernote\\ENScript.exe";
-            if (!File.Exists(enscriptpath))
-            {
-                MessageBox.Show("Could not find the ENScript.exe file from Evernote!\nPlease select this file in the next dialog.", "Evernote2Onenote");
-                OpenFileDialog openFileDialog1 = new OpenFileDialog();
-                openFileDialog1.Filter = "Applications|*.exe";
-                openFileDialog1.Title = "Select the ENScript.exe file";
-                openFileDialog1.CheckPathExists = true;
-
-                // Show the Dialog.
-                if (openFileDialog1.ShowDialog() == DialogResult.OK)
-                {
-                    enscriptpath = openFileDialog1.FileName;
-                }
-                if (!File.Exists(enscriptpath))
-                    this.Close();
-            }
-            ENScriptWrapper enscript = new ENScriptWrapper();
-            enscript.ENScriptPath = enscriptpath;
-            var notebooklist = enscript.GetNotebooks();
-            foreach (string s in notebooklist)
-                this.notebookCombo.Items.Add(s);
-            if (notebooklist.Count == 0)
-            {
-                MessageBox.Show("No Notebooks found in Evernote!\nMake sure you have at least one locally synched notebook.", "Evernote2Onenote");
-                startsync.Enabled = false;
-            }
-            else
-                this.notebookCombo.SelectedIndex = 0;
-
+            
             if (cmdNotebook.Length > 0)
             {
-                Startsync_Click(null, null);
+                StartSync(null, null);
             }
         }
 
@@ -184,16 +153,6 @@ namespace Evernote2Onenote
                 syncStep++;
         }
 
-        static string ProgramFilesx86()
-        {
-            if (8 == IntPtr.Size
-                || (!String.IsNullOrEmpty(Environment.GetEnvironmentVariable("PROCESSOR_ARCHITEW6432"))))
-            {
-                return Environment.GetEnvironmentVariable("ProgramFiles(x86)");
-            }
-
-            return Environment.GetEnvironmentVariable("ProgramFiles");
-        }
         private void btnENEXImport_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog1 = new OpenFileDialog();
@@ -205,44 +164,18 @@ namespace Evernote2Onenote
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 m_enexfile = openFileDialog1.FileName;
-                Startsync_Click(sender, e);
+                StartSync(sender, e);
             }
         }
 
-        private void Startsync_Click(object sender, EventArgs e)
+        private void StartSync(object sender, EventArgs e)
         {
-            ENNotebookName = this.notebookCombo.SelectedItem as string;
-            if (m_enexfile != null && m_enexfile.Length > 0)
+            if (!string.IsNullOrEmpty(m_enexfile))
             {
                 ENNotebookName = Path.GetFileNameWithoutExtension(m_enexfile);
             }
             if (cmdNoteBook.Length > 0)
                 ENNotebookName = cmdNoteBook;
-            if (ENNotebookName.Length == 0)
-            {
-                MessageBox.Show("Please enter a notebook in EverNote to import the notes from", "Evernote2Onenote");
-                return;
-            }
-            if (m_enexfile != null && m_enexfile.Length > 0)
-            {
-                enscriptpath = ProgramFilesx86() + "\\Evernote\\Evernote\\ENScript.exe";
-                if (!File.Exists(enscriptpath))
-                {
-                    MessageBox.Show("Could not find the ENScript.exe file from Evernote!\nPlease select this file in the next dialog.", "Evernote2Onenote");
-                    OpenFileDialog openFileDialog1 = new OpenFileDialog();
-                    openFileDialog1.Filter = "Applications|*.exe";
-                    openFileDialog1.Title = "Select the ENScript.exe file";
-                    openFileDialog1.CheckPathExists = true;
-
-                    // Show the Dialog.
-                    if (openFileDialog1.ShowDialog() == DialogResult.OK)
-                    {
-                        enscriptpath = openFileDialog1.FileName;
-                    }
-                    if (!File.Exists(enscriptpath))
-                        return;
-                }
-            }
 
             try
             {
@@ -250,12 +183,13 @@ namespace Evernote2Onenote
             }
             catch (Exception ex)
             {
-                MessageBox.Show(string.Format("Could not connect to Onenote!\nReasons for this might be:\n* The desktop version of onenote is not installed\n* Onenote is not installed properly\n* Onenote is already running but with a different user account\n\n{0}", ex.ToString()));
+                MessageBox.Show(
+                    $"Could not connect to Onenote!\nReasons for this might be:\n* The desktop version of onenote is not installed\n* Onenote is not installed properly\n* Onenote is already running but with a different user account\n\n{ex.ToString()}");
                 return;
             }
             if (onApp == null)
             {
-                MessageBox.Show(string.Format("Could not connect to Onenote!\nReasons for this might be:\n* The desktop version of onenote is not installed\n* Onenote is not installed properly\n* Onenote is already running but with a different user account\n\n{0}"));
+                _ = MessageBox.Show(string.Format("Could not connect to Onenote!\nReasons for this might be:\n* The desktop version of onenote is not installed\n* Onenote is not installed properly\n* Onenote is already running but with a different user account\n\n{0}"));
                 return;
             }
             // create a new notebook named "EverNote"
@@ -302,9 +236,9 @@ namespace Evernote2Onenote
             if (importDatePicker.Value > cmdDate)
                 cmdDate = importDatePicker.Value;
 
-            if (startsync.Text == "Start Import")
+            if (btnENEXImport.Text == "Import ENEX File")
             {
-                startsync.Text = "Cancel";
+                btnENEXImport.Text = "Cancel";
                 MethodInvoker syncDelegate = new MethodInvoker(ImportNotesToOnenote);
                 syncDelegate.BeginInvoke(null, null);
             }
@@ -317,7 +251,7 @@ namespace Evernote2Onenote
         private void ImportNotesToOnenote()
         {
             syncStep = SyncStep.Start;
-            if (m_enexfile != null && m_enexfile.Length > 0)
+            if (!string.IsNullOrEmpty(m_enexfile))
             {
                 List<Note> notesEvernote = new List<Note>();
                 if (m_enexfile != string.Empty)
@@ -331,29 +265,6 @@ namespace Evernote2Onenote
                     ImportNotesToOnenote(ENNotebookName, notesEvernote, m_enexfile);
                 }
             }
-            else
-            {
-                SetInfo("Extracting notes from Evernote", "", 0, 0);
-                string exportFile = ExtractNotes(ENNotebookName);
-                if (exportFile != null)
-                {
-                    List<Note> notesEvernote = new List<Note>();
-                    if (exportFile != string.Empty)
-                    {
-                        SetInfo("Parsing notes from Evernote", "", 0, 0);
-                        notesEvernote = ParseNotes(exportFile);
-                    }
-                    if (exportFile != string.Empty)
-                    {
-                        SetInfo("importing notes to Onenote", "", 0, 0);
-                        ImportNotesToOnenote(ENNotebookName, notesEvernote, exportFile);
-                    }
-                }
-                else
-                {
-                    MessageBox.Show(string.Format("The notebook \"{0}\" either does not exist or isn't accessible!", ENNotebookName));
-                }
-            }
 
             m_enexfile = "";
             if (cancelled)
@@ -365,7 +276,7 @@ namespace Evernote2Onenote
 
             synchronizationContext.Send(new SendOrPostCallback(delegate (object state)
             {
-                startsync.Text = "Start Import";
+                btnENEXImport.Text = "Import ENEX File";
                 this.infoText1.Text = "Finished";
                 this.progressIndicator.Minimum = 0;
                 this.progressIndicator.Maximum = 100000;
@@ -379,36 +290,7 @@ namespace Evernote2Onenote
                 }), null);
             }
         }
-
-        private string ExtractNotes(string notebook)
-        {
-            if (cancelled)
-            {
-                return null;
-            }
-            syncStep = SyncStep.ExtractNotes;
-
-            ENScriptWrapper enscript = new ENScriptWrapper();
-            enscript.ENScriptPath = enscriptpath;
-
-            string exportFile = Path.GetTempFileName();
-#if DEBUG
-            exportFile = @"D:\Development\evimsync\" + notebook + ".xml";
-#endif
-            if (enscript.ExportNotebook(notebook, exportFile))
-            {
-                return exportFile;
-            }
-
-            // in case the selected notebook is empty, we don't get
-            // an exportFile. But just to make sure the notebook
-            // exists anyway, we check that here before giving up
-            if (enscript.GetNotebooks().Contains(notebook))
-                return string.Empty;
-
-            return null;
-        }
-
+        
         private List<Note> ParseNotes(string exportFile)
         {
             syncStep = SyncStep.ParseNotes;

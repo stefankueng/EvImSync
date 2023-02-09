@@ -115,7 +115,6 @@
     <Compile Include="HTMLAgilityPack\HtmlAgilityPack\Utilities.cs" />
     <Compile Include="Enums\NoteAction.cs" />
     <Compile Include="Note.cs" />
-    <Compile Include="ENScriptWrapper.cs" />
     <Compile Include="MainFrm.cs">
       <SubType>Form</SubType>
     </Compile>

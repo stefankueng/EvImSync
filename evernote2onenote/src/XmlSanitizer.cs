@@ -1,5 +1,5 @@
 ﻿// Evernote2Onenote - imports Evernote notes to Onenote
-// Copyright (C) 2014 - Stefan Kueng
+// Copyright (C) 2014, 2023 - Stefan Kueng
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,12 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Text;
 
 namespace Evernote2Onenote
 {
-    public class XmlSanitizer
+    public static class XmlSanitizer
     {
         /// <summary>
         /// Remove illegal XML characters from a string.
@@ -31,7 +30,7 @@ namespace Evernote2Onenote
                 return string.Empty;
             }
 
-            StringBuilder buffer = new StringBuilder(xml.Length);
+            var buffer = new StringBuilder(xml.Length);
 
             foreach (char c in xml)
             {
@@ -47,7 +46,7 @@ namespace Evernote2Onenote
         /// <summary>
         /// Whether a given character is allowed by XML 1.0.
         /// </summary>
-        public static bool IsLegalXmlChar(int character)
+        private static bool IsLegalXmlChar(int character)
         {
             return
             (

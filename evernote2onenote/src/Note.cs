@@ -1,5 +1,5 @@
 ﻿// Evernote2Onenote - imports Evernote notes to Onenote
-// Copyright (C) 2014 - Stefan Kueng
+// Copyright (C) 2014, 2023 - Stefan Kueng
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -29,6 +29,8 @@ namespace Evernote2Onenote
     {
         public Note()
         {
+            SourceUrl = string.Empty;
+            this.content = string.Empty;
             Title = string.Empty;
             ContentHash = string.Empty;
             Tags = new List<string>();

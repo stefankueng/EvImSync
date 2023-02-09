@@ -1,5 +1,5 @@
 ﻿// Evernote2Onenote - imports Evernote notes to Onenote
-// Copyright (C) 2014 - Stefan Kueng
+// Copyright (C) 2014, 2023 - Stefan Kueng
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -24,26 +24,26 @@ namespace Evernote2Onenote
         /// <summary>
         /// The data of the attachment, encoded in BASE64
         /// </summary>
-        public string Base64Data { get; set; }
+        public string Base64Data { get; set; } = string.Empty;
 
         /// <summary>
         /// the content ID
         /// </summary>
-        public string ContentID { get; set; }
+        public string ContentID { get; set; } = string.Empty;
 
         /// <summary>
         /// the content type, e.g. "image/jpeg"
         /// </summary>
-        public string ContentType { get; set; }
+        public string ContentType { get; set; } = string.Empty;
 
         /// <summary>
         /// the file name of the attachment
         /// </summary>
-        public string FileName { get; set; }
+        public string FileName { get; set; } = string.Empty;
 
         /// <summary>
         /// the hash of the attachment 
         /// </summary>
-        public string Hash { get; set; }
+        public string Hash { get; set; } = string.Empty;
     }
 }

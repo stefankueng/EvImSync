@@ -398,7 +398,11 @@ namespace Evernote2Onenote
 
                             Note note = new Note();
                             note.Title = HttpUtility.HtmlDecode(node.InnerText);
-                            node = node.NextSibling;
+                            var contentElements = xmlDocItem.GetElementsByTagName("content");
+                            if (contentElements.Count> 0)
+                            {
+                                node = contentElements[0];
+                            }
                             note.Content = HttpUtility.HtmlDecode(node.InnerXml);
 
                             XmlNodeList atts = xmlDocItem.GetElementsByTagName("resource");
@@ -469,9 +473,11 @@ namespace Evernote2Onenote
                             {
                                 try
                                 {
-                                    note.SourceUrl = n.InnerText;
                                     if (n.InnerText.StartsWith("file://"))
-                                        note.SourceUrl = "";
+                                        continue;
+                                    if (n.InnerText.StartsWith("en-cache://"))
+                                        continue;
+                                    note.SourceUrl = n.InnerText;
                                 }
                                 catch (System.FormatException)
                                 {
@@ -615,6 +621,7 @@ namespace Evernote2Onenote
                     MessageBox.Show(string.Format("Exception importing notes:\n{0}", ex.ToString()));
                 }
             }
+            onApp = null;
         }
         private void AppendHierarchy(XmlNode xml, StringBuilder str, int level)
         {

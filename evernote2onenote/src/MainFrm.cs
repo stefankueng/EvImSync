@@ -657,7 +657,7 @@ namespace Evernote2Onenote
 
         private void homeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            System.Diagnostics.Process.Start("http://stefanstools.sourceforge.net/Evernote2Onenote.html");
+            System.Diagnostics.Process.Start("https://tools.stefankueng.com/Evernote2Onenote.html");
         }
         private string GetSection(string sectionName)
         {

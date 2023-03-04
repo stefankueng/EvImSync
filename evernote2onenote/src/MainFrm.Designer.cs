@@ -70,8 +70,7 @@ namespace Evernote2Onenote
             this.fileToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Padding = new System.Windows.Forms.Padding(6, 2, 0, 2);
-            this.menuStrip1.Size = new System.Drawing.Size(776, 48);
+            this.menuStrip1.Size = new System.Drawing.Size(776, 40);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -80,7 +79,7 @@ namespace Evernote2Onenote
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(71, 44);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(71, 36);
             this.fileToolStripMenuItem.Text = "File";
             // 
             // exitToolStripMenuItem
@@ -117,7 +116,7 @@ namespace Evernote2Onenote
             this.progressIndicator.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.progressIndicator.Location = new System.Drawing.Point(15, 254);
-            this.progressIndicator.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.progressIndicator.Margin = new System.Windows.Forms.Padding(6);
             this.progressIndicator.Name = "progressIndicator";
             this.progressIndicator.Size = new System.Drawing.Size(742, 26);
             this.progressIndicator.TabIndex = 5;
@@ -157,7 +156,7 @@ namespace Evernote2Onenote
             // btnENEXImport
             // 
             this.btnENEXImport.Location = new System.Drawing.Point(331, 127);
-            this.btnENEXImport.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.btnENEXImport.Margin = new System.Windows.Forms.Padding(6);
             this.btnENEXImport.Name = "btnENEXImport";
             this.btnENEXImport.Size = new System.Drawing.Size(426, 44);
             this.btnENEXImport.TabIndex = 13;
@@ -168,7 +167,7 @@ namespace Evernote2Onenote
             // importDatePicker
             // 
             this.importDatePicker.Location = new System.Drawing.Point(331, 81);
-            this.importDatePicker.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.importDatePicker.Margin = new System.Windows.Forms.Padding(6);
             this.importDatePicker.MinDate = new System.DateTime(1799, 1, 1, 0, 0, 0, 0);
             this.importDatePicker.Name = "importDatePicker";
             this.importDatePicker.Size = new System.Drawing.Size(426, 31);
@@ -190,7 +189,7 @@ namespace Evernote2Onenote
             this.modifiedDateCheckbox.Checked = true;
             this.modifiedDateCheckbox.CheckState = System.Windows.Forms.CheckState.Checked;
             this.modifiedDateCheckbox.Location = new System.Drawing.Point(24, 127);
-            this.modifiedDateCheckbox.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.modifiedDateCheckbox.Margin = new System.Windows.Forms.Padding(6);
             this.modifiedDateCheckbox.Name = "modifiedDateCheckbox";
             this.modifiedDateCheckbox.Size = new System.Drawing.Size(288, 54);
             this.modifiedDateCheckbox.TabIndex = 16;
@@ -215,11 +214,12 @@ namespace Evernote2Onenote
             this.Controls.Add(this.menuStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
-            this.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.Margin = new System.Windows.Forms.Padding(6);
             this.MaximumSize = new System.Drawing.Size(1248, 360);
             this.Name = "MainFrm";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "Evernote2Onenote";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainFrm_FormClosing);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);

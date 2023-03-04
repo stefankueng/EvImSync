@@ -609,6 +609,8 @@ namespace Evernote2Onenote
                 }
             }
             _onApp = null;
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
         private void AppendHierarchy(XmlNode xml, StringBuilder str, int level)
         {
@@ -738,6 +740,17 @@ namespace Evernote2Onenote
             }
             filename = System.Security.SecurityElement.Escape(filename);
             return "<file-name>" + filename + "</file-name>";
+        }
+
+        private void MainFrm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (_onApp != null)
+            {
+                _cancelled = true;
+            }
+            _onApp = null;
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
     }
 }

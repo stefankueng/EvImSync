@@ -73,7 +73,7 @@ namespace Evernote2Onenote
         {
             InitializeComponent();
             _synchronizationContext = SynchronizationContext.Current;
-            string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
             versionLabel.Text = $@"Version: {version}";
 
             if (cmdNotebook.Length > 0)
@@ -112,7 +112,7 @@ namespace Evernote2Onenote
 
         private void SetInfo(string line1, string line2, int pos, int max)
         {
-            int fullpos = 0;
+            var fullpos = 0;
 
             switch (_syncStep)
             {
@@ -148,7 +148,13 @@ namespace Evernote2Onenote
 
         private void btnENEXImport_Click(object sender, EventArgs e)
         {
-            OpenFileDialog openFileDialog1 = new OpenFileDialog();
+            if (btnENEXImport.Text == "Cancel")
+            {
+                _cancelled = true;
+                return;
+            }
+
+            var openFileDialog1 = new OpenFileDialog();
             openFileDialog1.Filter = @"Evernote exports|*.enex";
             openFileDialog1.Title = @"Select the ENEX file";
             openFileDialog1.CheckPathExists = true;
@@ -188,20 +194,18 @@ namespace Evernote2Onenote
             // create a new notebook named "EverNote"
             try
             {
-                string xmlHierarchy;
-                _onApp.GetHierarchy("", OneNote.HierarchyScope.hsNotebooks, out xmlHierarchy);
+                _onApp.GetHierarchy("", OneNote.HierarchyScope.hsNotebooks, out var xmlHierarchy);
 
                 // Get the hierarchy for the default notebook folder
                 _onApp.GetSpecialLocation(OneNote.SpecialLocation.slDefaultNotebookFolder, out _evernoteNotebookPath);
                 _evernoteNotebookPath += "\\" + _enNotebookName;
-                string newnbId;
-                _onApp.OpenHierarchy(_evernoteNotebookPath, "", out newnbId, OneNote.CreateFileType.cftNotebook);
+                _onApp.OpenHierarchy(_evernoteNotebookPath, "", out var newnbId, OneNote.CreateFileType.cftNotebook);
                 _onApp.GetHierarchy(newnbId, OneNote.HierarchyScope.hsPages, out _);
 
                 // Load and process the hierarchy
-                XmlDocument docHierarchy = new XmlDocument();
+                var docHierarchy = new XmlDocument();
                 docHierarchy.LoadXml(xmlHierarchy);
-                StringBuilder hierarchy = new StringBuilder();
+                var hierarchy = new StringBuilder();
                 AppendHierarchy(docHierarchy.DocumentElement, hierarchy, 0);
             }
             catch (Exception)
@@ -243,7 +247,7 @@ namespace Evernote2Onenote
             _syncStep = SyncStep.Start;
             if (!string.IsNullOrEmpty(_enexfile))
             {
-                List<Note> notesEvernote = new List<Note>();
+                var notesEvernote = new List<Note>();
                 if (_enexfile != string.Empty)
                 {
                     SetInfo("Parsing notes from Evernote", "", 0, 0);
@@ -284,17 +288,14 @@ namespace Evernote2Onenote
         private List<Note> ParseNotes(string exportFile)
         {
             _syncStep = SyncStep.ParseNotes;
-            List<Note> noteList = new List<Note>();
+            var noteList = new List<Note>();
             if (_cancelled)
             {
                 return noteList;
             }
 
-            XmlTextReader xtrInput;
-            XmlDocument xmlDocItem;
-
-            xtrInput = new XmlTextReader(exportFile);
-            string xmltext = "";
+            var xtrInput = new XmlTextReader(exportFile);
+            var xmltext = "";
             try
             {
                 while (xtrInput.Read())
@@ -306,17 +307,19 @@ namespace Evernote2Onenote
                             break;
                         }
 
-                        xmlDocItem = new XmlDocument();
+                        var xmlDocItem = new XmlDocument();
                         xmltext = SanitizeXml(xtrInput.ReadOuterXml());
                         xmlDocItem.LoadXml(xmltext);
-                        XmlNode node = xmlDocItem.FirstChild;
+                        var node = xmlDocItem.FirstChild;
 
                         // node is <note> element
                         // node.FirstChild.InnerText is <title>
                         node = node.FirstChild;
 
-                        Note note = new Note();
-                        note.Title = HttpUtility.HtmlDecode(node.InnerText);
+                        var note = new Note
+                        {
+                            Title = HttpUtility.HtmlDecode(node.InnerText)
+                        };
 
                         noteList.Add(note);
                     }
@@ -329,7 +332,7 @@ namespace Evernote2Onenote
                 // happens if the notebook was empty or does not exist.
                 // Or due to a parsing error if a note isn't properly xml encoded
                 // try to find the name of the note that's causing the problems
-                string notename = "";
+                var notename = "";
                 if (xmltext.Length > 0)
                 {
                     var notematch = _rxNote.Match(xmltext);
@@ -338,12 +341,12 @@ namespace Evernote2Onenote
                         notename = notematch.Groups[1].ToString();
                     }
                 }
-                string temppath = Path.GetTempPath() + "\\ev2on";
-                string tempfilepathDir = temppath + "\\failedNotes";
+                var temppath = Path.GetTempPath() + "\\ev2on";
+                var tempfilepathDir = temppath + "\\failedNotes";
                 try
                 {
                     Directory.CreateDirectory(tempfilepathDir);
-                    string tempfilepath = tempfilepathDir + "\\note-";
+                    var tempfilepath = tempfilepathDir + "\\note-";
                     tempfilepath += Guid.NewGuid().ToString();
                     tempfilepath += ".xml";
                     File.WriteAllText(tempfilepath, xmltext);
@@ -353,10 +356,9 @@ namespace Evernote2Onenote
                     // ignored
                 }
 
-                if (notename.Length > 0)
-                    MessageBox.Show($"Error parsing the note \"{notename}\" in notebook \"{_enNotebookName}\",\n{ex}\\n\\nA copy of the note is left in {tempfilepathDir}. If you want to help fix the problem, please consider creating an issue and attaching that note to it: https://github.com/stefankueng/EvImSync/issues");
-                else
-                    MessageBox.Show($"Error parsing the notebook \"{_enNotebookName}\"\n{ex}\\n\\nA copy of the note is left in {tempfilepathDir}. If you want to help fix the problem, please consider creating an issue and attaching that note to it: https://github.com/stefankueng/EvImSync/issues");
+                MessageBox.Show(notename.Length > 0
+                    ? $"Error parsing the note \"{notename}\" in notebook \"{_enNotebookName}\",\n{ex}\\n\\nA copy of the note is left in {tempfilepathDir}. If you want to help fix the problem, please consider creating an issue and attaching that note to it: https://github.com/stefankueng/EvImSync/issues"
+                    : $"Error parsing the notebook \"{_enNotebookName}\"\n{ex}\\n\\nA copy of the note is left in {tempfilepathDir}. If you want to help fix the problem, please consider creating an issue and attaching that note to it: https://github.com/stefankueng/EvImSync/issues");
             }
 
             return noteList;
@@ -365,22 +367,20 @@ namespace Evernote2Onenote
         private void ImportNotesToOnenote(List<Note> notesEvernote, string exportFile)
         {
             _syncStep = SyncStep.CalculateWhatToDo;
-            int uploadcount = notesEvernote.Count;
+            var uploadcount = notesEvernote.Count;
 
-            string temppath = Path.GetTempPath() + "\\ev2on";
+            var temppath = Path.GetTempPath() + "\\ev2on";
             Directory.CreateDirectory(temppath);
 
             _syncStep = SyncStep.ImportNotes;
-            int counter = 0;
+            var counter = 0;
 
 
             {
-                XmlTextReader xtrInput;
-                XmlDocument xmlDocItem;
-                string xmltext = "";
+                var xmltext = "";
                 try
                 {
-                    xtrInput = new XmlTextReader(exportFile);
+                    var xtrInput = new XmlTextReader(exportFile);
                     while (xtrInput.Read())
                     {
                         while ((xtrInput.NodeType == XmlNodeType.Element) && (xtrInput.Name.ToLower() == "note"))
@@ -390,17 +390,19 @@ namespace Evernote2Onenote
                                 break;
                             }
 
-                            xmlDocItem = new XmlDocument();
+                            var xmlDocItem = new XmlDocument();
                             xmltext = SanitizeXml(xtrInput.ReadOuterXml());
                             xmlDocItem.LoadXml(xmltext);
-                            XmlNode node = xmlDocItem.FirstChild;
+                            var node = xmlDocItem.FirstChild;
 
                             // node is <note> element
                             // node.FirstChild.InnerText is <title>
                             node = node.FirstChild;
 
-                            Note note = new Note();
-                            note.Title = HttpUtility.HtmlDecode(node.InnerText);
+                            var note = new Note
+                            {
+                                Title = HttpUtility.HtmlDecode(node.InnerText)
+                            };
                             if (note.Title.StartsWith("=?"))
                                 note.Title = Rfc2047Decoder.Parse(note.Title);
                             var contentElements = xmlDocItem.GetElementsByTagName("content");
@@ -412,32 +414,34 @@ namespace Evernote2Onenote
                             if (note.Content.StartsWith("=?"))
                                 note.Content = Rfc2047Decoder.Parse(note.Content);
 
-                            XmlNodeList atts = xmlDocItem.GetElementsByTagName("resource");
+                            var atts = xmlDocItem.GetElementsByTagName("resource");
                             foreach (XmlNode xmln in atts)
                             {
-                                Attachment attachment = new Attachment();
-                                attachment.Base64Data = xmln.FirstChild.InnerText;
-                                byte[] data = Convert.FromBase64String(xmln.FirstChild.InnerText);
-                                byte[] hash = new System.Security.Cryptography.MD5CryptoServiceProvider().ComputeHash(data);
-                                string hashHex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
+                                var attachment = new Attachment
+                                {
+                                    Base64Data = xmln.FirstChild.InnerText
+                                };
+                                var data = Convert.FromBase64String(xmln.FirstChild.InnerText);
+                                var hash = new System.Security.Cryptography.MD5CryptoServiceProvider().ComputeHash(data);
+                                var hashHex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
 
                                 attachment.Hash = hashHex;
 
-                                XmlNodeList fns = xmlDocItem.GetElementsByTagName("file-name");
+                                var fns = xmlDocItem.GetElementsByTagName("file-name");
                                 if (fns.Count > note.Attachments.Count)
                                 {
                                     attachment.FileName = HttpUtility.HtmlDecode(fns.Item(note.Attachments.Count).InnerText);
                                     if (attachment.FileName.StartsWith("=?"))
                                         attachment.FileName = Rfc2047Decoder.Parse(attachment.FileName);
-                                    string invalid = new string(Path.GetInvalidFileNameChars());
-                                    foreach (char c in invalid)
+                                    var invalid = new string(Path.GetInvalidFileNameChars());
+                                    foreach (var c in invalid)
                                     {
                                         attachment.FileName = attachment.FileName.Replace(c.ToString(), "");
                                     }
                                     attachment.FileName = System.Security.SecurityElement.Escape(attachment.FileName);
                                 }
 
-                                XmlNodeList mimes = xmlDocItem.GetElementsByTagName("mime");
+                                var mimes = xmlDocItem.GetElementsByTagName("mime");
                                 if (mimes.Count > note.Attachments.Count)
                                 {
                                     attachment.ContentType = HttpUtility.HtmlDecode(mimes.Item(note.Attachments.Count).InnerText);
@@ -446,13 +450,13 @@ namespace Evernote2Onenote
                                 note.Attachments.Add(attachment);
                             }
 
-                            XmlNodeList tagslist = xmlDocItem.GetElementsByTagName("tag");
+                            var tagslist = xmlDocItem.GetElementsByTagName("tag");
                             foreach (XmlNode n in tagslist)
                             {
                                 note.Tags.Add(HttpUtility.HtmlDecode(n.InnerText));
                             }
 
-                            XmlNodeList datelist = xmlDocItem.GetElementsByTagName("created");
+                            var datelist = xmlDocItem.GetElementsByTagName("created");
                             foreach (XmlNode n in datelist)
                             {
                                 if (DateTime.TryParseExact(n.InnerText, "yyyyMMddTHHmmssZ", CultureInfo.CurrentCulture, DateTimeStyles.AdjustToUniversal, out var dateCreated))
@@ -462,7 +466,7 @@ namespace Evernote2Onenote
                             }
                             if (modifiedDateCheckbox.Checked)
                             {
-                                XmlNodeList datelist2 = xmlDocItem.GetElementsByTagName("updated");
+                                var datelist2 = xmlDocItem.GetElementsByTagName("updated");
                                 foreach (XmlNode n in datelist2)
                                 {
                                     if (DateTime.TryParseExact(n.InnerText, "yyyyMMddTHHmmssZ", CultureInfo.CurrentCulture, DateTimeStyles.AdjustToUniversal, out var dateUpdated))
@@ -472,7 +476,7 @@ namespace Evernote2Onenote
                                 }
                             }
 
-                            XmlNodeList sourceurl = xmlDocItem.GetElementsByTagName("source-url");
+                            var sourceurl = xmlDocItem.GetElementsByTagName("source-url");
                             note.SourceUrl = "";
                             foreach (XmlNode n in sourceurl)
                             {
@@ -492,24 +496,24 @@ namespace Evernote2Onenote
                             if (_cmdDate > note.Date)
                                 continue;
 
-                            SetInfo(null, string.Format("importing note ({0} of {1}) : \"{2}\"", counter + 1, uploadcount, note.Title), counter++, uploadcount);
+                            SetInfo(null, $"importing note ({counter + 1} of {uploadcount}) : \"{note.Title}\"", counter++, uploadcount);
 
-                            string htmlBody = note.Content;
+                            var htmlBody = note.Content;
 
-                            List<string> tempfiles = new List<string>();
-                            string xmlAttachments = "";
-                            foreach (Attachment attachment in note.Attachments)
+                            var tempfiles = new List<string>();
+                            var xmlAttachments = "";
+                            foreach (var attachment in note.Attachments)
                             {
                                 // save the attached file
-                                string tempfilepath = temppath + "\\";
-                                byte[] data = Convert.FromBase64String(attachment.Base64Data);
+                                var tempfilepath = temppath + "\\";
+                                var data = Convert.FromBase64String(attachment.Base64Data);
                                 tempfilepath += attachment.Hash;
                                 Stream fs = new FileStream(tempfilepath, FileMode.Create);
                                 fs.Write(data, 0, data.Length);
                                 fs.Close();
                                 tempfiles.Add(tempfilepath);
 
-                                Regex rx = new Regex(@"<en-media\b[^>]*?hash=""" + attachment.Hash + @"""[^>]*/>", RegexOptions.IgnoreCase);
+                                var rx = new Regex(@"<en-media\b[^>]*?hash=""" + attachment.Hash + @"""[^>]*/>", RegexOptions.IgnoreCase);
                                 if ((attachment.ContentType != null) && (attachment.ContentType.Contains("image") && rx.Match(htmlBody).Success))
                                 {
                                     // replace the <en-media /> tag with an <img /> tag
@@ -525,10 +529,12 @@ namespace Evernote2Onenote
                                     }
                                     else
                                     {
-                                        if ((attachment.FileName != null) && (attachment.FileName.Length > 0))
-                                            xmlAttachments += string.Format("<one:InsertedFile pathSource=\"{0}\" preferredName=\"{1}\" />", tempfilepath, attachment.FileName);
+                                        if (!string.IsNullOrEmpty(attachment.FileName))
+                                            xmlAttachments +=
+                                                $"<one:InsertedFile pathSource=\"{tempfilepath}\" preferredName=\"{attachment.FileName}\" />";
                                         else
-                                            xmlAttachments += string.Format("<one:InsertedFile pathSource=\"{0}\" preferredName=\"{1}\" />", tempfilepath, attachment.Hash);
+                                            xmlAttachments +=
+                                                $"<one:InsertedFile pathSource=\"{tempfilepath}\" preferredName=\"{attachment.Hash}\" />";
                                     }
                                 }
                             }
@@ -544,7 +550,7 @@ namespace Evernote2Onenote
                             htmlBody = htmlBody.Trim();
                             htmlBody = @"<!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 4.01 Transitional//EN""><head></head>" + htmlBody;
 
-                            string emailBody = htmlBody;
+                            var emailBody = htmlBody;
                             emailBody = _rxDate.Replace(emailBody, "Date: " + note.Date.ToString("ddd, dd MMM yyyy HH:mm:ss K"));
                             emailBody = emailBody.Replace("&apos;", "'");
                             emailBody = emailBody.Replace("’", "'");
@@ -553,49 +559,49 @@ namespace Evernote2Onenote
 
                             try
                             {
-                                string pageId = string.Empty;
+                                var pageId = string.Empty;
 
                                 // Get the hierarchy for all the notebooks
                                 if ((note.Tags.Count > 0) && (!_useUnfiledSection))
                                 {
-                                    foreach (string tag in note.Tags)
+                                    foreach (var tag in note.Tags)
                                     {
-                                        string sectionId = GetSection(tag);
+                                        var sectionId = GetSection(tag);
                                         _onApp.CreateNewPage(sectionId, out pageId, OneNote.NewPageStyle.npsBlankPageWithTitle);
                                         //_onApp.GetPageContent(pageId, out _);
                                         //OneNote uses HTML for the xml string to pass to the UpdatePageContent, so use the
                                         //Outlook HTMLBody property.  It coerces rtf and plain text to HTML.
-                                        int outlineId = new Random().Next();
+                                        var outlineId = new Random().Next();
                                         //string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, m_outlineIDMetaName);
-                                        string xmlSource = string.Format(XmlSourceUrl, note.SourceUrl);
-                                        string outlineContent = string.Format(_xmlNewOutlineContent, emailBody, outlineId, System.Security.SecurityElement.Escape(note.Title).Replace("&apos;", "'"), note.SourceUrl.Length > 0 ? xmlSource : "");
-                                        string xml = string.Format(XmlNewOutline, outlineContent, pageId, Xmlns, System.Security.SecurityElement.Escape(note.Title).Replace("&apos;", "'"), xmlAttachments, note.Date.ToString("yyyy'-'MM'-'ddTHH':'mm':'ss'Z'"));
+                                        var xmlSource = string.Format(XmlSourceUrl, note.SourceUrl);
+                                        var outlineContent = string.Format(_xmlNewOutlineContent, emailBody, outlineId, System.Security.SecurityElement.Escape(note.Title).Replace("&apos;", "'"), note.SourceUrl.Length > 0 ? xmlSource : "");
+                                        var xml = string.Format(XmlNewOutline, outlineContent, pageId, Xmlns, System.Security.SecurityElement.Escape(note.Title).Replace("&apos;", "'"), xmlAttachments, note.Date.ToString("yyyy'-'MM'-'ddTHH':'mm':'ss'Z'"));
                                         _onApp.UpdatePageContent(xml, DateTime.MinValue, OneNote.XMLSchema.xs2013, true);
                                     }
                                 }
                                 else
                                 {
-                                    string sectionId = _useUnfiledSection ? _newnbId : GetSection("not specified");
+                                    var sectionId = _useUnfiledSection ? _newnbId : GetSection("not specified");
                                     _onApp.CreateNewPage(sectionId, out pageId, OneNote.NewPageStyle.npsBlankPageWithTitle);
                                     //_onApp.GetPageContent(pageId, out _);
                                     //OneNote uses HTML for the xml string to pass to the UpdatePageContent, so use the
                                     //Outlook HTMLBody property.  It coerces rtf and plain text to HTML.
-                                    int outlineId = new Random().Next();
+                                    var outlineId = new Random().Next();
                                     //string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, m_outlineIDMetaName);
-                                    string xmlSource = string.Format(XmlSourceUrl, note.SourceUrl);
-                                    string outlineContent = string.Format(_xmlNewOutlineContent, emailBody, outlineId, System.Security.SecurityElement.Escape(note.Title).Replace("&apos;", "'"), note.SourceUrl.Length > 0 ? xmlSource : "");
-                                    string xml = string.Format(XmlNewOutline, outlineContent, pageId, Xmlns, System.Security.SecurityElement.Escape(note.Title).Replace("&apos;", "'"), xmlAttachments, note.Date.ToString("yyyy'-'MM'-'ddTHH':'mm':'ss'Z'"));
+                                    var xmlSource = string.Format(XmlSourceUrl, note.SourceUrl);
+                                    var outlineContent = string.Format(_xmlNewOutlineContent, emailBody, outlineId, System.Security.SecurityElement.Escape(note.Title).Replace("&apos;", "'"), note.SourceUrl.Length > 0 ? xmlSource : "");
+                                    var xml = string.Format(XmlNewOutline, outlineContent, pageId, Xmlns, System.Security.SecurityElement.Escape(note.Title).Replace("&apos;", "'"), xmlAttachments, note.Date.ToString("yyyy'-'MM'-'ddTHH':'mm':'ss'Z'"));
                                     _onApp.UpdatePageContent(xml, DateTime.MinValue, OneNote.XMLSchema.xs2013, true);
                                 }
                                 _onApp.SyncHierarchy(pageId);
                             }
                             catch (Exception ex)
                             {
-                                string tempfilepathDir = temppath + "\\failedNotes";
+                                var tempfilepathDir = temppath + "\\failedNotes";
                                 try
                                 {
                                     Directory.CreateDirectory(tempfilepathDir);
-                                    string tempfilepath = tempfilepathDir + "\\note-";
+                                    var tempfilepath = tempfilepathDir + "\\note-";
                                     tempfilepath += Guid.NewGuid().ToString();
                                     tempfilepath += ".xml";
                                     File.WriteAllText(tempfilepath, xmltext);
@@ -608,7 +614,7 @@ namespace Evernote2Onenote
                                 MessageBox.Show($"Note:{note.Title}\n{ex}\n\nA copy of the note is left in {tempfilepathDir}. If you want to help fix the problem, please consider creating an issue and attaching that note to it: https://github.com/stefankueng/EvImSync/issues");
                             }
 
-                            foreach (string p in tempfiles)
+                            foreach (var p in tempfiles)
                             {
                                 File.Delete(p);
                             }
@@ -622,7 +628,7 @@ namespace Evernote2Onenote
                     // happens if the notebook was empty or does not exist.
                     // Or due to a parsing error if a note isn't properly xml encoded
                     // try to find the name of the note that's causing the problems
-                    string notename = "";
+                    var notename = "";
                     if (xmltext.Length > 0)
                     {
                         var notematch = _rxNote.Match(xmltext);
@@ -631,11 +637,11 @@ namespace Evernote2Onenote
                             notename = notematch.Groups[1].ToString();
                         }
                     }
-                    string tempfilepathDir = temppath + "\\failedNotes";
+                    var tempfilepathDir = temppath + "\\failedNotes";
                     try
                     {
                         Directory.CreateDirectory(tempfilepathDir);
-                        string tempfilepath = tempfilepathDir + "\\note-";
+                        var tempfilepath = tempfilepathDir + "\\note-";
                         tempfilepath += Guid.NewGuid().ToString();
                         tempfilepath += ".xml";
                         File.WriteAllText(tempfilepath, xmltext);
@@ -645,10 +651,9 @@ namespace Evernote2Onenote
                         // ignored
                     }
 
-                    if (notename.Length > 0)
-                        MessageBox.Show($"Error parsing the note \"{notename}\" in notebook \"{_enNotebookName}\",\n{ex}\\n\\nA copy of the note is left in {tempfilepathDir}. If you want to help fix the problem, please consider creating an issue and attaching that note to it: https://github.com/stefankueng/EvImSync/issues");
-                    else
-                        MessageBox.Show($"Error parsing the notebook \"{_enNotebookName}\"\n{ex}\\n\\nA copy of the note is left in {tempfilepathDir}. If you want to help fix the problem, please consider creating an issue and attaching that note to it: https://github.com/stefankueng/EvImSync/issues");
+                    MessageBox.Show(notename.Length > 0
+                        ? $"Error parsing the note \"{notename}\" in notebook \"{_enNotebookName}\",\n{ex}\\n\\nA copy of the note is left in {tempfilepathDir}. If you want to help fix the problem, please consider creating an issue and attaching that note to it: https://github.com/stefankueng/EvImSync/issues"
+                        : $"Error parsing the notebook \"{_enNotebookName}\"\n{ex}\\n\\nA copy of the note is left in {tempfilepathDir}. If you want to help fix the problem, please consider creating an issue and attaching that note to it: https://github.com/stefankueng/EvImSync/issues");
                 }
                 catch (Exception ex)
                 {
@@ -666,13 +671,13 @@ namespace Evernote2Onenote
             {
                 if (xml.Attributes != null)
                 {
-                    string id = xml.Attributes != null && xml.LocalName == "Section" && xml.Attributes["path"].Value == _evernoteNotebookPath
+                    var id = xml.Attributes != null && xml.LocalName == "Section" && xml.Attributes["path"].Value == _evernoteNotebookPath
                         ? "UnfiledNotes"
                         : xml.Attributes["ID"].Value;
-                    string name = HttpUtility.HtmlEncode(xml.Attributes["name"].Value);
+                    var name = HttpUtility.HtmlEncode(xml.Attributes["name"].Value);
                     if (str.Length > 0)
                         str.Append("\n");
-                    str.Append(string.Format("{0} {1} {2} {3}", level.ToString(), xml.LocalName, id, name));
+                    str.Append($"{level.ToString()} {xml.LocalName} {id} {name}");
                 }
             }
             // The set of elements that contain children that are meaningful to export:
@@ -697,7 +702,7 @@ namespace Evernote2Onenote
         }
         private string GetSection(string sectionName)
         {
-            string newnbId = "";
+            var newnbId = "";
             try
             {
                 // remove and/or replace characters that are not allowed in Onenote section names
@@ -714,16 +719,15 @@ namespace Evernote2Onenote
                 sectionName = sectionName.Replace("\"", "'");
                 sectionName = sectionName.Replace("%", "");
 
-                string xmlHierarchy;
-                _onApp.GetHierarchy("", OneNote.HierarchyScope.hsNotebooks, out xmlHierarchy);
+                _onApp.GetHierarchy("", OneNote.HierarchyScope.hsNotebooks, out var xmlHierarchy);
 
                 _onApp.OpenHierarchy(_evernoteNotebookPath + "\\" + sectionName + ".one", "", out newnbId, OneNote.CreateFileType.cftSection);
                 _onApp.GetHierarchy(newnbId, OneNote.HierarchyScope.hsSections, out _);
 
                 // Load and process the hierarchy
-                XmlDocument docHierarchy = new XmlDocument();
+                var docHierarchy = new XmlDocument();
                 docHierarchy.LoadXml(xmlHierarchy);
-                StringBuilder hierarchy = new StringBuilder(sectionName);
+                var hierarchy = new StringBuilder(sectionName);
                 AppendHierarchy(docHierarchy.DocumentElement, hierarchy, 0);
             }
             catch (Exception /*ex*/)
@@ -736,11 +740,11 @@ namespace Evernote2Onenote
         private string SanitizeXml(string text)
         {
             //text = HttpUtility.HtmlDecode(text);
-            Regex rxtitle = new Regex("<note><title>(.+)</title>", RegexOptions.IgnoreCase);
+            var rxtitle = new Regex("<note><title>(.+)</title>", RegexOptions.IgnoreCase);
             var match = rxtitle.Match(text);
             if (match.Groups.Count == 2)
             {
-                string title = match.Groups[1].ToString();
+                var title = match.Groups[1].ToString();
                 title = title.Replace("&", "&amp;");
                 title = title.Replace("\"", "&quot;");
                 title = title.Replace("'", "&apos;");
@@ -751,11 +755,11 @@ namespace Evernote2Onenote
                 text = rxtitle.Replace(text, "<note><title>" + title + "</title>");
             }
 
-            Regex rxauthor = new Regex("<author>(.+)</author>", RegexOptions.IgnoreCase);
+            var rxauthor = new Regex("<author>(.+)</author>", RegexOptions.IgnoreCase);
             var authormatch = rxauthor.Match(text);
             if (match.Groups.Count == 2)
             {
-                string author = authormatch.Groups[1].ToString();
+                var author = authormatch.Groups[1].ToString();
                 author = author.Replace("&", "&amp;");
                 author = author.Replace("\"", "&quot;");
                 author = author.Replace("'", "&apos;");
@@ -766,7 +770,7 @@ namespace Evernote2Onenote
                 text = rxauthor.Replace(text, "<author>" + author + "</author>");
             }
 
-            Regex rxfilename = new Regex("<file-name>(.+)</file-name>", RegexOptions.IgnoreCase);
+            var rxfilename = new Regex("<file-name>(.+)</file-name>", RegexOptions.IgnoreCase);
             if (match.Groups.Count == 2)
             {
                 MatchEvaluator myEvaluator = FilenameMatchEvaluator;
@@ -775,13 +779,14 @@ namespace Evernote2Onenote
 
             return text;
         }
-        public string FilenameMatchEvaluator(Match m)
+
+        private string FilenameMatchEvaluator(Match m)
         {
-            string filename = m.Groups[1].ToString();
+            var filename = m.Groups[1].ToString();
             filename = filename.Replace("&nbsp;", " ");
             // remove illegal path chars
-            string invalid = new string(Path.GetInvalidFileNameChars());
-            foreach (char c in invalid)
+            var invalid = new string(Path.GetInvalidFileNameChars());
+            foreach (var c in invalid)
             {
                 filename = filename.Replace(c.ToString(), "");
             }

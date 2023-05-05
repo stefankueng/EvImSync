@@ -15,17 +15,18 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using Evernote2Onenote.Enums;
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Net.Mail;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Web;
 using System.Windows.Forms;
 using System.Xml;
+
 using OneNote = Microsoft.Office.Interop.OneNote;
 
 namespace Evernote2Onenote
@@ -59,7 +60,7 @@ namespace Evernote2Onenote
 
         private readonly Regex _rxStyle = new Regex("(?<text>\\<div.)style=\\\"[^\\\"]*\\\"", RegexOptions.IgnoreCase);
         private readonly Regex _rxCdata = new Regex(@"<!\[CDATA\[<\?xml version=[""']1.0[""'][^?]*\?>", RegexOptions.IgnoreCase);
-        private readonly Regex _rxCdataInner = new Regex(@"\<\!\[CDATA\[(?<text>.*)\]\]\>", RegexOptions.IgnoreCase|RegexOptions.Singleline);
+        private readonly Regex _rxCdataInner = new Regex(@"\<\!\[CDATA\[(?<text>.*)\]\]\>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
         private readonly Regex _rxBodyStart = new Regex(@"<en-note[^>/]*>", RegexOptions.IgnoreCase);
         private readonly Regex _rxBodyEnd = new Regex(@"</en-note\s*>\s*]]>", RegexOptions.IgnoreCase);
         private readonly Regex _rxBodyEmpty = new Regex(@"<en-note[^>/]*/>\s*]]>", RegexOptions.IgnoreCase);
@@ -96,7 +97,7 @@ namespace Evernote2Onenote
             {
                 importDatePicker.Value = importDatePicker.MinDate;
             }
-            
+
             if (cmdNotebook.Length > 0)
             {
                 StartSync();
@@ -279,7 +280,7 @@ namespace Evernote2Onenote
                 }, null);
             }
         }
-        
+
         private List<Note> ParseNotes(string exportFile)
         {
             _syncStep = SyncStep.ParseNotes;
@@ -327,22 +328,35 @@ namespace Evernote2Onenote
             {
                 // happens if the notebook was empty or does not exist.
                 // Or due to a parsing error if a note isn't properly xml encoded
-                // 
                 // try to find the name of the note that's causing the problems
                 string notename = "";
                 if (xmltext.Length > 0)
                 {
-                    Regex rxnote = new Regex("<title>(.+)</title>", RegexOptions.IgnoreCase);
-                    var notematch = rxnote.Match(xmltext);
+                    var notematch = _rxNote.Match(xmltext);
                     if (notematch.Groups.Count == 2)
                     {
                         notename = notematch.Groups[1].ToString();
                     }
                 }
+                string temppath = Path.GetTempPath() + "\\ev2on";
+                string tempfilepathDir = temppath + "\\failedNotes";
+                try
+                {
+                    Directory.CreateDirectory(tempfilepathDir);
+                    string tempfilepath = tempfilepathDir + "\\note-";
+                    tempfilepath += Guid.NewGuid().ToString();
+                    tempfilepath += ".xml";
+                    File.WriteAllText(tempfilepath, xmltext);
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
+
                 if (notename.Length > 0)
-                    MessageBox.Show($"Error parsing the note \"{notename}\" in notebook \"{_enNotebookName}\",\n{ex}");
+                    MessageBox.Show($"Error parsing the note \"{notename}\" in notebook \"{_enNotebookName}\",\n{ex}\\n\\nA copy of the note is left in {tempfilepathDir}. If you want to help fix the problem, please consider creating an issue and attaching that note to it: https://github.com/stefankueng/EvImSync/issues");
                 else
-                    MessageBox.Show($"Error parsing the notebook \"{_enNotebookName}\"\n{ex}");
+                    MessageBox.Show($"Error parsing the notebook \"{_enNotebookName}\"\n{ex}\\n\\nA copy of the note is left in {tempfilepathDir}. If you want to help fix the problem, please consider creating an issue and attaching that note to it: https://github.com/stefankueng/EvImSync/issues");
             }
 
             return noteList;
@@ -390,7 +404,7 @@ namespace Evernote2Onenote
                             if (note.Title.StartsWith("=?"))
                                 note.Title = Rfc2047Decoder.Parse(note.Title);
                             var contentElements = xmlDocItem.GetElementsByTagName("content");
-                            if (contentElements.Count> 0)
+                            if (contentElements.Count > 0)
                             {
                                 node = contentElements[0];
                             }
@@ -441,9 +455,7 @@ namespace Evernote2Onenote
                             XmlNodeList datelist = xmlDocItem.GetElementsByTagName("created");
                             foreach (XmlNode n in datelist)
                             {
-                                DateTime dateCreated;
-
-                                if (DateTime.TryParseExact(n.InnerText, "yyyyMMddTHHmmssZ", CultureInfo.CurrentCulture, DateTimeStyles.AdjustToUniversal, out dateCreated))
+                                if (DateTime.TryParseExact(n.InnerText, "yyyyMMddTHHmmssZ", CultureInfo.CurrentCulture, DateTimeStyles.AdjustToUniversal, out var dateCreated))
                                 {
                                     note.Date = dateCreated;
                                 }
@@ -453,9 +465,7 @@ namespace Evernote2Onenote
                                 XmlNodeList datelist2 = xmlDocItem.GetElementsByTagName("updated");
                                 foreach (XmlNode n in datelist2)
                                 {
-                                    DateTime dateUpdated;
-
-                                    if (DateTime.TryParseExact(n.InnerText, "yyyyMMddTHHmmssZ", CultureInfo.CurrentCulture, DateTimeStyles.AdjustToUniversal, out dateUpdated))
+                                    if (DateTime.TryParseExact(n.InnerText, "yyyyMMddTHHmmssZ", CultureInfo.CurrentCulture, DateTimeStyles.AdjustToUniversal, out var dateUpdated))
                                     {
                                         note.Date = dateUpdated;
                                     }
@@ -581,7 +591,21 @@ namespace Evernote2Onenote
                             }
                             catch (Exception ex)
                             {
-                                MessageBox.Show($"Note:{note.Title}\n{ex}");
+                                string tempfilepathDir = temppath + "\\failedNotes";
+                                try
+                                {
+                                    Directory.CreateDirectory(tempfilepathDir);
+                                    string tempfilepath = tempfilepathDir + "\\note-";
+                                    tempfilepath += Guid.NewGuid().ToString();
+                                    tempfilepath += ".xml";
+                                    File.WriteAllText(tempfilepath, xmltext);
+                                }
+                                catch (Exception)
+                                {
+                                    // ignored
+                                }
+
+                                MessageBox.Show($"Note:{note.Title}\n{ex}\n\nA copy of the note is left in {tempfilepathDir}. If you want to help fix the problem, please consider creating an issue and attaching that note to it: https://github.com/stefankueng/EvImSync/issues");
                             }
 
                             foreach (string p in tempfiles)
@@ -607,10 +631,24 @@ namespace Evernote2Onenote
                             notename = notematch.Groups[1].ToString();
                         }
                     }
+                    string tempfilepathDir = temppath + "\\failedNotes";
+                    try
+                    {
+                        Directory.CreateDirectory(tempfilepathDir);
+                        string tempfilepath = tempfilepathDir + "\\note-";
+                        tempfilepath += Guid.NewGuid().ToString();
+                        tempfilepath += ".xml";
+                        File.WriteAllText(tempfilepath, xmltext);
+                    }
+                    catch (Exception)
+                    {
+                        // ignored
+                    }
+
                     if (notename.Length > 0)
-                        MessageBox.Show($"Error parsing the note \"{notename}\" in notebook \"{_enNotebookName}\",\n{ex}");
+                        MessageBox.Show($"Error parsing the note \"{notename}\" in notebook \"{_enNotebookName}\",\n{ex}\\n\\nA copy of the note is left in {tempfilepathDir}. If you want to help fix the problem, please consider creating an issue and attaching that note to it: https://github.com/stefankueng/EvImSync/issues");
                     else
-                        MessageBox.Show($"Error parsing the notebook \"{_enNotebookName}\"\n{ex}");
+                        MessageBox.Show($"Error parsing the notebook \"{_enNotebookName}\"\n{ex}\\n\\nA copy of the note is left in {tempfilepathDir}. If you want to help fix the problem, please consider creating an issue and attaching that note to it: https://github.com/stefankueng/EvImSync/issues");
                 }
                 catch (Exception ex)
                 {

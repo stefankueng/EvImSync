@@ -275,7 +275,7 @@ namespace Evernote2Onenote
         public List<string> Tags { get; set; }
         public List<Attachment> Attachments { get; set; }
         public NoteAction Action { get; set; }
-        public DateTime Date { get; set; }
+        public DateTime Date { get; set; } = DateTime.Now;
         public string SourceUrl { get; set; }
         public List<string> NewTags { get; set; }
         public List<string> ObsoleteTags { get; set; }

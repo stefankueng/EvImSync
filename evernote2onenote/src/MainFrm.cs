@@ -39,7 +39,6 @@ namespace Evernote2Onenote
         private bool _cancelled;
         private SyncStep _syncStep = SyncStep.Start;
         private Microsoft.Office.Interop.OneNote.Application _onApp;
-        private string _pageId;
         private readonly string _xmlNewOutlineContent =
             "<one:Meta name=\"{2}\" content=\"{1}\"/>" +
             "<one:OEChildren><one:HTMLBlock><one:Data><![CDATA[{0}]]></one:Data></one:HTMLBlock>{3}</one:OEChildren>";
@@ -181,7 +180,7 @@ namespace Evernote2Onenote
             }
             if (_onApp == null)
             {
-                _ = MessageBox.Show("Could not connect to Onenote!\nReasons for this might be:\n* The desktop version of onenote is not installed\n* Onenote is not installed properly\n* Onenote is already running but with a different user account\n");
+                MessageBox.Show("Could not connect to Onenote!\nReasons for this might be:\n* The desktop version of onenote is not installed\n* Onenote is not installed properly\n* Onenote is already running but with a different user account\n");
                 return;
             }
             // create a new notebook named "EverNote"
@@ -537,38 +536,41 @@ namespace Evernote2Onenote
 
                             try
                             {
+                                string pageId = string.Empty;
+
                                 // Get the hierarchy for all the notebooks
                                 if ((note.Tags.Count > 0) && (!_useUnfiledSection))
                                 {
                                     foreach (string tag in note.Tags)
                                     {
                                         string sectionId = GetSection(tag);
-                                        _onApp.CreateNewPage(sectionId, out _pageId, OneNote.NewPageStyle.npsBlankPageWithTitle);
-                                        _onApp.GetPageContent(_pageId, out _);
+                                        _onApp.CreateNewPage(sectionId, out pageId, OneNote.NewPageStyle.npsBlankPageWithTitle);
+                                        //_onApp.GetPageContent(pageId, out _);
                                         //OneNote uses HTML for the xml string to pass to the UpdatePageContent, so use the
                                         //Outlook HTMLBody property.  It coerces rtf and plain text to HTML.
                                         int outlineId = new Random().Next();
                                         //string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, m_outlineIDMetaName);
                                         string xmlSource = string.Format(XmlSourceUrl, note.SourceUrl);
                                         string outlineContent = string.Format(_xmlNewOutlineContent, emailBody, outlineId, System.Security.SecurityElement.Escape(note.Title).Replace("&apos;", "'"), note.SourceUrl.Length > 0 ? xmlSource : "");
-                                        string xml = string.Format(XmlNewOutline, outlineContent, _pageId, Xmlns, System.Security.SecurityElement.Escape(note.Title).Replace("&apos;", "'"), xmlAttachments, note.Date.ToString("yyyy'-'MM'-'ddTHH':'mm':'ss'Z'"));
+                                        string xml = string.Format(XmlNewOutline, outlineContent, pageId, Xmlns, System.Security.SecurityElement.Escape(note.Title).Replace("&apos;", "'"), xmlAttachments, note.Date.ToString("yyyy'-'MM'-'ddTHH':'mm':'ss'Z'"));
                                         _onApp.UpdatePageContent(xml, DateTime.MinValue, OneNote.XMLSchema.xs2013, true);
                                     }
                                 }
                                 else
                                 {
                                     string sectionId = _useUnfiledSection ? _newnbId : GetSection("not specified");
-                                    _onApp.CreateNewPage(sectionId, out _pageId, OneNote.NewPageStyle.npsBlankPageWithTitle);
-                                    _onApp.GetPageContent(_pageId, out _);
+                                    _onApp.CreateNewPage(sectionId, out pageId, OneNote.NewPageStyle.npsBlankPageWithTitle);
+                                    //_onApp.GetPageContent(pageId, out _);
                                     //OneNote uses HTML for the xml string to pass to the UpdatePageContent, so use the
                                     //Outlook HTMLBody property.  It coerces rtf and plain text to HTML.
                                     int outlineId = new Random().Next();
                                     //string outlineContent = string.Format(m_xmlNewOutlineContent, emailBody, outlineID, m_outlineIDMetaName);
                                     string xmlSource = string.Format(XmlSourceUrl, note.SourceUrl);
                                     string outlineContent = string.Format(_xmlNewOutlineContent, emailBody, outlineId, System.Security.SecurityElement.Escape(note.Title).Replace("&apos;", "'"), note.SourceUrl.Length > 0 ? xmlSource : "");
-                                    string xml = string.Format(XmlNewOutline, outlineContent, _pageId, Xmlns, System.Security.SecurityElement.Escape(note.Title).Replace("&apos;", "'"), xmlAttachments, note.Date.ToString("yyyy'-'MM'-'ddTHH':'mm':'ss'Z'"));
+                                    string xml = string.Format(XmlNewOutline, outlineContent, pageId, Xmlns, System.Security.SecurityElement.Escape(note.Title).Replace("&apos;", "'"), xmlAttachments, note.Date.ToString("yyyy'-'MM'-'ddTHH':'mm':'ss'Z'"));
                                     _onApp.UpdatePageContent(xml, DateTime.MinValue, OneNote.XMLSchema.xs2013, true);
                                 }
+                                _onApp.SyncHierarchy(pageId);
                             }
                             catch (Exception ex)
                             {

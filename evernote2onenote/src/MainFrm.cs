@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Net.Mail;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -386,12 +387,16 @@ namespace Evernote2Onenote
 
                             Note note = new Note();
                             note.Title = HttpUtility.HtmlDecode(node.InnerText);
+                            if (note.Title.StartsWith("=?"))
+                                note.Title = Rfc2047Decoder.Parse(note.Title);
                             var contentElements = xmlDocItem.GetElementsByTagName("content");
                             if (contentElements.Count> 0)
                             {
                                 node = contentElements[0];
                             }
                             note.Content = HttpUtility.HtmlDecode(node.InnerXml);
+                            if (note.Content.StartsWith("=?"))
+                                note.Content = Rfc2047Decoder.Parse(note.Content);
 
                             XmlNodeList atts = xmlDocItem.GetElementsByTagName("resource");
                             foreach (XmlNode xmln in atts)
@@ -408,6 +413,8 @@ namespace Evernote2Onenote
                                 if (fns.Count > note.Attachments.Count)
                                 {
                                     attachment.FileName = HttpUtility.HtmlDecode(fns.Item(note.Attachments.Count).InnerText);
+                                    if (attachment.FileName.StartsWith("=?"))
+                                        attachment.FileName = Rfc2047Decoder.Parse(attachment.FileName);
                                     string invalid = new string(Path.GetInvalidFileNameChars());
                                     foreach (char c in invalid)
                                     {

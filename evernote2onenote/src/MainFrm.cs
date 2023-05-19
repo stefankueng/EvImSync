@@ -59,7 +59,8 @@ namespace Evernote2Onenote
         private DateTime _cmdDate = new DateTime(0);
 
         private readonly Regex _rxStyle = new Regex("(?<text>\\<div.)style=\\\"[^\\\"]*\\\"", RegexOptions.IgnoreCase);
-        private readonly Regex _rxCdata = new Regex(@"<!\[CDATA\[<\?xml version=[""']1.0[""'][^?]*\?>", RegexOptions.IgnoreCase);
+        private readonly Regex _rxCdata =  new Regex(@"<!\[CDATA\[<\?xml version=[""']1.0[""'][^?]*\?>", RegexOptions.IgnoreCase);
+        private readonly Regex _rxCdata2 = new Regex(@"<!\[CDATA\[<!DOCTYPE en-note \w+ ""https?://xml.evernote.com/pub/enml2.dtd"">", RegexOptions.IgnoreCase);
         private readonly Regex _rxCdataInner = new Regex(@"\<\!\[CDATA\[(?<text>.*)\]\]\>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
         private readonly Regex _rxBodyStart = new Regex(@"<en-note[^>/]*>", RegexOptions.IgnoreCase);
         private readonly Regex _rxBodyEnd = new Regex(@"</en-note\s*>\s*]]>", RegexOptions.IgnoreCase);
@@ -543,6 +544,7 @@ namespace Evernote2Onenote
                             htmlBody = _rxStyle.Replace(htmlBody, "${text}");
                             htmlBody = _rxComment.Replace(htmlBody, string.Empty);
                             htmlBody = _rxCdata.Replace(htmlBody, string.Empty);
+                            htmlBody = _rxCdata2.Replace(htmlBody, string.Empty);
                             htmlBody = RxDtd.Replace(htmlBody, string.Empty);
                             htmlBody = _rxBodyStart.Replace(htmlBody, "<body>");
                             htmlBody = _rxBodyEnd.Replace(htmlBody, "</body>");

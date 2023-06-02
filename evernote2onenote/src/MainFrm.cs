@@ -58,7 +58,7 @@ namespace Evernote2Onenote
         private readonly string _cmdNoteBook = "";
         private DateTime _cmdDate = new DateTime(0);
 
-        private readonly Regex _rxStyle = new Regex("(?<text>\\<div.)style=\\\"[^\\\"]*\\\"", RegexOptions.IgnoreCase);
+        private readonly Regex _rxStyle = new Regex("(?<text>\\<(?:div|span).)style=\\\"[^\\\"]*\\\"", RegexOptions.IgnoreCase);
         private readonly Regex _rxCdata = new Regex(@"<!\[CDATA\[<\?xml version=[""']1.0[""'][^?]*\?>", RegexOptions.IgnoreCase);
         private readonly Regex _rxCdata2 = new Regex(@"<!\[CDATA\[<!DOCTYPE en-note \w+ ""https?://xml.evernote.com/pub/enml2.dtd"">", RegexOptions.IgnoreCase);
         private readonly Regex _rxCdataInner = new Regex(@"\<\!\[CDATA\[(?<text>.*)\]\]\>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
@@ -554,7 +554,7 @@ namespace Evernote2Onenote
                             htmlBody = _rxBodyEnd.Replace(htmlBody, "</body>");
                             htmlBody = _rxBodyEmpty.Replace(htmlBody, "<body></body>");
                             htmlBody = htmlBody.Trim();
-                            htmlBody = @"<!DOCTYPE HTML PUBLIC ""-//W3C//DTD HTML 4.01 Transitional//EN""><head></head>" + htmlBody;
+                            htmlBody = @"<!DOCTYPE html><head></head>" + htmlBody;
 
                             var emailBody = htmlBody;
                             emailBody = _rxDate.Replace(emailBody, "Date: " + note.Date.ToString("ddd, dd MMM yyyy HH:mm:ss K"));

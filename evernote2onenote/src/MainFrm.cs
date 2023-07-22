@@ -403,7 +403,7 @@ namespace Evernote2Onenote
 
                             var note = new Note
                             {
-                                Title = HttpUtility.HtmlDecode(node.InnerText)
+                                Title = HttpUtility.HtmlDecode(node.InnerText).Replace("&nbsp;", " ")
                             };
                             if (note.Title.StartsWith("=?"))
                                 note.Title = Rfc2047Decoder.Parse(note.Title);
@@ -786,6 +786,13 @@ namespace Evernote2Onenote
             {
                 MatchEvaluator myEvaluator = FilenameMatchEvaluator;
                 text = rxfilename.Replace(text, myEvaluator);
+            }
+
+            var rxSrcUrl = new Regex("<source-url>(.+)</source-url>", RegexOptions.IgnoreCase);
+            if (match.Groups.Count == 2)
+            {
+                MatchEvaluator myEvaluator = FilenameMatchEvaluator;
+                text = rxSrcUrl.Replace(text, myEvaluator);
             }
 
             return text;

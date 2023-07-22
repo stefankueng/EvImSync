@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Net.Mail;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -516,7 +517,8 @@ namespace Evernote2Onenote
                                 tempfiles.Add(tempfilepath);
 
                                 var rx = new Regex(@"<en-media\b[^>]*?hash=""" + attachment.Hash + @"""[^>]*/>", RegexOptions.IgnoreCase);
-                                if ((attachment.ContentType != null) && (attachment.ContentType.Contains("image") && rx.Match(htmlBody).Success))
+                                var rxMatch = rx.Match(htmlBody);
+                                if ((attachment.ContentType != null) && (attachment.ContentType.Contains("image") && rxMatch.Success))
                                 {
                                     // replace the <en-media /> tag with an <img /> tag
                                     htmlBody = rx.Replace(htmlBody, @"<img src=""file:///" + tempfilepath + @"""/>");
@@ -558,6 +560,17 @@ namespace Evernote2Onenote
                             htmlBody = htmlBody.Trim();
                             htmlBody = @"<!DOCTYPE html><head></head>" + htmlBody;
 
+                            // Evernote does not escape < and > chars in <pre> sections!
+                            // do that here so we don't get malformed xml
+                            var rxPre = new Regex(@"<pre\b[^>]*?>(.+)</pre>", RegexOptions.IgnoreCase|RegexOptions.Singleline);
+                            foreach (Match match in rxPre.Matches(htmlBody))
+                            {
+                                var fullPreSection = match.ToString();
+                                var innerSection = match.Groups[1].ToString();
+                                var innserSectionCorrect = innerSection.Replace("<", "&lt;").Replace(">", "&gt;");
+                                fullPreSection = fullPreSection.Replace(innerSection, innserSectionCorrect);
+                                htmlBody = rxPre.Replace(htmlBody, fullPreSection);
+                            }
                             var emailBody = htmlBody;
                             emailBody = _rxDate.Replace(emailBody, "Date: " + note.Date.ToString("ddd, dd MMM yyyy HH:mm:ss K"));
                             emailBody = emailBody.Replace("&apos;", "'");
@@ -591,7 +604,12 @@ namespace Evernote2Onenote
                                 {
                                     var sectionId = _useUnfiledSection ? _newnbId : GetSection("not specified");
                                     _onApp.CreateNewPage(sectionId, out pageId, OneNote.NewPageStyle.npsBlankPageWithTitle);
-                                    //_onApp.GetPageContent(pageId, out _);
+                                    //string pages = string.Empty;
+                                    //_onApp.GetHierarchy(sectionId, OneNote.HierarchyScope.hsPages, out pages);
+                                    //string pageContent = string.Empty;
+                                    //string testPageId = pageId;
+                                    //_onApp.GetPageContent(testPageId, out pageContent);
+
                                     //OneNote uses HTML for the xml string to pass to the UpdatePageContent, so use the
                                     //Outlook HTMLBody property.  It coerces rtf and plain text to HTML.
                                     var outlineId = new Random().Next();

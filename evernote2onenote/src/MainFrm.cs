@@ -58,7 +58,8 @@ namespace Evernote2Onenote
         private readonly string _cmdNoteBook = "";
         private DateTime _cmdDate = new DateTime(0);
 
-        private readonly Regex _rxStyle = new Regex("(?<text>\\<(?:div|span).)style=\\\"[^\\\"]*\\\"", RegexOptions.IgnoreCase);
+        private readonly Regex _rxStyle = new Regex("(?<text>\\<(?:div|span|li|ul).)style=\\\"[^\\\"]*\\\"", RegexOptions.IgnoreCase);
+        private readonly Regex _rxFontFamily = new Regex(@"font-family: \""[^\""]*\""", RegexOptions.IgnoreCase);
         private readonly Regex _rxCdata = new Regex(@"<!\[CDATA\[<\?xml version=[""']1.0[""'][^?]*\?>", RegexOptions.IgnoreCase);
         private readonly Regex _rxCdata2 = new Regex(@"<!\[CDATA\[<!DOCTYPE en-note \w+ ""https?://xml.evernote.com/pub/enml2.dtd"">", RegexOptions.IgnoreCase);
         private readonly Regex _rxCdataInner = new Regex(@"\<\!\[CDATA\[(?<text>.*)\]\]\>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
@@ -68,7 +69,7 @@ namespace Evernote2Onenote
         private readonly Regex _rxDate = new Regex(@"^date:(.*)$", RegexOptions.IgnoreCase | RegexOptions.Multiline);
         private readonly Regex _rxNote = new Regex("<title>(.+)</title>", RegexOptions.IgnoreCase);
         private readonly Regex _rxComment = new Regex("<!--(.+)-->", RegexOptions.IgnoreCase);
-        private static readonly Regex RxDtd = new Regex(@"<!DOCTYPE en-note SYSTEM \""http:\/\/xml\.evernote\.com\/pub\/enml\d*\.dtd\"">", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private readonly Regex _rxDtd = new Regex(@"<!DOCTYPE en-note SYSTEM \""http:\/\/xml\.evernote\.com\/pub\/enml\d*\.dtd\"">", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         public MainFrm(string cmdNotebook, string cmdDate)
         {
@@ -545,11 +546,12 @@ namespace Evernote2Onenote
                             }
                             note.Attachments.Clear();
 
+                            htmlBody = _rxFontFamily.Replace(htmlBody, string.Empty);
                             htmlBody = _rxStyle.Replace(htmlBody, "${text}");
                             htmlBody = _rxComment.Replace(htmlBody, string.Empty);
                             htmlBody = _rxCdata.Replace(htmlBody, string.Empty);
                             htmlBody = _rxCdata2.Replace(htmlBody, string.Empty);
-                            htmlBody = RxDtd.Replace(htmlBody, string.Empty);
+                            htmlBody = _rxDtd.Replace(htmlBody, string.Empty);
                             htmlBody = _rxBodyStart.Replace(htmlBody, "<body>");
                             htmlBody = _rxBodyEnd.Replace(htmlBody, "</body>");
                             htmlBody = _rxBodyEmpty.Replace(htmlBody, "<body></body>");
@@ -724,6 +726,9 @@ namespace Evernote2Onenote
                 sectionName = sectionName.Replace("#", "");
                 sectionName = sectionName.Replace("\"", "'");
                 sectionName = sectionName.Replace("%", "");
+                sectionName = sectionName.Trim('.');
+                if (sectionName.Length > 80)
+                    sectionName = sectionName.Substring(0, 80);
 
                 _onApp.GetHierarchy("", OneNote.HierarchyScope.hsNotebooks, out var xmlHierarchy);
 

@@ -30,7 +30,7 @@ namespace Evernote2Onenote
         public Note()
         {
             SourceUrl = string.Empty;
-            this.content = string.Empty;
+            this._content = string.Empty;
             Title = string.Empty;
             ContentHash = string.Empty;
             Tags = new List<string>();
@@ -161,15 +161,15 @@ namespace Evernote2Onenote
             if (contentId != null)
                 cid = contentId.TrimStart('<', '"');
             cid = cid.TrimEnd('>', '"');
-            if ((cid.Length > 0) && content.Contains(cid))
+            if ((cid.Length > 0) && _content.Contains(cid))
             {
                 // convert the reference tag to a media tag
-                int idIndex = content.IndexOf(cid);
+                int idIndex = _content.IndexOf(cid);
 
                 // go left until the '<' is found
-                int bracketIndex = content.LastIndexOf('<', idIndex);
-                int endBracket = content.IndexOf('>', bracketIndex);
-                string refTag = content.Substring(bracketIndex, endBracket - bracketIndex + 1);
+                int bracketIndex = _content.LastIndexOf('<', idIndex);
+                int endBracket = _content.IndexOf('>', bracketIndex);
+                string refTag = _content.Substring(bracketIndex, endBracket - bracketIndex + 1);
                 int srcStart = refTag.ToLower().IndexOf("src=\"") + 4;
                 int srcEnd = refTag.IndexOf('"', srcStart + 1);
                 string srcString = refTag.Substring(srcStart, srcEnd - srcStart + 1);
@@ -179,12 +179,12 @@ namespace Evernote2Onenote
                 int imgEnd = mediaTag.IndexOfAny(" \t".ToCharArray(), imgStart);
                 mediaTag = mediaTag.Remove(imgStart, imgEnd - imgStart);
                 mediaTag = mediaTag.Insert(imgStart, "en-media type=\"" + contentType.ToLower() + "\"");
-                Content = content.Replace(refTag, mediaTag);
+                Content = _content.Replace(refTag, mediaTag);
             }
             else
             {
                 // just link the attachment to the content
-                Content = content + "<en-media hash=\"" + hashHex + "\" type=\"" + contentType.ToLower() + "\"/>";
+                Content = _content + "<en-media hash=\"" + hashHex + "\" type=\"" + contentType.ToLower() + "\"/>";
             }
 
             string attachmentString = Convert.ToBase64String(binaryData);
@@ -258,19 +258,25 @@ namespace Evernote2Onenote
         {
             get
             {
-                return content;
+                return _content;
             }
 
             set
             {
-                content = value.Replace("\r", string.Empty);
-                byte[] hash = new MD5CryptoServiceProvider().ComputeHash(System.Text.Encoding.UTF8.GetBytes(content));
+                _content = value.Replace("\r", string.Empty);
+                byte[] hash = new MD5CryptoServiceProvider().ComputeHash(System.Text.Encoding.UTF8.GetBytes(_content));
                 string hashHex = BitConverter.ToString(hash).Replace("-", string.Empty).ToLower();
                 ContentHash = hashHex;
             }
         }
 
-        public string Title { get; set; }
+        public string Title {
+            get => _title;
+            set =>
+                _title = value != null && value.Length > 255
+                    ? value.Substring(0, 255)
+                    : value;
+        }
         public string ContentHash { get; set; }
         public List<string> Tags { get; set; }
         public List<Attachment> Attachments { get; set; }
@@ -280,6 +286,7 @@ namespace Evernote2Onenote
         public List<string> NewTags { get; set; }
         public List<string> ObsoleteTags { get; set; }
 
-        private string content;
+        private string _content;
+        private string _title;
     }
 }

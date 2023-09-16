@@ -59,7 +59,7 @@ namespace Evernote2Onenote
         private readonly string _cmdNoteBook = "";
         private DateTime _cmdDate = new DateTime(0);
 
-        private readonly Regex _rxStyle = new Regex("(?<text>\\<(?:div|span|li|ul).)style=\\\"[^\\\"]*\\\"", RegexOptions.IgnoreCase);
+        private readonly Regex _rxStyle = new Regex("(?<text>\\<(?:div|span|li|ul).)\\s*style=\\\"[^\\\"]*\\\"", RegexOptions.IgnoreCase);
         private readonly Regex _rxFontFamily = new Regex(@"font-family: \""[^\""]*\""", RegexOptions.IgnoreCase);
         private readonly Regex _rxCdata = new Regex(@"<!\[CDATA\[<\?xml version=[""']1.0[""'][^?]*\?>", RegexOptions.IgnoreCase);
         private readonly Regex _rxCdata2 = new Regex(@"<!\[CDATA\[<!DOCTYPE en-note \w+ ""https?://xml.evernote.com/pub/enml2.dtd"">", RegexOptions.IgnoreCase);
@@ -416,7 +416,7 @@ namespace Evernote2Onenote
                             {
                                 node = contentElements[0];
                             }
-                            note.Content = HttpUtility.HtmlDecode(node.InnerXml);
+                            note.Content = node.InnerXml;//HttpUtility.HtmlDecode(node.InnerXml);
                             if (note.Content.StartsWith("=?"))
                                 note.Content = Rfc2047Decoder.Parse(note.Content);
 
@@ -552,7 +552,14 @@ namespace Evernote2Onenote
                             note.Attachments.Clear();
 
                             htmlBody = _rxFontFamily.Replace(htmlBody, string.Empty);
-                            htmlBody = _rxStyle.Replace(htmlBody, "${text}");
+                            htmlBody = _rxStyle.Replace(htmlBody, delegate (Match m)
+                            {
+                                if (m.Value.Contains("--en-codeblock:true;"))
+                                    return m.Result("<br><br>${text}") + "style=\"background-color:#B0B0B0; font-family: Consolas, Courier New, monospace; font-size: 15px;\"";
+                                return m.Result("${text}");
+                            });
+                            htmlBody = htmlBody.Replace("<pre>", "<br><br><pre style=\"font-family: Consolas, Courier New, monospace; font-size: 15px; background-color:#B0B0B0;\">");   
+                            htmlBody = htmlBody.Replace("</pre>", "</pre><br><br>");
                             htmlBody = _rxComment.Replace(htmlBody, string.Empty);
                             htmlBody = _rxEmptyCdata.Replace(htmlBody, string.Empty);
                             htmlBody = _rxEmptyCdata2.Replace(htmlBody, string.Empty);
@@ -568,7 +575,7 @@ namespace Evernote2Onenote
 
                             // Evernote does not escape < and > chars in <pre> sections!
                             // do that here so we don't get malformed xml
-                            var rxPre = new Regex(@"<pre\b[^>]*?>(.+)</pre>", RegexOptions.IgnoreCase|RegexOptions.Singleline);
+                            var rxPre = new Regex(@"<pre\b[^>]*?>(.+)</pre>", RegexOptions.IgnoreCase | RegexOptions.Singleline);
                             foreach (Match match in rxPre.Matches(htmlBody))
                             {
                                 var fullPreSection = match.ToString();

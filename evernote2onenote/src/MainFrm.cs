@@ -59,7 +59,7 @@ namespace Evernote2Onenote
         private readonly string _cmdNoteBook = "";
         private DateTime _cmdDate = new DateTime(0);
 
-        private readonly Regex _rxStyle = new Regex("(?<text>\\<(?:div|span|li|ul).)\\s*style=\\\"[^\\\"]*\\\"", RegexOptions.IgnoreCase);
+        private readonly Regex _rxStyle = new Regex("(?<text>\\<(?:div|span|li|ul|ol|p|td|tr|table|tbody|h1|h2|a\\s+href=\\\"[^\\\"]*\\\").)\\s*style=\\\"[^\\\"]*\\\"", RegexOptions.IgnoreCase);
         private readonly Regex _rxFontFamily = new Regex(@"font-family: \""[^\""]*\""", RegexOptions.IgnoreCase);
         private readonly Regex _rxCdata = new Regex(@"<!\[CDATA\[<\?xml version=[""']1.0[""'][^?]*\?>", RegexOptions.IgnoreCase);
         private readonly Regex _rxCdata2 = new Regex(@"<!\[CDATA\[<!DOCTYPE en-note \w+ ""https?://xml.evernote.com/pub/enml2.dtd"">", RegexOptions.IgnoreCase);

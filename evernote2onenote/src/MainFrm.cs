@@ -637,7 +637,15 @@ namespace Evernote2Onenote
                                     foreach (var tag in note.Tags)
                                     {
                                         var sectionId = GetSection(tag);
-                                        _onApp.CreateNewPage(sectionId, out pageId, OneNote.NewPageStyle.npsBlankPageWithTitle);
+                                        try
+                                        {
+                                            _onApp.CreateNewPage(sectionId, out pageId, OneNote.NewPageStyle.npsBlankPageWithTitle);
+                                        }
+                                        catch (Exception)
+                                        {
+                                            sectionId = _useUnfiledSection ? _newnbId : GetSection("not specified");
+                                            _onApp.CreateNewPage(sectionId, out pageId, OneNote.NewPageStyle.npsBlankPageWithTitle);
+                                        }
                                         //_onApp.GetPageContent(pageId, out _);
                                         //OneNote uses HTML for the xml string to pass to the UpdatePageContent, so use the
                                         //Outlook HTMLBody property.  It coerces rtf and plain text to HTML.

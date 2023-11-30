@@ -204,7 +204,7 @@ namespace Evernote2Onenote
 
                 // Get the hierarchy for the default notebook folder
                 _onApp.GetSpecialLocation(OneNote.SpecialLocation.slDefaultNotebookFolder, out _evernoteNotebookPath);
-                var nbName = _enNotebookName.Substring(0, 30); // only allow 30 chars for the notebook name
+                var nbName = _enNotebookName.Substring(0, Math.Min(30, _enNotebookName.Length)); // only allow 30 chars for the notebook name
                 _evernoteNotebookPath += "\\" + nbName;
                 _onApp.OpenHierarchy(_evernoteNotebookPath, "", out var newnbId, OneNote.CreateFileType.cftNotebook);
                 _onApp.GetHierarchy(newnbId, OneNote.HierarchyScope.hsPages, out _);
@@ -252,6 +252,26 @@ namespace Evernote2Onenote
         private void ImportNotesToOnenote()
         {
             _syncStep = SyncStep.Start;
+
+            // shut down onedrive sync so it doesn't interfere with the import
+            // get program files folder
+            var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+            // start the onedrive.exe process with the /shutdown parameter
+            var onedrive = Path.Combine(programFiles, "Microsoft OneDrive", "OneDrive.exe");
+            if (!File.Exists(onedrive))
+            {
+                var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                onedrive = Path.Combine(localAppData, "Microsoft", "OneDrive", "OneDrive.exe");
+            }
+            if (File.Exists(onedrive))
+            {
+                var p = new System.Diagnostics.Process();
+                p.StartInfo.FileName = onedrive;
+                p.StartInfo.Arguments = "/shutdown";
+                p.Start();
+                p.WaitForExit();
+            }
+
             if (!string.IsNullOrEmpty(_enexfile))
             {
                 var notesEvernote = new List<Note>();
@@ -274,6 +294,14 @@ namespace Evernote2Onenote
             }
             else
                 SetInfo("", "", 0, 0);
+
+            if (File.Exists(onedrive))
+            {
+                var p = new System.Diagnostics.Process();
+                p.StartInfo.FileName = onedrive;
+                p.StartInfo.Arguments = "/background";
+                p.Start();
+            }
 
             _synchronizationContext.Send(delegate
             {

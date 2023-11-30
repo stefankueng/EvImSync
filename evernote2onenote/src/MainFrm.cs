@@ -203,7 +203,14 @@ namespace Evernote2Onenote
                 _onApp.GetHierarchy("", OneNote.HierarchyScope.hsNotebooks, out var xmlHierarchy);
 
                 // Get the hierarchy for the default notebook folder
-                _onApp.GetSpecialLocation(OneNote.SpecialLocation.slDefaultNotebookFolder, out _evernoteNotebookPath);
+                try
+                {
+                    _onApp.GetSpecialLocation(OneNote.SpecialLocation.slDefaultNotebookFolder, out _evernoteNotebookPath);
+                }
+                catch (Exception)
+                {
+                    _onApp.GetSpecialLocation(OneNote.SpecialLocation.slUnfiledNotesSection, out _evernoteNotebookPath);
+                }
                 var nbName = _enNotebookName.Substring(0, Math.Min(30, _enNotebookName.Length)); // only allow 30 chars for the notebook name
                 _evernoteNotebookPath += "\\" + nbName;
                 _onApp.OpenHierarchy(_evernoteNotebookPath, "", out var newnbId, OneNote.CreateFileType.cftNotebook);

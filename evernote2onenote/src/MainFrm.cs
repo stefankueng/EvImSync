@@ -223,8 +223,10 @@ namespace Evernote2Onenote
                 var hierarchy = new StringBuilder();
                 AppendHierarchy(docHierarchy.DocumentElement, hierarchy, 0);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                MessageBox.Show($"Could not create the target notebook in Onenote!\nTrying to use the \"unfiled notes\" section instead.\nThe error was:\n\n{ex}");
+
                 try
                 {
                     _onApp.GetHierarchy("", OneNote.HierarchyScope.hsPages, out _);
@@ -237,7 +239,7 @@ namespace Evernote2Onenote
                 }
                 catch (Exception ex2)
                 {
-                    MessageBox.Show($"Could not create the target notebook in Onenote!\n{ex2}");
+                    MessageBox.Show($"Could not create the target notebook in Onenote!\nMake sure you have the desktop version of OneNote installed, not the one from the Windows store!\n\n{ex2}");
                     return;
                 }
             }

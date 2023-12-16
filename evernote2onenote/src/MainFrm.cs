@@ -20,7 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Net.Mail;
+using System.IO.Compression;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -386,20 +386,9 @@ namespace Evernote2Onenote
                         notename = notematch.Groups[1].ToString();
                     }
                 }
-                var temppath = Path.GetTempPath() + "\\ev2on";
-                var tempfilepathDir = temppath + "\\failedNotes";
-                try
-                {
-                    Directory.CreateDirectory(tempfilepathDir);
-                    var tempfilepath = tempfilepathDir + "\\note-";
-                    tempfilepath += Guid.NewGuid().ToString();
-                    tempfilepath += ".xml";
-                    File.WriteAllText(tempfilepath, xmltext);
-                }
-                catch (Exception)
-                {
-                    // ignored
-                }
+                string tempfilepathDir = string.Empty;
+                if (xmltext.Length > 0)
+                    tempfilepathDir = ZipFailedNote(xmltext);
 
                 MessageBox.Show(notename.Length > 0
                     ? $"Error parsing the note \"{notename}\" in notebook \"{_enNotebookName}\",\n{ex}\\n\\nA copy of the note is left in {tempfilepathDir}. If you want to help fix the problem, please consider creating an issue and attaching that note to it: https://github.com/stefankueng/EvImSync/issues"
@@ -407,6 +396,35 @@ namespace Evernote2Onenote
             }
 
             return noteList;
+        }
+
+        private static string ZipFailedNote(string xmltext)
+        {
+            var temppath = Path.GetTempPath() + "\\ev2on";
+            var tempfilepathDir = temppath + "\\failedNotes";
+            try
+            {
+                Directory.CreateDirectory(tempfilepathDir);
+                var noteName = "note-" + Guid.NewGuid().ToString();
+                var tempfilepath = tempfilepathDir + "\\";
+                tempfilepath += noteName;
+                tempfilepath += ".enex";
+                xmltext = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><!DOCTYPE en-export SYSTEM \"http://xml.evernote.com/pub/evernote-export4.dtd\"><en-export>" + xmltext;
+                xmltext = xmltext + "</en-export>";
+                File.WriteAllText(tempfilepath, xmltext);
+                var zipFilePath = tempfilepath + ".zip";
+                using (ZipArchive zip = ZipFile.Open(zipFilePath, ZipArchiveMode.Create))
+                {
+                    zip.CreateEntryFromFile(tempfilepath, noteName + ".enex");
+                }
+                File.Delete(tempfilepath);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+
+            return tempfilepathDir;
         }
 
         private void ImportNotesToOnenote(List<Note> notesEvernote, string exportFile)
@@ -597,7 +615,7 @@ namespace Evernote2Onenote
                                     return m.Result("<br><br>${text}") + "style=\"background-color:#B0B0B0; font-family: Consolas, Courier New, monospace; font-size: 15px;\"";
                                 return m.Result("${text}");
                             });
-                            htmlBody = htmlBody.Replace("<pre>", "<br><br><pre style=\"font-family: Consolas, Courier New, monospace; font-size: 15px; background-color:#B0B0B0;\">");   
+                            htmlBody = htmlBody.Replace("<pre>", "<br><br><pre style=\"font-family: Consolas, Courier New, monospace; font-size: 15px; background-color:#B0B0B0;\">");
                             htmlBody = htmlBody.Replace("</pre>", "</pre><br><br>");
                             htmlBody = _rxComment.Replace(htmlBody, string.Empty);
                             htmlBody = _rxEmptyCdata.Replace(htmlBody, string.Empty);
@@ -683,19 +701,7 @@ namespace Evernote2Onenote
                             }
                             catch (Exception ex)
                             {
-                                var tempfilepathDir = temppath + "\\failedNotes";
-                                try
-                                {
-                                    Directory.CreateDirectory(tempfilepathDir);
-                                    var tempfilepath = tempfilepathDir + "\\note-";
-                                    tempfilepath += Guid.NewGuid().ToString();
-                                    tempfilepath += ".xml";
-                                    File.WriteAllText(tempfilepath, xmltext);
-                                }
-                                catch (Exception)
-                                {
-                                    // ignored
-                                }
+                                var tempfilepathDir = ZipFailedNote(xmltext);
 
                                 MessageBox.Show($"Note:{note.Title}\n{ex}\n\nA copy of the note is left in {tempfilepathDir}. If you want to help fix the problem, please consider creating an issue and attaching that note to it: https://github.com/stefankueng/EvImSync/issues");
                             }
@@ -723,19 +729,9 @@ namespace Evernote2Onenote
                             notename = notematch.Groups[1].ToString();
                         }
                     }
-                    var tempfilepathDir = temppath + "\\failedNotes";
-                    try
-                    {
-                        Directory.CreateDirectory(tempfilepathDir);
-                        var tempfilepath = tempfilepathDir + "\\note-";
-                        tempfilepath += Guid.NewGuid().ToString();
-                        tempfilepath += ".xml";
-                        File.WriteAllText(tempfilepath, xmltext);
-                    }
-                    catch (Exception)
-                    {
-                        // ignored
-                    }
+                    string tempfilepathDir = string.Empty;
+                    if (xmltext.Length > 0)
+                        tempfilepathDir = ZipFailedNote(xmltext);
 
                     MessageBox.Show(notename.Length > 0
                         ? $"Error parsing the note \"{notename}\" in notebook \"{_enNotebookName}\",\n{ex}\\n\\nA copy of the note is left in {tempfilepathDir}. If you want to help fix the problem, please consider creating an issue and attaching that note to it: https://github.com/stefankueng/EvImSync/issues"

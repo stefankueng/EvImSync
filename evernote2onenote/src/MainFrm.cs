@@ -74,7 +74,7 @@ namespace Evernote2Onenote
         private readonly Regex _rxNote = new Regex("<title>(.+)</title>", RegexOptions.IgnoreCase);
         private readonly Regex _rxComment = new Regex("<!--(.+)-->", RegexOptions.IgnoreCase);
         private readonly Regex _rxDtd = new Regex(@"<!DOCTYPE en-note SYSTEM \""http:\/\/xml\.evernote\.com\/pub\/enml\d*\.dtd\"">", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
+        private readonly Regex _rxBrOnly = new Regex("<br( |/)", RegexOptions.IgnoreCase);
         public MainFrm(string cmdNotebook, string cmdDate)
         {
             InitializeComponent();
@@ -609,11 +609,13 @@ namespace Evernote2Onenote
                             note.Attachments.Clear();
 
                             htmlBody = _rxFontFamily.Replace(htmlBody, string.Empty);
+                            // Insert &nbsp; before <br> to newline being effective
+                            htmlBody = _rxBrOnly.Replace(htmlBody, "&nbsp;$&");
                             htmlBody = _rxStyle.Replace(htmlBody, delegate (Match m)
                             {
                                 if (m.Value.Contains("--en-codeblock:true;"))
                                     return m.Result("<br><br>${text}") + "style=\"background-color:#B0B0B0; font-family: Consolas, Courier New, monospace; font-size: 15px;\"";
-                                return m.Result("${text}");
+                                return m.Result("$&"); // this "$&" restores the original row, so formatting remains in the xml
                             });
                             htmlBody = htmlBody.Replace("<pre>", "<br><br><pre style=\"font-family: Consolas, Courier New, monospace; font-size: 15px; background-color:#B0B0B0;\">");
                             htmlBody = htmlBody.Replace("</pre>", "</pre><br><br>");
